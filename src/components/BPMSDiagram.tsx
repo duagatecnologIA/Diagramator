@@ -1112,17 +1112,49 @@ function BPMSDiagramInner() {
 
   return (
     <div className="w-full h-screen">
-      <div className="h-16 bg-gray-800 text-white flex items-center justify-between px-6">
-        <h1 className="text-2xl font-bold">Diagrama BPMS - Proceso Portuario y Aduanero</h1>
-        <div className="text-sm text-gray-300">
-          <span className="mr-4">✏️ Doble click para editar nodos/conexiones</span>
-          <span className="mr-4">🔗 Conecta handles</span>
-          <span className="mr-4">↶ Ctrl+Z deshacer</span>
-          <span>🔍 Zoom con rueda</span>
+      <div className="h-20 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 text-white flex items-center justify-between px-8 shadow-lg border-b border-blue-700/30">
+        <div className="flex items-center space-x-4">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+            <Ship className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-100 to-white bg-clip-text text-transparent">
+              Diagrama BPMS
+            </h1>
+            <p className="text-xs text-blue-200 font-medium">
+              Proceso Portuario y Aduanero
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-1 bg-black/20 px-3 py-2 rounded-lg backdrop-blur-sm">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <span className="text-xs text-green-200 font-medium">Conectado</span>
+          </div>
+          
+          <div className="flex items-center space-x-4 text-sm">
+            <div className="flex items-center space-x-2 bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-all duration-200">
+              <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full"></div>
+              <span className="text-blue-100">Editar</span>
+            </div>
+            <div className="flex items-center space-x-2 bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-all duration-200">
+              <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+              <span className="text-blue-100">Conectar</span>
+            </div>
+            <div className="flex items-center space-x-2 bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-all duration-200">
+              <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+              <span className="text-blue-100">Deshacer</span>
+            </div>
+            <div className="flex items-center space-x-2 bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-all duration-200">
+              <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
+              <span className="text-blue-100">Zoom</span>
+            </div>
+          </div>
         </div>
       </div>
       <div 
-        className="h-[calc(100vh-4rem)] relative" 
+        className="h-[calc(100vh-5rem)] relative" 
         onKeyDown={onKeyDown} 
         tabIndex={0}
         style={{ cursor: getCursorStyle() }}
