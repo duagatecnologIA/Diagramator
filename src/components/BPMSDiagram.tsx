@@ -580,6 +580,50 @@ function BPMSDiagramInner() {
     }
   }, [nodes, edges]);
 
+  // Función para validar nodos
+  const validateNodes = useCallback((nodes: unknown[]): Node[] => {
+    return nodes.filter((node: unknown): node is Node => {
+      if (typeof node !== 'object' || node === null) return false;
+      
+      const nodeObj = node as Record<string, unknown>;
+      return (
+        'id' in nodeObj &&
+        'type' in nodeObj &&
+        'position' in nodeObj &&
+        typeof nodeObj.id === 'string' &&
+        typeof nodeObj.type === 'string' &&
+        typeof nodeObj.position === 'object' &&
+        nodeObj.position !== null &&
+        typeof (nodeObj.position as Record<string, unknown>).x === 'number' &&
+        typeof (nodeObj.position as Record<string, unknown>).y === 'number'
+      );
+    }).map(node => ({
+      ...node,
+      selected: false, // Asegurar que no estén seleccionados
+      dragging: false  // Asegurar que no estén en estado de arrastre
+    }));
+  }, []);
+
+  // Función para validar edges
+  const validateEdges = useCallback((edges: unknown[]): Edge[] => {
+    return edges.filter((edge: unknown): edge is Edge => {
+      if (typeof edge !== 'object' || edge === null) return false;
+      
+      const edgeObj = edge as Record<string, unknown>;
+      return (
+        'id' in edgeObj &&
+        'source' in edgeObj &&
+        'target' in edgeObj &&
+        typeof edgeObj.id === 'string' &&
+        typeof edgeObj.source === 'string' &&
+        typeof edgeObj.target === 'string'
+      );
+    }).map(edge => ({
+      ...edge,
+      selected: false // Asegurar que no estén seleccionados
+    }));
+  }, []);
+
   // Función para importar desde JSON
   const onImportJSON = useCallback(() => {
     console.log('Importando JSON...');
@@ -591,36 +635,68 @@ function BPMSDiagramInner() {
     input.onchange = (e: Event) => {
       const target = e.target as HTMLInputElement;
       const file = target.files?.[0];
-      if (!file) return;
+      if (!file) {
+        console.log('No se seleccionó archivo');
+        return;
+      }
 
       const reader = new FileReader();
       reader.onload = (event) => {
         try {
           const content = event.target?.result as string;
-          if (!content) {
+          if (!content || content.trim() === '') {
             alert('❌ El archivo está vacío');
             return;
           }
           
+          console.log('Parseando JSON...');
           const diagramData = JSON.parse(content);
+          console.log('Datos parseados:', diagramData);
           
           // Validar que el archivo tenga la estructura correcta
-          if (diagramData.nodes && Array.isArray(diagramData.nodes) && 
-              diagramData.edges && Array.isArray(diagramData.edges)) {
-            setNodes(diagramData.nodes);
-            setEdges(diagramData.edges);
-            saveToHistory(diagramData.nodes, diagramData.edges);
-            alert('✅ Diagrama importado exitosamente');
-          } else {
-            alert('❌ Formato de archivo inválido. El archivo debe contener nodos y conexiones.');
+          if (!diagramData || typeof diagramData !== 'object') {
+            alert('❌ Formato de archivo inválido. No es un objeto JSON válido.');
+            return;
           }
+          
+          if (!Array.isArray(diagramData.nodes)) {
+            alert('❌ Formato de archivo inválido. La propiedad "nodes" debe ser un array.');
+            return;
+          }
+          
+          if (!Array.isArray(diagramData.edges)) {
+            alert('❌ Formato de archivo inválido. La propiedad "edges" debe ser un array.');
+            return;
+          }
+          
+          // Validar y limpiar nodos y edges
+          const validNodes = validateNodes(diagramData.nodes);
+          const validEdges = validateEdges(diagramData.edges);
+          
+          console.log(`Nodos válidos: ${validNodes.length}/${diagramData.nodes.length}`);
+          console.log(`Edges válidos: ${validEdges.length}/${diagramData.edges.length}`);
+          
+          if (validNodes.length === 0 && validEdges.length === 0) {
+            alert('❌ No se encontraron nodos o conexiones válidos en el archivo.');
+            return;
+          }
+          
+          // Establecer los datos validados
+          setNodes(validNodes);
+          setEdges(validEdges);
+          saveToHistory(validNodes, validEdges);
+          
+          const message = `✅ Diagrama importado exitosamente\nNodos: ${validNodes.length}\nConexiones: ${validEdges.length}`;
+          alert(message);
+          
         } catch (error) {
+          console.error('Error al importar:', error);
           alert('❌ Error al importar el archivo. Verifica que sea un archivo JSON válido.');
-          console.error('Import error:', error);
         }
       };
       
       reader.onerror = () => {
+        console.error('Error al leer archivo');
         alert('❌ Error al leer el archivo');
       };
       
@@ -637,7 +713,7 @@ function BPMSDiagramInner() {
         document.body.removeChild(input);
       }
     }, 1000);
-  }, [setNodes, setEdges, saveToHistory]);
+  }, [setNodes, setEdges, saveToHistory, validateNodes, validateEdges]);
 
   // Función para cargar plantilla
   const onLoadTemplate = useCallback((templateType: 'empty' | 'workflow' | 'decision') => {
