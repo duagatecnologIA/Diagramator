@@ -540,13 +540,50 @@ function BPMSDiagramInner() {
     saveToHistory([...updatedNodes, ...duplicatedNodes], edges);
   }, [nodes, edges, nodeIdCounter, setNodes, saveToHistory]);
 
+  // Función para limpiar nodos para exportación
+  const cleanNodesForExport = useCallback((nodes: Node[]) => {
+    return nodes.map(node => ({
+      id: node.id,
+      type: node.type,
+      position: node.position,
+      data: node.data,
+      style: node.style,
+      className: node.className,
+      sourcePosition: node.sourcePosition,
+      targetPosition: node.targetPosition,
+      hidden: node.hidden,
+      selected: false, // Siempre exportar como no seleccionado
+      dragging: false, // Siempre exportar como no arrastrando
+    }));
+  }, []);
+
+  // Función para limpiar edges para exportación
+  const cleanEdgesForExport = useCallback((edges: Edge[]) => {
+    return edges.map(edge => ({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      type: edge.type,
+      style: edge.style,
+      label: edge.label,
+      labelStyle: edge.labelStyle,
+      labelBgStyle: edge.labelBgStyle,
+      labelBgPadding: edge.labelBgPadding,
+      labelBgBorderRadius: edge.labelBgBorderRadius,
+      markerEnd: edge.markerEnd,
+      markerStart: edge.markerStart,
+      hidden: edge.hidden,
+      selected: false, // Siempre exportar como no seleccionado
+    }));
+  }, []);
+
   // Función para exportar como JSON
   const onExportJSON = useCallback(() => {
     console.log('Exportando JSON...');
     try {
       const diagramData = {
-        nodes,
-        edges,
+        nodes: cleanNodesForExport(nodes),
+        edges: cleanEdgesForExport(edges),
         metadata: {
           name: 'BPMN Diagram',
           created: new Date().toISOString(),
@@ -578,7 +615,7 @@ function BPMSDiagramInner() {
       console.error('Error al exportar JSON:', error);
       alert('Error al exportar el diagrama. Intenta de nuevo.');
     }
-  }, [nodes, edges]);
+  }, [nodes, edges, cleanNodesForExport, cleanEdgesForExport]);
 
   // Función para validar nodos
   const validateNodes = useCallback((nodes: unknown[]): Node[] => {
