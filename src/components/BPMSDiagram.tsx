@@ -74,7 +74,7 @@ function PhaseNode({ data }: { data: NodeData }) {
         className="w-3 h-3 bg-blue-300 border-2 border-white"
       />
       <div className="flex items-center justify-center gap-3 mb-3">
-        {data.icon}
+        <Ship className="w-6 h-6" />
         <h3 className="text-xl font-bold">{data.label}</h3>
       </div>
       <p className="text-sm text-blue-100">{data.description}</p>
@@ -97,7 +97,7 @@ function ActivityNode({ data }: { data: NodeData }) {
         className="w-3 h-3 bg-gray-400 border-2 border-white"
       />
       <div className="flex items-center gap-2 mb-1">
-        {data.icon}
+        <FileText className="w-5 h-5 text-blue-600" />
         <h4 className="font-semibold text-gray-800">{data.label}</h4>
       </div>
       <p className="text-sm text-gray-600">{data.description}</p>
@@ -120,7 +120,7 @@ function DecisionNode({ data }: { data: NodeData }) {
         className="w-3 h-3 bg-yellow-500 border-2 border-white"
       />
       <div className="text-center">
-        {data.icon}
+        <AlertTriangle className="w-6 h-6 text-yellow-600 mx-auto" />
         <p className="text-sm font-semibold text-yellow-800 mt-1">{data.label}</p>
       </div>
       <Handle
@@ -152,7 +152,7 @@ function ProcessNode({ data }: { data: NodeData }) {
         className="w-3 h-3 bg-green-500 border-2 border-white"
       />
       <div className="flex items-center gap-2 mb-1">
-        {data.icon}
+        <CheckCircle className="w-5 h-5 text-green-600" />
         <h4 className="font-semibold text-green-800">{data.label}</h4>
       </div>
       <p className="text-sm text-green-700">{data.description}</p>
