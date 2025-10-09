@@ -20,9 +20,10 @@ import ReactFlow, {
   useReactFlow,
   Panel,
   getNodesBounds,
+  MiniMap,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { toPng } from 'html-to-image';
+import { toPng, toSvg } from 'html-to-image';
 import { 
   Ship, 
   FileText, 
@@ -41,7 +42,11 @@ import {
   Circle,
   Square,
   Diamond,
-  Hexagon
+  Hexagon,
+  Save,
+  Upload,
+  Copy,
+  FileJson
 } from 'lucide-react';
 
 // Interfaz para los datos de los nodos
@@ -178,6 +183,12 @@ function BPMSDiagramInner() {
   const [editingNode, setEditingNode] = React.useState<Node | null>(null);
   const [editLabel, setEditLabel] = React.useState('');
   const [editDescription, setEditDescription] = React.useState('');
+  
+  // Estado para clipboard (copy/paste)
+  const [clipboard, setClipboard] = React.useState<Node[]>([]);
+  
+  // Estado para mostrar modal de templates
+  const [showTemplates, setShowTemplates] = React.useState(false);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -358,6 +369,311 @@ function BPMSDiagramInner() {
     setEditDescription('');
   }, []);
 
+  // Función para copiar nodos seleccionados
+  const onCopy = useCallback(() => {
+    const selectedNodes = nodes.filter(node => node.selected);
+    if (selectedNodes.length > 0) {
+      setClipboard(selectedNodes);
+    }
+  }, [nodes]);
+
+  // Función para pegar nodos
+  const onPaste = useCallback(() => {
+    if (clipboard.length === 0) return;
+
+    const newNodes = clipboard.map((node) => {
+      const newId = `node-${nodeIdCounter + clipboard.indexOf(node)}`;
+      return {
+        ...node,
+        id: newId,
+        position: {
+          x: node.position.x + 50,
+          y: node.position.y + 50,
+        },
+        selected: false,
+      };
+    });
+
+    setNodeIdCounter(prev => prev + clipboard.length);
+    setNodes((nds) => [...nds, ...newNodes]);
+    saveToHistory([...nodes, ...newNodes], edges);
+  }, [clipboard, nodes, edges, nodeIdCounter, setNodes, saveToHistory]);
+
+  // Función para duplicar nodos seleccionados
+  const onDuplicate = useCallback(() => {
+    const selectedNodes = nodes.filter(node => node.selected);
+    if (selectedNodes.length === 0) return;
+
+    const duplicatedNodes = selectedNodes.map((node, index) => {
+      const newId = `node-${nodeIdCounter + index}`;
+      return {
+        ...node,
+        id: newId,
+        position: {
+          x: node.position.x + 50,
+          y: node.position.y + 50,
+        },
+        selected: true,
+      };
+    });
+
+    setNodeIdCounter(prev => prev + selectedNodes.length);
+    
+    // Deseleccionar nodos originales y agregar los duplicados
+    const updatedNodes = nodes.map(node => ({ ...node, selected: false }));
+    setNodes([...updatedNodes, ...duplicatedNodes]);
+    saveToHistory([...updatedNodes, ...duplicatedNodes], edges);
+  }, [nodes, edges, nodeIdCounter, setNodes, saveToHistory]);
+
+  // Función para guardar diagrama en localStorage
+  const onSaveToLocal = useCallback(() => {
+    const diagramData = {
+      nodes,
+      edges,
+      timestamp: new Date().toISOString(),
+    };
+    localStorage.setItem('bpmn-diagram', JSON.stringify(diagramData));
+    alert('✅ Diagrama guardado en el navegador');
+  }, [nodes, edges]);
+
+  // Función para cargar diagrama desde localStorage
+  const onLoadFromLocal = useCallback(() => {
+    const saved = localStorage.getItem('bpmn-diagram');
+    if (saved) {
+      const diagramData = JSON.parse(saved);
+      setNodes(diagramData.nodes);
+      setEdges(diagramData.edges);
+      saveToHistory(diagramData.nodes, diagramData.edges);
+      alert('✅ Diagrama cargado desde el navegador');
+    } else {
+      alert('❌ No hay diagrama guardado');
+    }
+  }, [setNodes, setEdges, saveToHistory]);
+
+  // Función para exportar como JSON
+  const onExportJSON = useCallback(() => {
+    const diagramData = {
+      nodes,
+      edges,
+      metadata: {
+        name: 'BPMN Diagram',
+        created: new Date().toISOString(),
+        version: '1.0',
+      },
+    };
+
+    const dataStr = JSON.stringify(diagramData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.download = `diagrama-bpmn-${new Date().toISOString().split('T')[0]}.json`;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [nodes, edges]);
+
+  // Función para importar desde JSON
+  const onImportJSON = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      const file = target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const content = event.target?.result as string;
+          const diagramData = JSON.parse(content);
+          
+          if (diagramData.nodes && diagramData.edges) {
+            setNodes(diagramData.nodes);
+            setEdges(diagramData.edges);
+            saveToHistory(diagramData.nodes, diagramData.edges);
+            alert('✅ Diagrama importado exitosamente');
+          } else {
+            alert('❌ Formato de archivo inválido');
+          }
+        } catch (error) {
+          alert('❌ Error al importar el archivo');
+          console.error('Import error:', error);
+        }
+      };
+      reader.readAsText(file);
+    };
+    
+    input.click();
+  }, [setNodes, setEdges, saveToHistory]);
+
+  // Función para cargar plantilla
+  const onLoadTemplate = useCallback((templateType: 'empty' | 'workflow' | 'decision') => {
+    let templateNodes: Node[] = [];
+    let templateEdges: Edge[] = [];
+
+    switch (templateType) {
+      case 'empty':
+        templateNodes = [];
+        templateEdges = [];
+        break;
+      
+      case 'workflow':
+        templateNodes = [
+          {
+            id: 'start',
+            type: 'phase',
+            position: { x: 250, y: 50 },
+            data: {
+              label: 'Inicio del Proceso',
+              description: 'Punto de inicio del workflow',
+              icon: <Ship className="w-6 h-6" />
+            },
+          },
+          {
+            id: 'step1',
+            type: 'activity',
+            position: { x: 250, y: 200 },
+            data: {
+              label: 'Actividad 1',
+              description: 'Primera actividad del proceso',
+              icon: <FileText className="w-5 h-5 text-blue-600" />
+            },
+          },
+          {
+            id: 'step2',
+            type: 'activity',
+            position: { x: 250, y: 350 },
+            data: {
+              label: 'Actividad 2',
+              description: 'Segunda actividad del proceso',
+              icon: <Shield className="w-5 h-5 text-blue-600" />
+            },
+          },
+          {
+            id: 'end',
+            type: 'process',
+            position: { x: 250, y: 500 },
+            data: {
+              label: 'Finalizar',
+              description: 'Proceso completado',
+              icon: <CheckCircle className="w-5 h-5 text-green-600" />
+            },
+          },
+        ];
+        
+        templateEdges = [
+          {
+            id: 'e1',
+            source: 'start',
+            target: 'step1',
+            type: 'smoothstep',
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#3B82F6' },
+            style: { stroke: '#3B82F6', strokeWidth: 2 }
+          },
+          {
+            id: 'e2',
+            source: 'step1',
+            target: 'step2',
+            type: 'smoothstep',
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#6B7280' },
+            style: { stroke: '#6B7280', strokeWidth: 2 }
+          },
+          {
+            id: 'e3',
+            source: 'step2',
+            target: 'end',
+            type: 'smoothstep',
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#10B981' },
+            style: { stroke: '#10B981', strokeWidth: 2 }
+          },
+        ];
+        break;
+      
+      case 'decision':
+        templateNodes = [
+          {
+            id: 'start',
+            type: 'activity',
+            position: { x: 250, y: 50 },
+            data: {
+              label: 'Inicio',
+              description: 'Actividad inicial',
+              icon: <FileText className="w-5 h-5 text-blue-600" />
+            },
+          },
+          {
+            id: 'decision',
+            type: 'decision',
+            position: { x: 280, y: 180 },
+            data: {
+              label: '¿Condición?',
+              icon: <AlertTriangle className="w-6 h-6 text-yellow-600" />
+            },
+          },
+          {
+            id: 'yes',
+            type: 'process',
+            position: { x: 100, y: 350 },
+            data: {
+              label: 'Opción Sí',
+              description: 'Camino afirmativo',
+              icon: <CheckCircle className="w-5 h-5 text-green-600" />
+            },
+          },
+          {
+            id: 'no',
+            type: 'process',
+            position: { x: 400, y: 350 },
+            data: {
+              label: 'Opción No',
+              description: 'Camino negativo',
+              icon: <X className="w-5 h-5 text-red-600" />
+            },
+          },
+        ];
+        
+        templateEdges = [
+          {
+            id: 'e1',
+            source: 'start',
+            target: 'decision',
+            type: 'smoothstep',
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#6B7280' },
+            style: { stroke: '#6B7280', strokeWidth: 2 }
+          },
+          {
+            id: 'e2',
+            source: 'decision',
+            target: 'yes',
+            type: 'smoothstep',
+            label: 'Sí',
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#10B981' },
+            style: { stroke: '#10B981', strokeWidth: 2 },
+            labelStyle: { fill: '#10B981', fontWeight: 600 }
+          },
+          {
+            id: 'e3',
+            source: 'decision',
+            target: 'no',
+            type: 'smoothstep',
+            label: 'No',
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#EF4444' },
+            style: { stroke: '#EF4444', strokeWidth: 2 },
+            labelStyle: { fill: '#EF4444', fontWeight: 600 }
+          },
+        ];
+        break;
+    }
+
+    setNodes(templateNodes);
+    setEdges(templateEdges);
+    saveToHistory(templateNodes, templateEdges);
+    setShowTemplates(false);
+    setNodeIdCounter(1000);
+  }, [setNodes, setEdges, saveToHistory]);
+
   // Función para exportar el diagrama como PNG
   const onExportPNG = useCallback(() => {
     const reactFlowViewport = document.querySelector('.react-flow__viewport') as HTMLElement;
@@ -388,6 +704,35 @@ function BPMSDiagramInner() {
     });
   }, [getNodes]);
 
+  // Función para exportar el diagrama como SVG
+  const onExportSVG = useCallback(() => {
+    const reactFlowViewport = document.querySelector('.react-flow__viewport') as HTMLElement;
+    
+    if (!reactFlowViewport) return;
+
+    const nodesBounds = getNodesBounds(getNodes());
+    const imageWidth = nodesBounds.width + 100;
+    const imageHeight = nodesBounds.height + 100;
+
+    toSvg(reactFlowViewport, {
+      backgroundColor: '#ffffff',
+      width: imageWidth,
+      height: imageHeight,
+      style: {
+        width: `${imageWidth}px`,
+        height: `${imageHeight}px`,
+        transform: `translate(${-nodesBounds.x + 50}px, ${-nodesBounds.y + 50}px)`,
+      },
+    }).then((dataUrl) => {
+      const link = document.createElement('a');
+      link.download = `diagrama-bpmn-${new Date().toISOString().split('T')[0]}.svg`;
+      link.href = dataUrl;
+      link.click();
+    }).catch((err) => {
+      console.error('Error al exportar SVG:', err);
+    });
+  }, [getNodes]);
+
   // Manejar teclas de atajo
   const onKeyDown = useCallback((event: React.KeyboardEvent) => {
     // Si el modal de edición está abierto, manejar sus teclas
@@ -409,12 +754,24 @@ function BPMSDiagramInner() {
     } else if ((event.ctrlKey || event.metaKey) && (event.key === 'y' || (event.key === 'z' && event.shiftKey))) {
       event.preventDefault();
       redo();
+    } else if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
+      event.preventDefault();
+      onCopy();
+    } else if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+      event.preventDefault();
+      onPaste();
+    } else if ((event.ctrlKey || event.metaKey) && event.key === 'd') {
+      event.preventDefault();
+      onDuplicate();
+    } else if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+      event.preventDefault();
+      onSaveToLocal();
     } else if (event.key === 'Delete' || event.key === 'Backspace') {
       onDelete();
     } else if (event.key === 'Escape') {
       setToolMode('select');
     }
-  }, [undo, redo, onDelete, editingNode, handleSaveEdit, handleCancelEdit]);
+  }, [undo, redo, onDelete, editingNode, handleSaveEdit, handleCancelEdit, onCopy, onPaste, onDuplicate, onSaveToLocal]);
 
   // Obtener el estilo del cursor según el modo de herramienta
   const getCursorStyle = () => {
@@ -769,11 +1126,42 @@ function BPMSDiagramInner() {
             showFitView={true}
             showZoom={true}
           />
+          <MiniMap 
+            nodeColor={(node) => {
+              switch (node.type) {
+                case 'phase':
+                  return '#2563EB';
+                case 'activity':
+                  return '#6B7280';
+                case 'decision':
+                  return '#EAB308';
+                case 'process':
+                  return '#10B981';
+                default:
+                  return '#6B7280';
+              }
+            }}
+            nodeBorderRadius={2}
+            position="bottom-right"
+            className="bg-white border-2 border-gray-300 rounded-lg"
+          />
           
           {/* Panel de Herramientas - Izquierda */}
           <Panel position="top-left" className="bg-white rounded-lg shadow-lg p-3 space-y-2">
             <div className="text-xs text-gray-600 mb-2 font-medium text-center">Agregar Elementos</div>
             
+            {/* Botón Templates */}
+            <button
+              onClick={() => setShowTemplates(true)}
+              className="w-full px-3 py-2 rounded transition-colors text-sm font-medium flex items-center gap-2 bg-purple-100 text-purple-700 hover:bg-purple-200"
+              title="Cargar Plantilla"
+            >
+              <FileText className="w-4 h-4" />
+              📋 Plantillas
+            </button>
+
+            <div className="border-t border-gray-200 my-2"></div>
+
             {/* Botón Seleccionar/Mover */}
             <button
               onClick={() => setToolMode('select')}
@@ -896,36 +1284,176 @@ function BPMSDiagramInner() {
               </button>
             </div>
 
+            <div className="border-t border-gray-200 my-2"></div>
+            <div className="text-xs text-gray-600 mb-2 font-medium">Archivo</div>
+
+            {/* Botones de Guardar/Cargar */}
+            <div className="flex space-x-1">
+              <button
+                onClick={onSaveToLocal}
+                className="flex-1 px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-xs font-medium flex items-center justify-center gap-1"
+                title="Guardar en navegador (Ctrl+S)"
+              >
+                <Save className="w-3 h-3" />
+                Guardar
+              </button>
+              <button
+                onClick={onLoadFromLocal}
+                className="flex-1 px-2 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors text-xs font-medium flex items-center justify-center gap-1"
+                title="Cargar desde navegador"
+              >
+                <Upload className="w-3 h-3" />
+                Cargar
+              </button>
+            </div>
+
+            <div className="border-t border-gray-200 my-2"></div>
+            <div className="text-xs text-gray-600 mb-2 font-medium">Exportar/Importar</div>
+
             {/* Botón de Exportar PNG */}
             <button
               onClick={onExportPNG}
-              className="w-full px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+              className="w-full px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs font-medium flex items-center justify-center gap-2"
               title="Exportar como PNG"
             >
-              <Download className="w-4 h-4" />
-              Exportar PNG
+              <Download className="w-3 h-3" />
+              PNG
             </button>
+
+            {/* Botón de Exportar SVG */}
+            <button
+              onClick={onExportSVG}
+              className="w-full px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs font-medium flex items-center justify-center gap-2"
+              title="Exportar como SVG"
+            >
+              <Download className="w-3 h-3" />
+              SVG
+            </button>
+
+            {/* Botones de JSON */}
+            <div className="flex space-x-1">
+              <button
+                onClick={onExportJSON}
+                className="flex-1 px-2 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors text-xs font-medium flex items-center justify-center gap-1"
+                title="Exportar JSON"
+              >
+                <FileJson className="w-3 h-3" />
+                Exportar
+              </button>
+              <button
+                onClick={onImportJSON}
+                className="flex-1 px-2 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors text-xs font-medium flex items-center justify-center gap-1"
+                title="Importar JSON"
+              >
+                <Upload className="w-3 h-3" />
+                Importar
+              </button>
+            </div>
+
+            <div className="border-t border-gray-200 my-2"></div>
+            <div className="text-xs text-gray-600 mb-2 font-medium">Edición</div>
+
+            {/* Botones Copy/Paste/Duplicate */}
+            <div className="flex space-x-1">
+              <button
+                onClick={onCopy}
+                disabled={!nodes.some(node => node.selected)}
+                className="flex-1 px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-xs font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
+                title="Copiar (Ctrl+C)"
+              >
+                <Copy className="w-3 h-3" />
+              </button>
+              <button
+                onClick={onPaste}
+                disabled={clipboard.length === 0}
+                className="flex-1 px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-xs font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
+                title="Pegar (Ctrl+V)"
+              >
+                📋
+              </button>
+              <button
+                onClick={onDuplicate}
+                disabled={!nodes.some(node => node.selected)}
+                className="flex-1 px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-xs font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
+                title="Duplicar (Ctrl+D)"
+              >
+                2x
+              </button>
+            </div>
 
             {/* Botón de Eliminar */}
             <button
               onClick={onDelete}
-              className="w-full px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-sm font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="w-full px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-xs font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
               disabled={!nodes.some(node => node.selected) && !edges.some(edge => edge.selected)}
             >
-              🗑️ Eliminar Seleccionados
+              🗑️ Eliminar
             </button>
             
             <div className="text-xs text-gray-500 mt-2">
-              <div>• Click para seleccionar</div>
-              <div>• Doble click para editar texto</div>
-              <div>• Cmd/Ctrl + Click para múltiple</div>
-              <div>• Ctrl+Z para deshacer</div>
-              <div>• Ctrl+Y para rehacer</div>
-              <div>• Delete/Backspace para eliminar</div>
+              <div className="font-medium mb-1">Atajos de Teclado:</div>
+              <div>• Ctrl+S: Guardar</div>
+              <div>• Ctrl+C/V/D: Copy/Paste/Duplicar</div>
+              <div>• Ctrl+Z/Y: Deshacer/Rehacer</div>
+              <div>• Delete: Eliminar selección</div>
+              <div>• Doble click: Editar texto</div>
+              <div>• Esc: Modo selección</div>
             </div>
           </Panel>
           <Background variant={BackgroundVariant.Dots} />
         </ReactFlow>
+
+        {/* Modal de Plantillas */}
+        {showTemplates && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-2xl">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                📋 Selecciona una Plantilla
+              </h2>
+              
+              <div className="grid grid-cols-3 gap-4">
+                {/* Plantilla Vacía */}
+                <button
+                  onClick={() => onLoadTemplate('empty')}
+                  className="p-6 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                >
+                  <div className="text-4xl mb-3">📄</div>
+                  <h3 className="font-semibold text-gray-800 mb-2">Vacío</h3>
+                  <p className="text-xs text-gray-600">Comenzar desde cero con un lienzo en blanco</p>
+                </button>
+
+                {/* Plantilla Workflow */}
+                <button
+                  onClick={() => onLoadTemplate('workflow')}
+                  className="p-6 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                >
+                  <div className="text-4xl mb-3">📊</div>
+                  <h3 className="font-semibold text-gray-800 mb-2">Workflow Básico</h3>
+                  <p className="text-xs text-gray-600">Proceso lineal con inicio, actividades y fin</p>
+                </button>
+
+                {/* Plantilla Decisión */}
+                <button
+                  onClick={() => onLoadTemplate('decision')}
+                  className="p-6 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                >
+                  <div className="text-4xl mb-3">🔀</div>
+                  <h3 className="font-semibold text-gray-800 mb-2">Árbol de Decisión</h3>
+                  <p className="text-xs text-gray-600">Diagrama con punto de decisión y bifurcaciones</p>
+                </button>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setShowTemplates(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors font-medium"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Modal de Edición */}
         {editingNode && (
