@@ -20,8 +20,11 @@ import ReactFlow, {
   ReactFlowProvider,
   useReactFlow,
   Panel,
+  getNodesBounds,
+  getViewportForBounds,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { toPng } from 'html-to-image';
 import { 
   Ship, 
   FileText, 
@@ -33,7 +36,15 @@ import {
   Truck,
   Lock,
   Camera,
-  X
+  X,
+  Download,
+  MousePointer,
+  Trash2,
+  Circle,
+  Square,
+  Diamond,
+  Hexagon,
+  Plus
 } from 'lucide-react';
 
 // Definir tipos de nodos personalizados
@@ -149,11 +160,20 @@ function ProcessNode({ data }: { data: any }) {
 function BPMSDiagramInner() {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const { deleteElements } = useReactFlow();
+  const { deleteElements, getNodes, project } = useReactFlow();
 
   // Estados para el historial de undo/redo
   const [history, setHistory] = React.useState<{nodes: Node[], edges: Edge[]}[]>([]);
   const [historyIndex, setHistoryIndex] = React.useState(-1);
+  
+  // Estado para el modo de herramienta actual
+  const [toolMode, setToolMode] = React.useState<'select' | 'phase' | 'activity' | 'decision' | 'process' | 'delete'>('select');
+  const [nodeIdCounter, setNodeIdCounter] = React.useState(1000);
+  
+  // Estado para edición de nodos
+  const [editingNode, setEditingNode] = React.useState<Node | null>(null);
+  const [editLabel, setEditLabel] = React.useState('');
+  const [editDescription, setEditDescription] = React.useState('');
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -203,8 +223,182 @@ function BPMSDiagramInner() {
     }
   }, [deleteElements, nodes, edges, saveToHistory]);
 
+  // Función para agregar un nuevo nodo
+  const addNode = useCallback((type: string, position: { x: number; y: number }) => {
+    const newId = `node-${nodeIdCounter}`;
+    setNodeIdCounter(prev => prev + 1);
+    
+    let newNode: Node;
+    
+    switch (type) {
+      case 'phase':
+        newNode = {
+          id: newId,
+          type: 'phase',
+          position,
+          data: {
+            label: 'Nueva Fase',
+            description: 'Descripción de la fase',
+            icon: <Ship className="w-6 h-6" />
+          },
+        };
+        break;
+      case 'activity':
+        newNode = {
+          id: newId,
+          type: 'activity',
+          position,
+          data: {
+            label: 'Nueva Actividad',
+            description: 'Descripción de la actividad',
+            icon: <FileText className="w-5 h-5 text-blue-600" />
+          },
+        };
+        break;
+      case 'decision':
+        newNode = {
+          id: newId,
+          type: 'decision',
+          position,
+          data: {
+            label: '¿Decisión?',
+            icon: <AlertTriangle className="w-6 h-6 text-yellow-600" />
+          },
+        };
+        break;
+      case 'process':
+        newNode = {
+          id: newId,
+          type: 'process',
+          position,
+          data: {
+            label: 'Nuevo Proceso',
+            description: 'Descripción del proceso',
+            icon: <CheckCircle className="w-5 h-5 text-green-600" />
+          },
+        };
+        break;
+      default:
+        return;
+    }
+    
+    setNodes((nds) => [...nds, newNode]);
+    saveToHistory([...nodes, newNode], edges);
+    setToolMode('select'); // Volver al modo selección después de agregar
+  }, [nodeIdCounter, setNodes, nodes, edges, saveToHistory]);
+
+  // Manejar clic en el canvas
+  const onPaneClick = useCallback((event: React.MouseEvent) => {
+    if (toolMode === 'select') return;
+    
+    if (toolMode === 'delete') {
+      // El modo delete se maneja en el clic de nodos
+      return;
+    }
+    
+    const reactFlowBounds = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const position = project({
+      x: event.clientX - reactFlowBounds.left,
+      y: event.clientY - reactFlowBounds.top,
+    });
+    
+    addNode(toolMode, position);
+  }, [toolMode, project, addNode]);
+
+  // Manejar clic en nodos
+  const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
+    if (toolMode === 'delete') {
+      saveToHistory(nodes, edges);
+      deleteElements({ nodes: [node], edges: [] });
+    }
+  }, [toolMode, deleteElements, nodes, edges, saveToHistory]);
+
+  // Manejar doble clic en nodos para editar
+  const onNodeDoubleClick = useCallback((_event: React.MouseEvent, node: Node) => {
+    if (toolMode === 'select') {
+      setEditingNode(node);
+      setEditLabel(node.data.label || '');
+      setEditDescription(node.data.description || '');
+    }
+  }, [toolMode]);
+
+  // Guardar cambios de edición
+  const handleSaveEdit = useCallback(() => {
+    if (!editingNode) return;
+
+    const updatedNodes = nodes.map(node => {
+      if (node.id === editingNode.id) {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            label: editLabel,
+            description: editDescription,
+          }
+        };
+      }
+      return node;
+    });
+
+    saveToHistory(nodes, edges);
+    setNodes(updatedNodes);
+    setEditingNode(null);
+    setEditLabel('');
+    setEditDescription('');
+  }, [editingNode, editLabel, editDescription, nodes, edges, setNodes, saveToHistory]);
+
+  // Cancelar edición
+  const handleCancelEdit = useCallback(() => {
+    setEditingNode(null);
+    setEditLabel('');
+    setEditDescription('');
+  }, []);
+
+  // Función para exportar el diagrama como PNG
+  const onExportPNG = useCallback(() => {
+    const reactFlowViewport = document.querySelector('.react-flow__viewport') as HTMLElement;
+    
+    if (!reactFlowViewport) return;
+
+    const nodesBounds = getNodesBounds(getNodes());
+    const imageWidth = nodesBounds.width + 100;
+    const imageHeight = nodesBounds.height + 100;
+
+    toPng(reactFlowViewport, {
+      backgroundColor: '#ffffff',
+      width: imageWidth,
+      height: imageHeight,
+      style: {
+        width: `${imageWidth}px`,
+        height: `${imageHeight}px`,
+        transform: `translate(${-nodesBounds.x + 50}px, ${-nodesBounds.y + 50}px)`,
+      },
+      pixelRatio: 2,
+    }).then((dataUrl) => {
+      const link = document.createElement('a');
+      link.download = `diagrama-bpmn-${new Date().toISOString().split('T')[0]}.png`;
+      link.href = dataUrl;
+      link.click();
+    }).catch((err) => {
+      console.error('Error al exportar PNG:', err);
+    });
+  }, [getNodes]);
+
   // Manejar teclas de atajo
   const onKeyDown = useCallback((event: React.KeyboardEvent) => {
+    // Si el modal de edición está abierto, manejar sus teclas
+    if (editingNode) {
+      if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        handleSaveEdit();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        handleCancelEdit();
+      }
+      return;
+    }
+
+    // Teclas de atajo normales
     if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
       event.preventDefault();
       undo();
@@ -213,8 +407,25 @@ function BPMSDiagramInner() {
       redo();
     } else if (event.key === 'Delete' || event.key === 'Backspace') {
       onDelete();
+    } else if (event.key === 'Escape') {
+      setToolMode('select');
     }
-  }, [undo, redo, onDelete]);
+  }, [undo, redo, onDelete, editingNode, handleSaveEdit, handleCancelEdit]);
+
+  // Obtener el estilo del cursor según el modo de herramienta
+  const getCursorStyle = () => {
+    switch (toolMode) {
+      case 'phase':
+      case 'activity':
+      case 'decision':
+      case 'process':
+        return 'crosshair';
+      case 'delete':
+        return 'not-allowed';
+      default:
+        return 'default';
+    }
+  };
 
   // Definir los nodos del diagrama organizados por fases
   const initialNodes: Node[] = useMemo(() => [
@@ -470,8 +681,10 @@ function BPMSDiagramInner() {
     setNodes(initialNodes);
     setEdges(initialEdges);
     // Guardar estado inicial en el historial
-    saveToHistory(initialNodes, initialEdges);
-  }, [setNodes, setEdges, saveToHistory]);
+    setHistory([{ nodes: initialNodes, edges: initialEdges }]);
+    setHistoryIndex(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Guardar estado en historial cuando cambian los nodos o edges (excepto en undo/redo)
   React.useEffect(() => {
@@ -488,22 +701,42 @@ function BPMSDiagramInner() {
   return (
     <div className="w-full h-screen">
       <div className="h-16 bg-gray-800 text-white flex items-center justify-between px-6">
-        <h1 className="text-2xl font-bold">Diagrama BPMS - Proceso Portuario y Aduanero por Fases</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Diagrama BPMS - Proceso Portuario y Aduanero</h1>
+          <div className="text-xs text-gray-400 mt-1">
+            Modo actual: <span className="font-semibold text-blue-400">
+              {toolMode === 'select' && '🖱️ Seleccionar/Mover'}
+              {toolMode === 'phase' && '➕ Agregar Fase'}
+              {toolMode === 'activity' && '➕ Agregar Actividad'}
+              {toolMode === 'decision' && '➕ Agregar Decisión'}
+              {toolMode === 'process' && '➕ Agregar Proceso'}
+              {toolMode === 'delete' && '🗑️ Eliminar'}
+            </span>
+            {toolMode !== 'select' && <span className="ml-2 text-yellow-300">(Presiona Esc para volver a Seleccionar)</span>}
+          </div>
+        </div>
         <div className="text-sm text-gray-300">
-          <span className="mr-4">🖱️ Arrastra nodos</span>
-          <span className="mr-4">🔗 Conecta con handles</span>
-          <span className="mr-4">↶ Ctrl+Z para deshacer</span>
-          <span className="mr-4">🗑️ Delete para eliminar</span>
+          <span className="mr-4">✏️ Doble click para editar</span>
+          <span className="mr-4">🔗 Conecta handles</span>
+          <span className="mr-4">↶ Ctrl+Z deshacer</span>
           <span>🔍 Zoom con rueda</span>
         </div>
       </div>
-      <div className="h-[calc(100vh-4rem)] relative" onKeyDown={onKeyDown} tabIndex={0}>
+      <div 
+        className="h-[calc(100vh-4rem)] relative" 
+        onKeyDown={onKeyDown} 
+        tabIndex={0}
+        style={{ cursor: getCursorStyle() }}
+      >
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onPaneClick={onPaneClick}
+          onNodeClick={onNodeClick}
+          onNodeDoubleClick={onNodeDoubleClick}
           nodeTypes={nodeTypes}
           fitView
           attributionPosition="bottom-left"
@@ -513,25 +746,129 @@ function BPMSDiagramInner() {
             markerEnd: { type: MarkerType.ArrowClosed },
             style: { strokeWidth: 2 }
           }}
-          nodesDraggable={true}
+          nodesDraggable={toolMode === 'select'}
           nodesConnectable={true}
-          elementsSelectable={true}
+          elementsSelectable={toolMode === 'select'}
           selectNodesOnDrag={false}
-          panOnDrag={true}
+          panOnDrag={toolMode === 'select'}
           zoomOnScroll={true}
           panOnScroll={false}
           preventScrolling={false}
           minZoom={0.1}
           maxZoom={2}
-          deleteKeyCode={null} // Deshabilitamos la eliminación por tecla por defecto
-          multiSelectionKeyCode={['Meta', 'Ctrl']} // Cmd/Ctrl para selección múltiple
-          selectionKeyCode={['Meta', 'Ctrl']} // Cmd/Ctrl para selección
+          deleteKeyCode={null}
+          multiSelectionKeyCode={['Meta', 'Ctrl']}
+          selectionKeyCode={['Meta', 'Ctrl']}
         >
           <Controls 
             showInteractive={true}
             showFitView={true}
             showZoom={true}
           />
+          
+          {/* Panel de Herramientas - Izquierda */}
+          <Panel position="top-left" className="bg-white rounded-lg shadow-lg p-3 space-y-2">
+            <div className="text-xs text-gray-600 mb-2 font-medium text-center">Agregar Elementos</div>
+            
+            {/* Botón Seleccionar/Mover */}
+            <button
+              onClick={() => setToolMode('select')}
+              className={`w-full px-3 py-2 rounded transition-colors text-sm font-medium flex items-center gap-2 ${
+                toolMode === 'select' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              title="Seleccionar y Mover (Esc)"
+            >
+              <MousePointer className="w-4 h-4" />
+              Seleccionar
+            </button>
+
+            <div className="border-t border-gray-200 my-2"></div>
+            <div className="text-xs text-gray-500 mb-1">Tipos de Nodos:</div>
+
+            {/* Botón Agregar Fase */}
+            <button
+              onClick={() => setToolMode('phase')}
+              className={`w-full px-3 py-2 rounded transition-colors text-sm font-medium flex items-center gap-2 ${
+                toolMode === 'phase' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+              }`}
+              title="Agregar Fase"
+            >
+              <Hexagon className="w-4 h-4" />
+              Fase
+            </button>
+
+            {/* Botón Agregar Actividad */}
+            <button
+              onClick={() => setToolMode('activity')}
+              className={`w-full px-3 py-2 rounded transition-colors text-sm font-medium flex items-center gap-2 ${
+                toolMode === 'activity' 
+                  ? 'bg-gray-600 text-white' 
+                  : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+              }`}
+              title="Agregar Actividad"
+            >
+              <Square className="w-4 h-4" />
+              Actividad
+            </button>
+
+            {/* Botón Agregar Decisión */}
+            <button
+              onClick={() => setToolMode('decision')}
+              className={`w-full px-3 py-2 rounded transition-colors text-sm font-medium flex items-center gap-2 ${
+                toolMode === 'decision' 
+                  ? 'bg-yellow-600 text-white' 
+                  : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
+              }`}
+              title="Agregar Decisión"
+            >
+              <Diamond className="w-4 h-4" />
+              Decisión
+            </button>
+
+            {/* Botón Agregar Proceso */}
+            <button
+              onClick={() => setToolMode('process')}
+              className={`w-full px-3 py-2 rounded transition-colors text-sm font-medium flex items-center gap-2 ${
+                toolMode === 'process' 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-green-50 text-green-700 hover:bg-green-100'
+              }`}
+              title="Agregar Proceso"
+            >
+              <Circle className="w-4 h-4" />
+              Proceso
+            </button>
+
+            <div className="border-t border-gray-200 my-2"></div>
+
+            {/* Botón Eliminar */}
+            <button
+              onClick={() => setToolMode('delete')}
+              className={`w-full px-3 py-2 rounded transition-colors text-sm font-medium flex items-center gap-2 ${
+                toolMode === 'delete' 
+                  ? 'bg-red-600 text-white' 
+                  : 'bg-red-50 text-red-700 hover:bg-red-100'
+              }`}
+              title="Modo Eliminar"
+            >
+              <Trash2 className="w-4 h-4" />
+              Eliminar
+            </button>
+
+            <div className="text-xs text-gray-500 mt-2 pt-2 border-t border-gray-200">
+              <div className="mb-1 font-medium">Instrucciones:</div>
+              <div>• Selecciona herramienta</div>
+              <div>• Click en canvas para crear</div>
+              <div>• Doble click para editar</div>
+              <div>• Conecta nodos por handles</div>
+              <div>• Esc para volver a selección</div>
+            </div>
+          </Panel>
+
           <Panel position="top-right" className="bg-white rounded-lg shadow-lg p-3 space-y-2">
             <div className="text-xs text-gray-600 mb-2 font-medium">Herramientas de Edición</div>
             
@@ -555,6 +892,16 @@ function BPMSDiagramInner() {
               </button>
             </div>
 
+            {/* Botón de Exportar PNG */}
+            <button
+              onClick={onExportPNG}
+              className="w-full px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+              title="Exportar como PNG"
+            >
+              <Download className="w-4 h-4" />
+              Exportar PNG
+            </button>
+
             {/* Botón de Eliminar */}
             <button
               onClick={onDelete}
@@ -566,6 +913,7 @@ function BPMSDiagramInner() {
             
             <div className="text-xs text-gray-500 mt-2">
               <div>• Click para seleccionar</div>
+              <div>• Doble click para editar texto</div>
               <div>• Cmd/Ctrl + Click para múltiple</div>
               <div>• Ctrl+Z para deshacer</div>
               <div>• Ctrl+Y para rehacer</div>
@@ -574,6 +922,70 @@ function BPMSDiagramInner() {
           </Panel>
           <Background variant={BackgroundVariant.Dots} />
         </ReactFlow>
+
+        {/* Modal de Edición */}
+        {editingNode && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                Editar {editingNode.type === 'phase' ? 'Fase' : 
+                        editingNode.type === 'activity' ? 'Actividad' :
+                        editingNode.type === 'decision' ? 'Decisión' : 'Proceso'}
+              </h2>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Título
+                  </label>
+                  <input
+                    type="text"
+                    value={editLabel}
+                    onChange={(e) => setEditLabel(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Título del nodo"
+                    autoFocus
+                  />
+                </div>
+
+                {editingNode.type !== 'decision' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Descripción
+                    </label>
+                    <textarea
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      placeholder="Descripción del nodo"
+                      rows={3}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6">
+                <div className="text-xs text-gray-500 mb-3 text-center">
+                  Presiona <kbd className="px-1 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs">Ctrl+Enter</kbd> para guardar o <kbd className="px-1 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs">Esc</kbd> para cancelar
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={handleCancelEdit}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors font-medium"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleSaveEdit}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    Guardar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
