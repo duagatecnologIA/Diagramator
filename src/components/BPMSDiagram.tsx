@@ -1442,6 +1442,49 @@ function BPMSDiagramInner() {
             </button>
 
             <div className="border-t border-gray-200 my-2"></div>
+            <div className="text-xs text-gray-600 mb-2 font-medium">Exportar/Importar</div>
+
+            {/* Botón de Exportar PNG */}
+            <button
+              onClick={onExportPNG}
+              className="w-full px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs font-medium flex items-center justify-center gap-2"
+              title="Exportar como PNG"
+            >
+              <Download className="w-3 h-3" />
+              PNG
+            </button>
+
+            {/* Botón de Exportar SVG */}
+            <button
+              onClick={onExportSVG}
+              className="w-full px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs font-medium flex items-center justify-center gap-2"
+              title="Exportar como SVG"
+            >
+              <Download className="w-3 h-3" />
+              SVG
+            </button>
+
+            {/* Botones de JSON */}
+            <div className="flex space-x-1">
+              <button
+                onClick={onExportJSON}
+                className="flex-1 px-2 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors text-xs font-medium flex items-center justify-center gap-1"
+                title="Exportar JSON"
+              >
+                <FileJson className="w-3 h-3" />
+                Exportar
+              </button>
+              <button
+                onClick={onImportJSON}
+                className="flex-1 px-2 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors text-xs font-medium flex items-center justify-center gap-1"
+                title="Importar JSON"
+              >
+                <Upload className="w-3 h-3" />
+                Importar
+              </button>
+            </div>
+
+            <div className="border-t border-gray-200 my-2"></div>
             <div className="text-xs text-gray-600 mb-2 font-medium">Edición</div>
 
             {/* Botones Copy/Paste/Duplicate */}
