@@ -191,6 +191,7 @@ function BPMSDiagramInner() {
   // Estado para edición de conexiones
   const [editingEdge, setEditingEdge] = React.useState<Edge | null>(null);
   const [editEdgeLabel, setEditEdgeLabel] = React.useState('');
+  const [editEdgeColor, setEditEdgeColor] = React.useState('#3B82F6');
   
   // Estado para clipboard (copy/paste)
   const [clipboard, setClipboard] = React.useState<Node[]>([]);
@@ -394,6 +395,9 @@ function BPMSDiagramInner() {
     if (toolMode === 'select') {
       setEditingEdge(edge);
       setEditEdgeLabel(typeof edge.label === 'string' ? edge.label : '');
+      // Extraer el color actual de la conexión o usar el por defecto
+      const currentColor = edge.style?.stroke || '#3B82F6';
+      setEditEdgeColor(currentColor);
     }
   }, [toolMode]);
 
@@ -407,6 +411,15 @@ function BPMSDiagramInner() {
           ...edge,
           label: editEdgeLabel,
           labelStyle: editEdgeLabel ? { fill: '#6B7280', fontWeight: 600 } : undefined,
+          style: {
+            ...edge.style,
+            stroke: editEdgeColor,
+            strokeWidth: 2
+          },
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            color: editEdgeColor
+          }
         };
       }
       return edge;
@@ -416,12 +429,14 @@ function BPMSDiagramInner() {
     setEdges(updatedEdges);
     setEditingEdge(null);
     setEditEdgeLabel('');
-  }, [editingEdge, editEdgeLabel, edges, nodes, setEdges, saveToHistory]);
+    setEditEdgeColor('#3B82F6');
+  }, [editingEdge, editEdgeLabel, editEdgeColor, edges, nodes, setEdges, saveToHistory]);
 
   // Cancelar edición de conexión
   const handleCancelEdgeEdit = useCallback(() => {
     setEditingEdge(null);
     setEditEdgeLabel('');
+    setEditEdgeColor('#3B82F6');
   }, []);
 
   // Función para copiar nodos seleccionados
@@ -1631,6 +1646,44 @@ function BPMSDiagramInner() {
                   <p className="text-xs text-gray-500 mt-1">
                     Deja vacío para no mostrar etiqueta
                   </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Color de la conexión
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={editEdgeColor}
+                      onChange={(e) => setEditEdgeColor(e.target.value)}
+                      className="w-12 h-10 border border-gray-300 rounded-md cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={editEdgeColor}
+                        onChange={(e) => setEditEdgeColor(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                        placeholder="#3B82F6"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Selecciona o escribe un color hexadecimal
+                  </p>
+                </div>
+
+                {/* Preview del color */}
+                <div className="bg-gray-50 rounded-lg p-3 border">
+                  <div className="text-xs text-gray-600 mb-2">Vista previa:</div>
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-16 h-1 rounded-full"
+                      style={{ backgroundColor: editEdgeColor }}
+                    ></div>
+                    <span className="text-xs text-gray-600">Color seleccionado</span>
+                  </div>
                 </div>
               </div>
 
