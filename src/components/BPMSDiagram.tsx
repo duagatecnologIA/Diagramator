@@ -300,7 +300,7 @@ function BPMSDiagramInner() {
           data: {
             label: 'Nueva Fase',
             description: 'Descripción de la fase',
-            icon: <Ship className="w-6 h-6" />
+            icon: null // No incluir iconos React directamente
           },
         };
         break;
@@ -312,7 +312,7 @@ function BPMSDiagramInner() {
           data: {
             label: 'Nueva Actividad',
             description: 'Descripción de la actividad',
-            icon: <FileText className="w-5 h-5 text-blue-600" />
+            icon: null // No incluir iconos React directamente
           },
         };
         break;
@@ -323,7 +323,7 @@ function BPMSDiagramInner() {
           position,
           data: {
             label: '¿Decisión?',
-            icon: <AlertTriangle className="w-6 h-6 text-yellow-600" />
+            icon: null // No incluir iconos React directamente
           },
         };
         break;
@@ -335,7 +335,7 @@ function BPMSDiagramInner() {
           data: {
             label: 'Nuevo Proceso',
             description: 'Descripción del proceso',
-            icon: <CheckCircle className="w-5 h-5 text-green-600" />
+            icon: null // No incluir iconos React directamente
           },
         };
         break;
@@ -1325,10 +1325,20 @@ function BPMSDiagramInner() {
   // Inicializar nodos y edges
   React.useEffect(() => {
     console.log('Inicializando diagrama...');
-    setNodes(initialNodes);
+    
+    // Limpiar nodos iniciales para evitar problemas de renderizado
+    const cleanedInitialNodes = initialNodes.map(node => ({
+      ...node,
+      data: {
+        ...node.data,
+        icon: null, // Remover iconos React para evitar problemas de renderizado
+      }
+    }));
+    
+    setNodes(cleanedInitialNodes);
     setEdges(initialEdges);
     // Guardar estado inicial en el historial
-    const initialState = { nodes: initialNodes, edges: initialEdges };
+    const initialState = { nodes: cleanedInitialNodes, edges: initialEdges };
     setHistory([initialState]);
     setHistoryIndex(0);
     console.log('Estado inicial guardado en historial');
