@@ -173,7 +173,8 @@ function BPMSDiagramInner() {
 
   // Estados para el historial de undo/redo
   const [history, setHistory] = React.useState<{nodes: Node[], edges: Edge[]}[]>([]);
-  const [historyIndex, setHistoryIndex] = React.useState(-1);
+  const [historyIndex, setHistoryIndex] = React.useState(0);
+  const [isUndoRedoOperation, setIsUndoRedoOperation] = React.useState(false);
   
   // Estado para el modo de herramienta actual
   const [toolMode, setToolMode] = React.useState<'select' | 'phase' | 'activity' | 'decision' | 'process' | 'delete'>('select');
@@ -199,14 +200,25 @@ function BPMSDiagramInner() {
 
   // Función para guardar el estado actual en el historial
   const saveToHistory = useCallback((newNodes: Node[], newEdges: Edge[]) => {
+    if (isUndoRedoOperation) {
+      setIsUndoRedoOperation(false);
+      return; // No guardar durante operaciones de undo/redo
+    }
+    
     const newState = { nodes: [...newNodes], edges: [...newEdges] };
+    
     setHistory(prev => {
       const newHistory = prev.slice(0, historyIndex + 1);
       newHistory.push(newState);
       return newHistory.slice(-50); // Mantener solo los últimos 50 estados
     });
-    setHistoryIndex(prev => Math.min(prev + 1, 49));
-  }, [historyIndex]);
+    
+    setHistoryIndex(prev => {
+      const newIndex = Math.min(prev + 1, 49);
+      console.log(`Guardando en historial - Índice: ${newIndex}`);
+      return newIndex;
+    });
+  }, [historyIndex, isUndoRedoOperation]);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -225,23 +237,37 @@ function BPMSDiagramInner() {
 
   // Función para deshacer (Ctrl+Z)
   const undo = useCallback(() => {
-    console.log('Undo...');
+    console.log(`Undo - Índice actual: ${historyIndex}, Historial length: ${history.length}`);
     if (historyIndex > 0) {
+      setIsUndoRedoOperation(true);
       const prevState = history[historyIndex - 1];
       setNodes(prevState.nodes);
       setEdges(prevState.edges);
-      setHistoryIndex(prev => prev - 1);
+      setHistoryIndex(prev => {
+        const newIndex = prev - 1;
+        console.log(`Undo - Nuevo índice: ${newIndex}`);
+        return newIndex;
+      });
+    } else {
+      console.log('No hay más cambios para deshacer');
     }
   }, [historyIndex, history, setNodes, setEdges]);
 
   // Función para rehacer (Ctrl+Y)
   const redo = useCallback(() => {
-    console.log('Redo...');
+    console.log(`Redo - Índice actual: ${historyIndex}, Historial length: ${history.length}`);
     if (historyIndex < history.length - 1) {
+      setIsUndoRedoOperation(true);
       const nextState = history[historyIndex + 1];
       setNodes(nextState.nodes);
       setEdges(nextState.edges);
-      setHistoryIndex(prev => prev + 1);
+      setHistoryIndex(prev => {
+        const newIndex = prev + 1;
+        console.log(`Redo - Nuevo índice: ${newIndex}`);
+        return newIndex;
+      });
+    } else {
+      console.log('No hay más cambios para rehacer');
     }
   }, [historyIndex, history, setNodes, setEdges]);
 
@@ -1159,25 +1185,37 @@ function BPMSDiagramInner() {
 
   // Inicializar nodos y edges
   React.useEffect(() => {
+    console.log('Inicializando diagrama...');
     setNodes(initialNodes);
     setEdges(initialEdges);
     // Guardar estado inicial en el historial
-    setHistory([{ nodes: initialNodes, edges: initialEdges }]);
+    const initialState = { nodes: initialNodes, edges: initialEdges };
+    setHistory([initialState]);
     setHistoryIndex(0);
+    console.log('Estado inicial guardado en historial');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Guardar estado en historial cuando cambian los nodos o edges (excepto en undo/redo)
   React.useEffect(() => {
-    if (historyIndex === -1 || (history.length > 0 && history[historyIndex]?.nodes !== nodes)) {
-      // Solo guardar si no es una operación de undo/redo
-      const timeoutId = setTimeout(() => {
-        saveToHistory(nodes, edges);
-      }, 100); // Debounce para evitar guardar demasiado frecuentemente
+    if (!isUndoRedoOperation && history.length > 0) {
+      const currentState = history[historyIndex];
+      const hasChanged = !currentState || 
+        currentState.nodes.length !== nodes.length || 
+        currentState.edges.length !== edges.length ||
+        JSON.stringify(currentState.nodes) !== JSON.stringify(nodes) ||
+        JSON.stringify(currentState.edges) !== JSON.stringify(edges);
       
-      return () => clearTimeout(timeoutId);
+      if (hasChanged) {
+        console.log('Cambios detectados, guardando en historial...');
+        const timeoutId = setTimeout(() => {
+          saveToHistory(nodes, edges);
+        }, 300); // Debounce para evitar guardar demasiado frecuentemente
+        
+        return () => clearTimeout(timeoutId);
+      }
     }
-  }, [nodes, edges, historyIndex, history, saveToHistory]);
+  }, [nodes, edges, historyIndex, isUndoRedoOperation, history, saveToHistory]);
 
   return (
     <div className="w-full h-screen">
