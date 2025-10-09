@@ -535,24 +535,35 @@ function BPMSDiagramInner() {
 
   // Función para exportar como JSON
   const onExportJSON = useCallback(() => {
-    const diagramData = {
-      nodes,
-      edges,
-      metadata: {
-        name: 'BPMN Diagram',
-        created: new Date().toISOString(),
-        version: '1.0',
-      },
-    };
+    try {
+      const diagramData = {
+        nodes,
+        edges,
+        metadata: {
+          name: 'BPMN Diagram',
+          created: new Date().toISOString(),
+          version: '1.0',
+        },
+      };
 
-    const dataStr = JSON.stringify(diagramData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.download = `diagrama-bpmn-${new Date().toISOString().split('T')[0]}.json`;
-    link.href = url;
-    link.click();
-    URL.revokeObjectURL(url);
+      const dataStr = JSON.stringify(diagramData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      
+      const link = document.createElement('a');
+      link.download = `diagrama-bpmn-${new Date().toISOString().split('T')[0]}.json`;
+      link.href = url;
+      link.style.display = 'none';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error al exportar JSON:', error);
+      alert('Error al exportar el diagrama. Intenta de nuevo.');
+    }
   }, [nodes, edges]);
 
   // Función para importar desde JSON
@@ -572,16 +583,18 @@ function BPMSDiagramInner() {
           const content = event.target?.result as string;
           const diagramData = JSON.parse(content);
           
-          if (diagramData.nodes && diagramData.edges) {
+          // Validar que el archivo tenga la estructura correcta
+          if (diagramData.nodes && Array.isArray(diagramData.nodes) && 
+              diagramData.edges && Array.isArray(diagramData.edges)) {
             setNodes(diagramData.nodes);
             setEdges(diagramData.edges);
             saveToHistory(diagramData.nodes, diagramData.edges);
             alert('✅ Diagrama importado exitosamente');
           } else {
-            alert('❌ Formato de archivo inválido');
+            alert('❌ Formato de archivo inválido. El archivo debe contener nodos y conexiones.');
           }
         } catch (error) {
-          alert('❌ Error al importar el archivo');
+          alert('❌ Error al importar el archivo. Verifica que sea un archivo JSON válido.');
           console.error('Import error:', error);
         }
       };
