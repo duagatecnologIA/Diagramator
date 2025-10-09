@@ -184,6 +184,10 @@ function BPMSDiagramInner() {
   const [editLabel, setEditLabel] = React.useState('');
   const [editDescription, setEditDescription] = React.useState('');
   
+  // Estado para edición de conexiones
+  const [editingEdge, setEditingEdge] = React.useState<Edge | null>(null);
+  const [editEdgeLabel, setEditEdgeLabel] = React.useState('');
+  
   // Estado para clipboard (copy/paste)
   const [clipboard, setClipboard] = React.useState<Node[]>([]);
   
@@ -367,6 +371,41 @@ function BPMSDiagramInner() {
     setEditingNode(null);
     setEditLabel('');
     setEditDescription('');
+  }, []);
+
+  // Manejar doble click en conexiones para editar etiqueta
+  const onEdgeDoubleClick = useCallback((_event: React.MouseEvent, edge: Edge) => {
+    if (toolMode === 'select') {
+      setEditingEdge(edge);
+      setEditEdgeLabel(typeof edge.label === 'string' ? edge.label : '');
+    }
+  }, [toolMode]);
+
+  // Guardar cambios de edición de conexión
+  const handleSaveEdgeEdit = useCallback(() => {
+    if (!editingEdge) return;
+
+    const updatedEdges = edges.map(edge => {
+      if (edge.id === editingEdge.id) {
+        return {
+          ...edge,
+          label: editEdgeLabel,
+          labelStyle: editEdgeLabel ? { fill: '#6B7280', fontWeight: 600 } : undefined,
+        };
+      }
+      return edge;
+    });
+
+    saveToHistory(nodes, updatedEdges);
+    setEdges(updatedEdges);
+    setEditingEdge(null);
+    setEditEdgeLabel('');
+  }, [editingEdge, editEdgeLabel, edges, nodes, setEdges, saveToHistory]);
+
+  // Cancelar edición de conexión
+  const handleCancelEdgeEdit = useCallback(() => {
+    setEditingEdge(null);
+    setEditEdgeLabel('');
   }, []);
 
   // Función para copiar nodos seleccionados
@@ -735,7 +774,7 @@ function BPMSDiagramInner() {
 
   // Manejar teclas de atajo
   const onKeyDown = useCallback((event: React.KeyboardEvent) => {
-    // Si el modal de edición está abierto, manejar sus teclas
+    // Si el modal de edición de nodo está abierto, manejar sus teclas
     if (editingNode) {
       if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();
@@ -743,6 +782,18 @@ function BPMSDiagramInner() {
       } else if (event.key === 'Escape') {
         event.preventDefault();
         handleCancelEdit();
+      }
+      return;
+    }
+
+    // Si el modal de edición de edge está abierto, manejar sus teclas
+    if (editingEdge) {
+      if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        handleSaveEdgeEdit();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        handleCancelEdgeEdit();
       }
       return;
     }
@@ -771,7 +822,7 @@ function BPMSDiagramInner() {
     } else if (event.key === 'Escape') {
       setToolMode('select');
     }
-  }, [undo, redo, onDelete, editingNode, handleSaveEdit, handleCancelEdit, onCopy, onPaste, onDuplicate, onSaveToLocal]);
+  }, [undo, redo, onDelete, editingNode, editingEdge, handleSaveEdit, handleCancelEdit, handleSaveEdgeEdit, handleCancelEdgeEdit, onCopy, onPaste, onDuplicate, onSaveToLocal]);
 
   // Obtener el estilo del cursor según el modo de herramienta
   const getCursorStyle = () => {
@@ -1077,7 +1128,7 @@ function BPMSDiagramInner() {
           </div>
         </div>
         <div className="text-sm text-gray-300">
-          <span className="mr-4">✏️ Doble click para editar</span>
+          <span className="mr-4">✏️ Doble click para editar nodos/conexiones</span>
           <span className="mr-4">🔗 Conecta handles</span>
           <span className="mr-4">↶ Ctrl+Z deshacer</span>
           <span>🔍 Zoom con rueda</span>
@@ -1098,6 +1149,7 @@ function BPMSDiagramInner() {
           onPaneClick={onPaneClick}
           onNodeClick={onNodeClick}
           onNodeDoubleClick={onNodeDoubleClick}
+          onEdgeDoubleClick={onEdgeDoubleClick}
           nodeTypes={nodeTypes}
           fitView
           attributionPosition="bottom-left"
@@ -1509,6 +1561,56 @@ function BPMSDiagramInner() {
                   </button>
                   <button
                     onClick={handleSaveEdit}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    Guardar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Edición de Conexión */}
+        {editingEdge && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                ✏️ Editar Etiqueta de Conexión
+              </h2>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Texto de la etiqueta
+                  </label>
+                  <input
+                    type="text"
+                    value={editEdgeLabel}
+                    onChange={(e) => setEditEdgeLabel(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Ej: Sí, No, Siguiente, etc."
+                    autoFocus
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Deja vacío para no mostrar etiqueta
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <div className="text-xs text-gray-500 mb-3 text-center">
+                  Presiona <kbd className="px-1 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs">Ctrl+Enter</kbd> para guardar o <kbd className="px-1 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs">Esc</kbd> para cancelar
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={handleCancelEdgeEdit}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors font-medium"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleSaveEdgeEdit}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
                   >
                     Guardar
