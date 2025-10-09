@@ -1220,9 +1220,9 @@ function BPMSDiagramInner() {
         }
         if ((key === 'sourcePosition' || key === 'targetPosition') && 
             key in item1 && key in item2) {
-          return (item1 as any)[key] === (item2 as any)[key];
+          return (item1 as Record<string, unknown>)[key] === (item2 as Record<string, unknown>)[key];
         }
-        return (item1 as any)[key] === (item2 as any)[key];
+        return (item1 as Record<string, unknown>)[key] === (item2 as Record<string, unknown>)[key];
       });
     });
   }, []);
