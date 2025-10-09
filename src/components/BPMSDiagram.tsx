@@ -319,22 +319,38 @@ function BPMSDiagramInner() {
     
     setNodes((nds) => [...nds, newNode]);
     saveToHistory([...nodes, newNode], edges);
-    setToolMode('select'); // Volver al modo selección después de agregar
+    // NO cambiar el toolMode automáticamente - mantener el modo activo
   }, [nodeIdCounter, setNodes, nodes, edges, saveToHistory]);
 
   // Manejar clic en el canvas
-  const onPaneClick = useCallback((event: React.MouseEvent) => {
-    if (toolMode === 'select') return;
-    
-    if (toolMode === 'delete') {
-      // El modo delete se maneja en el clic de nodos
+  const onPaneClick = useCallback((event: any) => {
+    // Solo agregar nodos si no estamos en modo selección o eliminación
+    if (toolMode === 'select' || toolMode === 'delete') {
       return;
     }
     
-    const reactFlowBounds = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    // Obtener las coordenadas del click
+    let clientX, clientY;
+    if (event.clientX !== undefined) {
+      // Evento estándar
+      clientX = event.clientX;
+      clientY = event.clientY;
+    } else if (event.nativeEvent) {
+      // Evento React
+      clientX = event.nativeEvent.clientX;
+      clientY = event.nativeEvent.clientY;
+    } else {
+      return;
+    }
+    
+    const reactFlowBounds = (event.currentTarget || document.querySelector('.react-flow__pane'))?.getBoundingClientRect();
+    if (!reactFlowBounds) {
+      return;
+    }
+    
     const position = project({
-      x: event.clientX - reactFlowBounds.left,
-      y: event.clientY - reactFlowBounds.top,
+      x: clientX - reactFlowBounds.left,
+      y: clientY - reactFlowBounds.top,
     });
     
     addNode(toolMode, position);
@@ -865,6 +881,7 @@ function BPMSDiagramInner() {
         return 'crosshair';
       case 'delete':
         return 'not-allowed';
+      case 'select':
       default:
         return 'default';
     }
@@ -1189,6 +1206,12 @@ function BPMSDiagramInner() {
         onKeyDown={onKeyDown} 
         tabIndex={0}
         style={{ cursor: getCursorStyle() }}
+        onClick={(event) => {
+          // Solo procesar si el click es en el div contenedor, no en elementos hijos
+          if (event.target === event.currentTarget) {
+            onPaneClick(event as any);
+          }
+        }}
       >
         <ReactFlow
           nodes={nodes}
@@ -1197,6 +1220,12 @@ function BPMSDiagramInner() {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onPaneClick={onPaneClick}
+          onClick={(event) => {
+            // Solo procesar si es un click en el canvas (no en nodos)
+            if (event.target === event.currentTarget || (event.target as HTMLElement).classList.contains('react-flow__pane')) {
+              onPaneClick(event as any);
+            }
+          }}
           onNodeClick={onNodeClick}
           onNodeDoubleClick={onNodeDoubleClick}
           onEdgeDoubleClick={onEdgeDoubleClick}
@@ -1209,11 +1238,12 @@ function BPMSDiagramInner() {
             markerEnd: { type: MarkerType.ArrowClosed, color: '#3B82F6' },
             style: { strokeWidth: 2, stroke: '#3B82F6' }
           }}
-          nodesDraggable={toolMode === 'select'}
+          nodesDraggable={true}
           nodesConnectable={true}
-          elementsSelectable={toolMode === 'select'}
+          elementsSelectable={true}
           selectNodesOnDrag={false}
           panOnDrag={toolMode === 'select'}
+          nodesFocusable={false}
           zoomOnScroll={true}
           panOnScroll={false}
           preventScrolling={false}
