@@ -225,6 +225,7 @@ function BPMSDiagramInner() {
 
   // Función para deshacer (Ctrl+Z)
   const undo = useCallback(() => {
+    console.log('Undo...');
     if (historyIndex > 0) {
       const prevState = history[historyIndex - 1];
       setNodes(prevState.nodes);
@@ -235,6 +236,7 @@ function BPMSDiagramInner() {
 
   // Función para rehacer (Ctrl+Y)
   const redo = useCallback(() => {
+    console.log('Redo...');
     if (historyIndex < history.length - 1) {
       const nextState = history[historyIndex + 1];
       setNodes(nextState.nodes);
@@ -245,6 +247,7 @@ function BPMSDiagramInner() {
 
   // Función para eliminar elementos seleccionados
   const onDelete = useCallback(() => {
+    console.log('Eliminando...');
     const selectedNodes = nodes.filter(node => node.selected);
     const selectedEdges = edges.filter(edge => edge.selected);
     
@@ -454,6 +457,7 @@ function BPMSDiagramInner() {
 
   // Función para copiar nodos seleccionados
   const onCopy = useCallback(() => {
+    console.log('Copiando...');
     const selectedNodes = nodes.filter(node => node.selected);
     if (selectedNodes.length > 0) {
       setClipboard(selectedNodes);
@@ -462,6 +466,7 @@ function BPMSDiagramInner() {
 
   // Función para pegar nodos
   const onPaste = useCallback(() => {
+    console.log('Pegando...');
     if (clipboard.length === 0) return;
 
     const newNodes = clipboard.map((node) => {
@@ -484,6 +489,7 @@ function BPMSDiagramInner() {
 
   // Función para duplicar nodos seleccionados
   const onDuplicate = useCallback(() => {
+    console.log('Duplicando...');
     const selectedNodes = nodes.filter(node => node.selected);
     if (selectedNodes.length === 0) return;
 
@@ -510,6 +516,7 @@ function BPMSDiagramInner() {
 
   // Función para exportar como JSON
   const onExportJSON = useCallback(() => {
+    console.log('Exportando JSON...');
     try {
       const diagramData = {
         nodes,
@@ -549,6 +556,7 @@ function BPMSDiagramInner() {
 
   // Función para importar desde JSON
   const onImportJSON = useCallback(() => {
+    console.log('Importando JSON...');
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
@@ -773,6 +781,7 @@ function BPMSDiagramInner() {
 
   // Función para exportar el diagrama como PNG
   const onExportPNG = useCallback(() => {
+    console.log('Exportando PNG...');
     const reactFlowViewport = document.querySelector('.react-flow__viewport') as HTMLElement;
     
     if (!reactFlowViewport) return;
@@ -803,6 +812,7 @@ function BPMSDiagramInner() {
 
   // Función para exportar el diagrama como SVG
   const onExportSVG = useCallback(() => {
+    console.log('Exportando SVG...');
     const reactFlowViewport = document.querySelector('.react-flow__viewport') as HTMLElement;
     
     if (!reactFlowViewport) return;
