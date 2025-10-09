@@ -1113,20 +1113,7 @@ function BPMSDiagramInner() {
   return (
     <div className="w-full h-screen">
       <div className="h-16 bg-gray-800 text-white flex items-center justify-between px-6">
-        <div>
-          <h1 className="text-2xl font-bold">Diagrama BPMS - Proceso Portuario y Aduanero</h1>
-          <div className="text-xs text-gray-400 mt-1">
-            Modo actual: <span className="font-semibold text-blue-400">
-              {toolMode === 'select' && '🖱️ Seleccionar/Mover'}
-              {toolMode === 'phase' && '➕ Agregar Fase'}
-              {toolMode === 'activity' && '➕ Agregar Actividad'}
-              {toolMode === 'decision' && '➕ Agregar Decisión'}
-              {toolMode === 'process' && '➕ Agregar Proceso'}
-              {toolMode === 'delete' && '🗑️ Eliminar'}
-            </span>
-            {toolMode !== 'select' && <span className="ml-2 text-yellow-300">(Presiona Esc para volver a Seleccionar)</span>}
-          </div>
-        </div>
+        <h1 className="text-2xl font-bold">Diagrama BPMS - Proceso Portuario y Aduanero</h1>
         <div className="text-sm text-gray-300">
           <span className="mr-4">✏️ Doble click para editar nodos/conexiones</span>
           <span className="mr-4">🔗 Conecta handles</span>
