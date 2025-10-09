@@ -179,9 +179,6 @@ function BPMSDiagramInner() {
   const [toolMode, setToolMode] = React.useState<'select' | 'phase' | 'activity' | 'decision' | 'process' | 'delete'>('select');
   const [nodeIdCounter, setNodeIdCounter] = React.useState(1000);
   
-  // Estado para herramientas de conexión - simplificado
-  const [connectionType, setConnectionType] = React.useState<'straight' | 'smoothstep' | 'step' | 'bezier'>('smoothstep');
-  const [connectionStyle, setConnectionStyle] = React.useState<'default' | 'dashed' | 'dotted' | 'thick'>('default');
   
   // Estado para edición de nodos
   const [editingNode, setEditingNode] = React.useState<Node | null>(null);
@@ -323,19 +320,19 @@ function BPMSDiagramInner() {
   }, [nodeIdCounter, setNodes, nodes, edges, saveToHistory]);
 
   // Manejar clic en el canvas
-  const onPaneClick = useCallback((event: any) => {
+  const onPaneClick = useCallback((event: React.MouseEvent | MouseEvent) => {
     // Solo agregar nodos si no estamos en modo selección o eliminación
     if (toolMode === 'select' || toolMode === 'delete') {
       return;
     }
     
     // Obtener las coordenadas del click
-    let clientX, clientY;
-    if (event.clientX !== undefined) {
+    let clientX: number, clientY: number;
+    if ('clientX' in event && event.clientX !== undefined) {
       // Evento estándar
       clientX = event.clientX;
       clientY = event.clientY;
-    } else if (event.nativeEvent) {
+    } else if ('nativeEvent' in event && event.nativeEvent) {
       // Evento React
       clientX = event.nativeEvent.clientX;
       clientY = event.nativeEvent.clientY;
@@ -343,7 +340,7 @@ function BPMSDiagramInner() {
       return;
     }
     
-    const reactFlowBounds = (event.currentTarget || document.querySelector('.react-flow__pane'))?.getBoundingClientRect();
+    const reactFlowBounds = (event.currentTarget as HTMLElement || document.querySelector('.react-flow__pane') as HTMLElement)?.getBoundingClientRect();
     if (!reactFlowBounds) {
       return;
     }
@@ -1209,7 +1206,7 @@ function BPMSDiagramInner() {
         onClick={(event) => {
           // Solo procesar si el click es en el div contenedor, no en elementos hijos
           if (event.target === event.currentTarget) {
-            onPaneClick(event as any);
+            onPaneClick(event);
           }
         }}
       >
@@ -1223,7 +1220,7 @@ function BPMSDiagramInner() {
           onClick={(event) => {
             // Solo procesar si es un click en el canvas (no en nodos)
             if (event.target === event.currentTarget || (event.target as HTMLElement).classList.contains('react-flow__pane')) {
-              onPaneClick(event as any);
+              onPaneClick(event);
             }
           }}
           onNodeClick={onNodeClick}
