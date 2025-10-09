@@ -546,7 +546,10 @@ function BPMSDiagramInner() {
       id: node.id,
       type: node.type,
       position: node.position,
-      data: node.data,
+      data: {
+        ...node.data,
+        icon: null, // Remover iconos React para evitar problemas de serialización
+      },
       style: node.style,
       className: node.className,
       sourcePosition: node.sourcePosition,
@@ -617,6 +620,22 @@ function BPMSDiagramInner() {
     }
   }, [nodes, edges, cleanNodesForExport, cleanEdgesForExport]);
 
+  // Función para reconstruir iconos basado en el tipo de nodo
+  const getIconForNodeType = useCallback((type: string) => {
+    switch (type) {
+      case 'phase':
+        return <Ship className="w-6 h-6" />;
+      case 'activity':
+        return <FileText className="w-5 h-5 text-blue-600" />;
+      case 'decision':
+        return <AlertTriangle className="w-6 h-6 text-yellow-600" />;
+      case 'process':
+        return <X className="w-5 h-5 text-red-600" />;
+      default:
+        return <Circle className="w-5 h-5" />;
+    }
+  }, []);
+
   // Función para validar nodos
   const validateNodes = useCallback((nodes: unknown[]): Node[] => {
     return nodes.filter((node: unknown): node is Node => {
@@ -634,12 +653,19 @@ function BPMSDiagramInner() {
         typeof (nodeObj.position as Record<string, unknown>).x === 'number' &&
         typeof (nodeObj.position as Record<string, unknown>).y === 'number'
       );
-    }).map(node => ({
-      ...node,
-      selected: false, // Asegurar que no estén seleccionados
-      dragging: false  // Asegurar que no estén en estado de arrastre
-    }));
-  }, []);
+    }).map(node => {
+      const nodeObj = node as Node;
+      return {
+        ...nodeObj,
+        data: {
+          ...nodeObj.data,
+          icon: nodeObj.data?.icon || getIconForNodeType(nodeObj.type || 'default'), // Reconstruir icono si no existe
+        },
+        selected: false, // Asegurar que no estén seleccionados
+        dragging: false  // Asegurar que no estén en estado de arrastre
+      };
+    });
+  }, [getIconForNodeType]);
 
   // Función para validar edges
   const validateEdges = useCallback((edges: unknown[]): Edge[] => {
