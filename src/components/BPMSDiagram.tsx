@@ -16,12 +16,10 @@ import ReactFlow, {
   Handle,
   ConnectionLineType,
   MarkerType,
-  EdgeTypes,
   ReactFlowProvider,
   useReactFlow,
   Panel,
   getNodesBounds,
-  getViewportForBounds,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { toPng } from 'html-to-image';
@@ -43,9 +41,15 @@ import {
   Circle,
   Square,
   Diamond,
-  Hexagon,
-  Plus
+  Hexagon
 } from 'lucide-react';
+
+// Interfaz para los datos de los nodos
+interface NodeData {
+  label: string;
+  description?: string;
+  icon?: React.ReactNode;
+}
 
 // Definir tipos de nodos personalizados
 const nodeTypes: NodeTypes = {
@@ -56,7 +60,7 @@ const nodeTypes: NodeTypes = {
 };
 
 // Nodo para las fases principales
-function PhaseNode({ data }: { data: any }) {
+function PhaseNode({ data }: { data: NodeData }) {
   return (
     <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-xl shadow-xl border-4 border-blue-300 min-w-[400px] text-center relative">
       <Handle
@@ -79,7 +83,7 @@ function PhaseNode({ data }: { data: any }) {
 }
 
 // Nodo para actividades
-function ActivityNode({ data }: { data: any }) {
+function ActivityNode({ data }: { data: NodeData }) {
   return (
     <div className="bg-white border-2 border-gray-300 rounded-lg p-3 shadow-md min-w-[250px] relative">
       <Handle
@@ -102,7 +106,7 @@ function ActivityNode({ data }: { data: any }) {
 }
 
 // Nodo para decisiones
-function DecisionNode({ data }: { data: any }) {
+function DecisionNode({ data }: { data: NodeData }) {
   return (
     <div className="bg-yellow-100 border-2 border-yellow-400 rounded-full p-4 shadow-md min-w-[120px] min-h-[120px] flex items-center justify-center relative">
       <Handle
@@ -134,7 +138,7 @@ function DecisionNode({ data }: { data: any }) {
 }
 
 // Nodo para procesos
-function ProcessNode({ data }: { data: any }) {
+function ProcessNode({ data }: { data: NodeData }) {
   return (
     <div className="bg-green-100 border-2 border-green-400 rounded-lg p-3 shadow-md min-w-[200px] relative">
       <Handle
