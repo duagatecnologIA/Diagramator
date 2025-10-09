@@ -47,18 +47,6 @@ import {
   Upload,
   Copy,
   FileJson,
-  ArrowRight,
-  ArrowDown,
-  ArrowUp,
-  ArrowLeft,
-  Zap,
-  Target,
-  GitBranch,
-  Link,
-  ArrowUpRight,
-  ArrowDownRight,
-  ArrowUpLeft,
-  ArrowDownLeft
 } from 'lucide-react';
 
 // Interfaz para los datos de los nodos
@@ -191,13 +179,9 @@ function BPMSDiagramInner() {
   const [toolMode, setToolMode] = React.useState<'select' | 'phase' | 'activity' | 'decision' | 'process' | 'delete'>('select');
   const [nodeIdCounter, setNodeIdCounter] = React.useState(1000);
   
-  // Estado para herramientas de conexión
-  const [showConnectionTools, setShowConnectionTools] = React.useState(false);
+  // Estado para herramientas de conexión - simplificado
   const [connectionType, setConnectionType] = React.useState<'straight' | 'smoothstep' | 'step' | 'bezier'>('smoothstep');
   const [connectionStyle, setConnectionStyle] = React.useState<'default' | 'dashed' | 'dotted' | 'thick'>('default');
-  
-  // Estado para drag de flechas
-  const [draggedArrow, setDraggedArrow] = React.useState<{type: string, style: string} | null>(null);
   
   // Estado para edición de nodos
   const [editingNode, setEditingNode] = React.useState<Node | null>(null);
@@ -214,36 +198,6 @@ function BPMSDiagramInner() {
   // Estado para mostrar modal de templates
   const [showTemplates, setShowTemplates] = React.useState(false);
 
-  // Función para obtener el estilo de conexión
-  const getConnectionStyle = useCallback(() => {
-    const baseStyle = { strokeWidth: 2 };
-    switch (connectionStyle) {
-      case 'dashed':
-        return { ...baseStyle, strokeDasharray: '5,5' };
-      case 'dotted':
-        return { ...baseStyle, strokeDasharray: '2,2' };
-      case 'thick':
-        return { ...baseStyle, strokeWidth: 4 };
-      default:
-        return baseStyle;
-    }
-  }, [connectionStyle]);
-
-  // Función para obtener el color de conexión
-  const getConnectionColor = useCallback(() => {
-    switch (connectionType) {
-      case 'straight':
-        return '#6B7280';
-      case 'smoothstep':
-        return '#3B82F6';
-      case 'step':
-        return '#10B981';
-      case 'bezier':
-        return '#8B5CF6';
-      default:
-        return '#3B82F6'; // Cambiar default a azul
-    }
-  }, [connectionType]);
 
   // Función para guardar el estado actual en el historial
   const saveToHistory = useCallback((newNodes: Node[], newEdges: Edge[]) => {
@@ -260,15 +214,15 @@ function BPMSDiagramInner() {
     (params: Connection) => {
       const newEdge = {
         ...params,
-        type: connectionType,
-        style: getConnectionStyle(),
-        markerEnd: { type: MarkerType.ArrowClosed, color: getConnectionColor() },
+        type: 'smoothstep',
+        style: { strokeWidth: 2, stroke: '#3B82F6' },
+        markerEnd: { type: MarkerType.ArrowClosed, color: '#3B82F6' },
       };
       const updatedEdges = addEdge(newEdge, edges);
       saveToHistory(nodes, updatedEdges);
       setEdges(updatedEdges);
     },
-    [edges, nodes, connectionType, connectionStyle, setEdges, saveToHistory, getConnectionStyle, getConnectionColor]
+    [edges, nodes, setEdges, saveToHistory]
   );
 
   // Función para deshacer (Ctrl+Z)
@@ -385,70 +339,6 @@ function BPMSDiagramInner() {
     addNode(toolMode, position);
   }, [toolMode, project, addNode]);
 
-  // Manejar drop de flechas en el canvas
-  const onDrop = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    
-    if (!draggedArrow) return;
-    
-    const reactFlowBounds = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    const position = project({
-      x: event.clientX - reactFlowBounds.left,
-      y: event.clientY - reactFlowBounds.top,
-    });
-    
-    // Crear dos nodos temporales conectados por la flecha arrastrada
-    const node1Id = `temp-node-1-${Date.now()}`;
-    const node2Id = `temp-node-2-${Date.now()}`;
-    const edgeId = `temp-edge-${Date.now()}`;
-    
-    const node1: Node = {
-      id: node1Id,
-      type: 'activity',
-      position: { x: position.x - 60, y: position.y },
-      data: {
-        label: 'Nodo A',
-        description: 'Nodo temporal',
-        icon: <Circle className="w-5 h-5 text-blue-600" />
-      },
-    };
-    
-    const node2: Node = {
-      id: node2Id,
-      type: 'activity', 
-      position: { x: position.x + 60, y: position.y },
-      data: {
-        label: 'Nodo B',
-        description: 'Nodo temporal',
-        icon: <Circle className="w-5 h-5 text-blue-600" />
-      },
-    };
-    
-    const newEdge: Edge = {
-      id: edgeId,
-      source: node1Id,
-      target: node2Id,
-      type: draggedArrow.type as any,
-      style: draggedArrow.style === 'dashed' ? { strokeDasharray: '5,5', strokeWidth: 2 } :
-             draggedArrow.style === 'dotted' ? { strokeDasharray: '2,2', strokeWidth: 2 } :
-             draggedArrow.style === 'thick' ? { strokeWidth: 4 } : { strokeWidth: 2 },
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#3B82F6' },
-    };
-    
-    const updatedNodes = [...nodes, node1, node2];
-    const updatedEdges = [...edges, newEdge];
-    
-    setNodes(updatedNodes);
-    setEdges(updatedEdges);
-    saveToHistory(updatedNodes, updatedEdges);
-    setDraggedArrow(null);
-  }, [draggedArrow, project, nodes, edges, setNodes, setEdges, saveToHistory]);
-
-  // Manejar drag over
-  const onDragOver = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'copy';
-  }, []);
 
   // Manejar clic en nodos
   const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
@@ -1295,19 +1185,14 @@ function BPMSDiagramInner() {
           onNodeClick={onNodeClick}
           onNodeDoubleClick={onNodeDoubleClick}
           onEdgeDoubleClick={onEdgeDoubleClick}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
           nodeTypes={nodeTypes}
           fitView
           attributionPosition="bottom-left"
-          connectionLineType={connectionType === 'smoothstep' ? ConnectionLineType.SmoothStep : 
-                           connectionType === 'step' ? ConnectionLineType.Step : 
-                           connectionType === 'straight' ? ConnectionLineType.Straight : 
-                           ConnectionLineType.Bezier}
+          connectionLineType={ConnectionLineType.SmoothStep}
           defaultEdgeOptions={{
-            type: connectionType,
-            markerEnd: { type: MarkerType.ArrowClosed, color: getConnectionColor() },
-            style: getConnectionStyle()
+            type: 'smoothstep',
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#3B82F6' },
+            style: { strokeWidth: 2, stroke: '#3B82F6' }
           }}
           nodesDraggable={toolMode === 'select'}
           nodesConnectable={true}
@@ -1378,258 +1263,6 @@ function BPMSDiagramInner() {
               Seleccionar
             </button>
 
-            <div className="border-t border-gray-200 my-2"></div>
-
-            {/* Botón Herramientas de Conexión */}
-            <button
-              onClick={() => setShowConnectionTools(!showConnectionTools)}
-              className={`w-full px-3 py-2 rounded transition-colors text-sm font-medium flex items-center gap-2 ${
-                showConnectionTools 
-                  ? 'bg-orange-600 text-white' 
-                  : 'bg-orange-50 text-orange-700 hover:bg-orange-100'
-              }`}
-              title="Herramientas de Conexión"
-            >
-              <GitBranch className="w-4 h-4" />
-              🔗 Conexiones
-            </button>
-
-            {/* Panel de Herramientas de Conexión */}
-            {showConnectionTools && (
-              <div className="bg-gray-50 rounded-lg p-3 space-y-3 border border-gray-200">
-                {/* Panel de Flechas Arrastrables */}
-                <div className="bg-white rounded-lg p-3 border border-gray-200">
-                  <div className="text-xs text-gray-600 font-medium mb-2">Flechas Predefinidas:</div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* Flecha Recta Normal */}
-                    <div
-                      draggable
-                      onDragStart={(e) => {
-                        setDraggedArrow({ type: 'straight', style: 'default' });
-                        e.dataTransfer.effectAllowed = 'copy';
-                      }}
-                      className="cursor-grab active:cursor-grabbing p-2 border border-gray-200 rounded hover:bg-gray-50 transition-colors"
-                      title="Arrastra para agregar flecha recta"
-                    >
-                      <div className="flex items-center justify-center">
-                        <svg width="40" height="20" className="text-gray-600">
-                          <line x1="5" y1="10" x2="35" y2="10" stroke="currentColor" strokeWidth="2" markerEnd="url(#arrowhead)" />
-                          <defs>
-                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                              <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
-                            </marker>
-                          </defs>
-                        </svg>
-                      </div>
-                      <div className="text-xs text-center text-gray-500 mt-1">Recta</div>
-                    </div>
-
-                    {/* Flecha Suave */}
-                    <div
-                      draggable
-                      onDragStart={(e) => {
-                        setDraggedArrow({ type: 'smoothstep', style: 'default' });
-                        e.dataTransfer.effectAllowed = 'copy';
-                      }}
-                      className="cursor-grab active:cursor-grabbing p-2 border border-gray-200 rounded hover:bg-gray-50 transition-colors"
-                      title="Arrastra para agregar flecha suave"
-                    >
-                      <div className="flex items-center justify-center">
-                        <svg width="40" height="20" className="text-blue-600">
-                          <path d="M5,10 Q20,5 35,10" stroke="currentColor" strokeWidth="2" fill="none" markerEnd="url(#arrowhead-blue)" />
-                          <defs>
-                            <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                              <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
-                            </marker>
-                          </defs>
-                        </svg>
-                      </div>
-                      <div className="text-xs text-center text-gray-500 mt-1">Suave</div>
-                    </div>
-
-                    {/* Flecha Discontinua */}
-                    <div
-                      draggable
-                      onDragStart={(e) => {
-                        setDraggedArrow({ type: 'straight', style: 'dashed' });
-                        e.dataTransfer.effectAllowed = 'copy';
-                      }}
-                      className="cursor-grab active:cursor-grabbing p-2 border border-gray-200 rounded hover:bg-gray-50 transition-colors"
-                      title="Arrastra para agregar flecha discontinua"
-                    >
-                      <div className="flex items-center justify-center">
-                        <svg width="40" height="20" className="text-yellow-600">
-                          <line x1="5" y1="10" x2="35" y2="10" stroke="currentColor" strokeWidth="2" strokeDasharray="3,3" markerEnd="url(#arrowhead-yellow)" />
-                          <defs>
-                            <marker id="arrowhead-yellow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                              <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
-                            </marker>
-                          </defs>
-                        </svg>
-                      </div>
-                      <div className="text-xs text-center text-gray-500 mt-1">Discontinua</div>
-                    </div>
-
-                    {/* Flecha Gruesa */}
-                    <div
-                      draggable
-                      onDragStart={(e) => {
-                        setDraggedArrow({ type: 'smoothstep', style: 'thick' });
-                        e.dataTransfer.effectAllowed = 'copy';
-                      }}
-                      className="cursor-grab active:cursor-grabbing p-2 border border-gray-200 rounded hover:bg-gray-50 transition-colors"
-                      title="Arrastra para agregar flecha gruesa"
-                    >
-                      <div className="flex items-center justify-center">
-                        <svg width="40" height="20" className="text-red-600">
-                          <line x1="5" y1="10" x2="35" y2="10" stroke="currentColor" strokeWidth="4" markerEnd="url(#arrowhead-red)" />
-                          <defs>
-                            <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                              <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
-                            </marker>
-                          </defs>
-                        </svg>
-                      </div>
-                      <div className="text-xs text-center text-gray-500 mt-1">Gruesa</div>
-                    </div>
-                  </div>
-                  
-                  <div className="text-xs text-gray-400 mt-2 text-center">
-                    🖱️ Arrastra al canvas para crear conexión
-                  </div>
-                </div>
-
-                {/* Separador */}
-                <div className="border-t border-gray-300 my-3"></div>
-
-                {/* Configuración para conectar nodos existentes */}
-                <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                  <div className="text-xs text-blue-700 font-medium mb-2">Conectar Nodos Existentes:</div>
-                  
-                  {/* Indicador de configuración actual */}
-                  <div className="bg-white rounded-lg p-2 border border-blue-200 mb-2">
-                    <div className="text-xs text-blue-600 mb-1">Configuración actual:</div>
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-8 h-1 rounded-full"
-                        style={{
-                          backgroundColor: getConnectionColor(),
-                          strokeDasharray: connectionStyle === 'dashed' ? '5,5' : 
-                                           connectionStyle === 'dotted' ? '2,2' : 'none',
-                          strokeWidth: connectionStyle === 'thick' ? 4 : 2
-                        }}
-                      ></div>
-                      <span className="text-xs text-blue-700">
-                        {connectionType === 'straight' ? 'Recta' :
-                         connectionType === 'smoothstep' ? 'Suave' :
-                         connectionType === 'step' ? 'Escalonada' : 'Curva'}
-                      </span>
-                      <span className="text-xs text-blue-600">
-                        {connectionStyle === 'default' ? 'Normal' :
-                         connectionStyle === 'dashed' ? 'Discontinua' :
-                         connectionStyle === 'dotted' ? 'Punteada' : 'Gruesa'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-blue-700 font-medium mb-1">Tipo de Línea:</div>
-                  <div className="grid grid-cols-2 gap-1 mb-2">
-                    <button
-                      onClick={() => setConnectionType('straight')}
-                      className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
-                        connectionType === 'straight' 
-                          ? 'bg-gray-600 text-white' 
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                      }`}
-                    >
-                      <ArrowRight className="w-3 h-3" />
-                      Recta
-                    </button>
-                    <button
-                      onClick={() => setConnectionType('smoothstep')}
-                      className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
-                        connectionType === 'smoothstep' 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                      }`}
-                    >
-                      <ArrowDownRight className="w-3 h-3" />
-                      Suave
-                    </button>
-                    <button
-                      onClick={() => setConnectionType('step')}
-                      className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
-                        connectionType === 'step' 
-                          ? 'bg-green-600 text-white' 
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                      }`}
-                    >
-                      <ArrowUpRight className="w-3 h-3" />
-                      Escalonada
-                    </button>
-                    <button
-                      onClick={() => setConnectionType('bezier')}
-                      className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
-                        connectionType === 'bezier' 
-                          ? 'bg-purple-600 text-white' 
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                      }`}
-                    >
-                      <Zap className="w-3 h-3" />
-                      Curva
-                    </button>
-                  </div>
-
-                  <div className="text-xs text-blue-700 font-medium mb-1">Estilo:</div>
-                  <div className="grid grid-cols-2 gap-1">
-                    <button
-                      onClick={() => setConnectionStyle('default')}
-                      className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                        connectionStyle === 'default' 
-                          ? 'bg-gray-600 text-white' 
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                      }`}
-                    >
-                      Normal
-                    </button>
-                    <button
-                      onClick={() => setConnectionStyle('dashed')}
-                      className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                        connectionStyle === 'dashed' 
-                          ? 'bg-yellow-600 text-white' 
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                      }`}
-                    >
-                      Discontinua
-                    </button>
-                    <button
-                      onClick={() => setConnectionStyle('dotted')}
-                      className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                        connectionStyle === 'dotted' 
-                          ? 'bg-orange-600 text-white' 
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                      }`}
-                    >
-                      Punteada
-                    </button>
-                    <button
-                      onClick={() => setConnectionStyle('thick')}
-                      className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                        connectionStyle === 'thick' 
-                          ? 'bg-red-600 text-white' 
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                      }`}
-                    >
-                      Gruesa
-                    </button>
-                  </div>
-
-                  <div className="text-xs text-blue-500 mt-2 text-center">
-                    💡 Arrastra desde un nodo a otro para conectar
-                  </div>
-                </div>
-              </div>
-            )}
 
             <div className="border-t border-gray-200 my-2"></div>
             <div className="text-xs text-gray-500 mb-1">Tipos de Nodos:</div>
