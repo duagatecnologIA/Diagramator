@@ -211,19 +211,6 @@ function BPMSDiagramInner() {
   // Estado para mostrar modal de templates
   const [showTemplates, setShowTemplates] = React.useState(false);
 
-  const onConnect = useCallback(
-    (params: Connection) => {
-      const newEdge = {
-        ...params,
-        type: connectionType,
-        style: getConnectionStyle(),
-        markerEnd: { type: MarkerType.ArrowClosed, color: getConnectionColor() },
-      };
-      setEdges((eds) => addEdge(newEdge, eds));
-    },
-    [setEdges, connectionType, connectionStyle]
-  );
-
   // Función para obtener el estilo de conexión
   const getConnectionStyle = useCallback(() => {
     const baseStyle = { strokeWidth: 2 };
@@ -251,7 +238,7 @@ function BPMSDiagramInner() {
       case 'bezier':
         return '#8B5CF6';
       default:
-        return '#6B7280';
+        return '#3B82F6'; // Cambiar default a azul
     }
   }, [connectionType]);
 
@@ -265,6 +252,21 @@ function BPMSDiagramInner() {
     });
     setHistoryIndex(prev => Math.min(prev + 1, 49));
   }, [historyIndex]);
+
+  const onConnect = useCallback(
+    (params: Connection) => {
+      const newEdge = {
+        ...params,
+        type: connectionType,
+        style: getConnectionStyle(),
+        markerEnd: { type: MarkerType.ArrowClosed, color: getConnectionColor() },
+      };
+      const updatedEdges = addEdge(newEdge, edges);
+      saveToHistory(nodes, updatedEdges);
+      setEdges(updatedEdges);
+    },
+    [edges, nodes, connectionType, connectionStyle, setEdges, saveToHistory, getConnectionStyle, getConnectionColor]
+  );
 
   // Función para deshacer (Ctrl+Z)
   const undo = useCallback(() => {
@@ -1325,6 +1327,32 @@ function BPMSDiagramInner() {
             {/* Panel de Herramientas de Conexión */}
             {showConnectionTools && (
               <div className="bg-gray-50 rounded-lg p-3 space-y-3 border border-gray-200">
+                {/* Indicador de configuración actual */}
+                <div className="bg-white rounded-lg p-2 border border-gray-200">
+                  <div className="text-xs text-gray-500 mb-1">Configuración actual:</div>
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-8 h-1 rounded-full"
+                      style={{
+                        backgroundColor: getConnectionColor(),
+                        strokeDasharray: connectionStyle === 'dashed' ? '5,5' : 
+                                         connectionStyle === 'dotted' ? '2,2' : 'none',
+                        strokeWidth: connectionStyle === 'thick' ? 4 : 2
+                      }}
+                    ></div>
+                    <span className="text-xs text-gray-700">
+                      {connectionType === 'straight' ? 'Recta' :
+                       connectionType === 'smoothstep' ? 'Suave' :
+                       connectionType === 'step' ? 'Escalonada' : 'Curva'}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {connectionStyle === 'default' ? 'Normal' :
+                       connectionStyle === 'dashed' ? 'Discontinua' :
+                       connectionStyle === 'dotted' ? 'Punteada' : 'Gruesa'}
+                    </span>
+                  </div>
+                </div>
+
                 <div className="text-xs text-gray-600 font-medium">Tipo de Línea:</div>
                 <div className="grid grid-cols-2 gap-2">
                   <button
