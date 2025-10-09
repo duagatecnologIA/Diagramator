@@ -196,6 +196,9 @@ function BPMSDiagramInner() {
   const [connectionType, setConnectionType] = React.useState<'straight' | 'smoothstep' | 'step' | 'bezier'>('smoothstep');
   const [connectionStyle, setConnectionStyle] = React.useState<'default' | 'dashed' | 'dotted' | 'thick'>('default');
   
+  // Estado para drag de flechas
+  const [draggedArrow, setDraggedArrow] = React.useState<{type: string, style: string} | null>(null);
+  
   // Estado para edición de nodos
   const [editingNode, setEditingNode] = React.useState<Node | null>(null);
   const [editLabel, setEditLabel] = React.useState('');
@@ -381,6 +384,71 @@ function BPMSDiagramInner() {
     
     addNode(toolMode, position);
   }, [toolMode, project, addNode]);
+
+  // Manejar drop de flechas en el canvas
+  const onDrop = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    
+    if (!draggedArrow) return;
+    
+    const reactFlowBounds = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const position = project({
+      x: event.clientX - reactFlowBounds.left,
+      y: event.clientY - reactFlowBounds.top,
+    });
+    
+    // Crear dos nodos temporales conectados por la flecha arrastrada
+    const node1Id = `temp-node-1-${Date.now()}`;
+    const node2Id = `temp-node-2-${Date.now()}`;
+    const edgeId = `temp-edge-${Date.now()}`;
+    
+    const node1: Node = {
+      id: node1Id,
+      type: 'activity',
+      position: { x: position.x - 60, y: position.y },
+      data: {
+        label: 'Nodo A',
+        description: 'Nodo temporal',
+        icon: <Circle className="w-5 h-5 text-blue-600" />
+      },
+    };
+    
+    const node2: Node = {
+      id: node2Id,
+      type: 'activity', 
+      position: { x: position.x + 60, y: position.y },
+      data: {
+        label: 'Nodo B',
+        description: 'Nodo temporal',
+        icon: <Circle className="w-5 h-5 text-blue-600" />
+      },
+    };
+    
+    const newEdge: Edge = {
+      id: edgeId,
+      source: node1Id,
+      target: node2Id,
+      type: draggedArrow.type as any,
+      style: draggedArrow.style === 'dashed' ? { strokeDasharray: '5,5', strokeWidth: 2 } :
+             draggedArrow.style === 'dotted' ? { strokeDasharray: '2,2', strokeWidth: 2 } :
+             draggedArrow.style === 'thick' ? { strokeWidth: 4 } : { strokeWidth: 2 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: '#3B82F6' },
+    };
+    
+    const updatedNodes = [...nodes, node1, node2];
+    const updatedEdges = [...edges, newEdge];
+    
+    setNodes(updatedNodes);
+    setEdges(updatedEdges);
+    saveToHistory(updatedNodes, updatedEdges);
+    setDraggedArrow(null);
+  }, [draggedArrow, project, nodes, edges, setNodes, setEdges, saveToHistory]);
+
+  // Manejar drag over
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+  }, []);
 
   // Manejar clic en nodos
   const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
@@ -1227,6 +1295,8 @@ function BPMSDiagramInner() {
           onNodeClick={onNodeClick}
           onNodeDoubleClick={onNodeDoubleClick}
           onEdgeDoubleClick={onEdgeDoubleClick}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
           nodeTypes={nodeTypes}
           fitView
           attributionPosition="bottom-left"
@@ -1447,6 +1517,108 @@ function BPMSDiagramInner() {
 
                 <div className="text-xs text-gray-500 pt-2 border-t border-gray-300">
                   💡 Selecciona tipo y estilo, luego conecta nodos
+                </div>
+
+                {/* Panel de Flechas Arrastrables */}
+                <div className="bg-white rounded-lg p-3 border border-gray-200">
+                  <div className="text-xs text-gray-600 font-medium mb-2">Flechas Predefinidas:</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Flecha Recta Normal */}
+                    <div
+                      draggable
+                      onDragStart={(e) => {
+                        setDraggedArrow({ type: 'straight', style: 'default' });
+                        e.dataTransfer.effectAllowed = 'copy';
+                      }}
+                      className="cursor-grab active:cursor-grabbing p-2 border border-gray-200 rounded hover:bg-gray-50 transition-colors"
+                      title="Arrastra para agregar flecha recta"
+                    >
+                      <div className="flex items-center justify-center">
+                        <svg width="40" height="20" className="text-gray-600">
+                          <line x1="5" y1="10" x2="35" y2="10" stroke="currentColor" strokeWidth="2" markerEnd="url(#arrowhead)" />
+                          <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                              <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
+                            </marker>
+                          </defs>
+                        </svg>
+                      </div>
+                      <div className="text-xs text-center text-gray-500 mt-1">Recta</div>
+                    </div>
+
+                    {/* Flecha Suave */}
+                    <div
+                      draggable
+                      onDragStart={(e) => {
+                        setDraggedArrow({ type: 'smoothstep', style: 'default' });
+                        e.dataTransfer.effectAllowed = 'copy';
+                      }}
+                      className="cursor-grab active:cursor-grabbing p-2 border border-gray-200 rounded hover:bg-gray-50 transition-colors"
+                      title="Arrastra para agregar flecha suave"
+                    >
+                      <div className="flex items-center justify-center">
+                        <svg width="40" height="20" className="text-blue-600">
+                          <path d="M5,10 Q20,5 35,10" stroke="currentColor" strokeWidth="2" fill="none" markerEnd="url(#arrowhead-blue)" />
+                          <defs>
+                            <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                              <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
+                            </marker>
+                          </defs>
+                        </svg>
+                      </div>
+                      <div className="text-xs text-center text-gray-500 mt-1">Suave</div>
+                    </div>
+
+                    {/* Flecha Discontinua */}
+                    <div
+                      draggable
+                      onDragStart={(e) => {
+                        setDraggedArrow({ type: 'straight', style: 'dashed' });
+                        e.dataTransfer.effectAllowed = 'copy';
+                      }}
+                      className="cursor-grab active:cursor-grabbing p-2 border border-gray-200 rounded hover:bg-gray-50 transition-colors"
+                      title="Arrastra para agregar flecha discontinua"
+                    >
+                      <div className="flex items-center justify-center">
+                        <svg width="40" height="20" className="text-yellow-600">
+                          <line x1="5" y1="10" x2="35" y2="10" stroke="currentColor" strokeWidth="2" strokeDasharray="3,3" markerEnd="url(#arrowhead-yellow)" />
+                          <defs>
+                            <marker id="arrowhead-yellow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                              <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
+                            </marker>
+                          </defs>
+                        </svg>
+                      </div>
+                      <div className="text-xs text-center text-gray-500 mt-1">Discontinua</div>
+                    </div>
+
+                    {/* Flecha Gruesa */}
+                    <div
+                      draggable
+                      onDragStart={(e) => {
+                        setDraggedArrow({ type: 'smoothstep', style: 'thick' });
+                        e.dataTransfer.effectAllowed = 'copy';
+                      }}
+                      className="cursor-grab active:cursor-grabbing p-2 border border-gray-200 rounded hover:bg-gray-50 transition-colors"
+                      title="Arrastra para agregar flecha gruesa"
+                    >
+                      <div className="flex items-center justify-center">
+                        <svg width="40" height="20" className="text-red-600">
+                          <line x1="5" y1="10" x2="35" y2="10" stroke="currentColor" strokeWidth="4" markerEnd="url(#arrowhead-red)" />
+                          <defs>
+                            <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                              <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
+                            </marker>
+                          </defs>
+                        </svg>
+                      </div>
+                      <div className="text-xs text-center text-gray-500 mt-1">Gruesa</div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-gray-400 mt-2 text-center">
+                    🖱️ Arrastra al canvas para crear conexión
+                  </div>
                 </div>
               </div>
             )}
