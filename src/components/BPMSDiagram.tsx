@@ -535,6 +535,7 @@ function BPMSDiagramInner() {
 
   // Función para exportar como JSON
   const onExportJSON = useCallback(() => {
+    console.log('onExportJSON llamado');
     try {
       const diagramData = {
         nodes,
@@ -547,19 +548,25 @@ function BPMSDiagramInner() {
       };
 
       const dataStr = JSON.stringify(diagramData, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const dataBlob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
       const url = URL.createObjectURL(dataBlob);
       
       const link = document.createElement('a');
-      link.download = `diagrama-bpmn-${new Date().toISOString().split('T')[0]}.json`;
+      const fileName = `diagrama-bpmn-${new Date().toISOString().split('T')[0]}.json`;
+      link.download = fileName;
       link.href = url;
       link.style.display = 'none';
       
+      // Agregar al DOM, hacer click y remover
       document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
       
-      URL.revokeObjectURL(url);
+      // Usar setTimeout para asegurar que el DOM esté listo
+      setTimeout(() => {
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 0);
+      
     } catch (error) {
       console.error('Error al exportar JSON:', error);
       alert('Error al exportar el diagrama. Intenta de nuevo.');
@@ -568,9 +575,11 @@ function BPMSDiagramInner() {
 
   // Función para importar desde JSON
   const onImportJSON = useCallback(() => {
+    console.log('onImportJSON llamado');
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
+    input.style.display = 'none';
     
     input.onchange = (e: Event) => {
       const target = e.target as HTMLInputElement;
@@ -581,6 +590,11 @@ function BPMSDiagramInner() {
       reader.onload = (event) => {
         try {
           const content = event.target?.result as string;
+          if (!content) {
+            alert('❌ El archivo está vacío');
+            return;
+          }
+          
           const diagramData = JSON.parse(content);
           
           // Validar que el archivo tenga la estructura correcta
@@ -598,10 +612,24 @@ function BPMSDiagramInner() {
           console.error('Import error:', error);
         }
       };
+      
+      reader.onerror = () => {
+        alert('❌ Error al leer el archivo');
+      };
+      
       reader.readAsText(file);
     };
     
+    // Agregar al DOM temporalmente
+    document.body.appendChild(input);
     input.click();
+    
+    // Limpiar después de un tiempo
+    setTimeout(() => {
+      if (document.body.contains(input)) {
+        document.body.removeChild(input);
+      }
+    }, 1000);
   }, [setNodes, setEdges, saveToHistory]);
 
   // Función para cargar plantilla
