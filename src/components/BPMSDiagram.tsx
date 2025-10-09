@@ -1196,6 +1196,37 @@ function BPMSDiagramInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Función auxiliar para comparar nodos y edges sin referencias circulares
+  const compareStates = useCallback((state1: Node[] | Edge[], state2: Node[] | Edge[]) => {
+    if (state1.length !== state2.length) return false;
+    
+    return state1.every((item1, index) => {
+      const item2 = state2[index];
+      if (!item2) return false;
+      
+      // Comparar propiedades esenciales sin referencias circulares
+      const keys1 = Object.keys(item1).filter(key => 
+        key !== 'dragging' && 
+        key !== 'selected' && 
+        key !== 'data' && 
+        key !== 'style' &&
+        key !== 'markerEnd' &&
+        key !== 'markerStart'
+      );
+      
+      return keys1.every(key => {
+        if (key === 'position' && 'position' in item1 && 'position' in item2) {
+          return item1.position.x === item2.position.x && item1.position.y === item2.position.y;
+        }
+        if ((key === 'sourcePosition' || key === 'targetPosition') && 
+            key in item1 && key in item2) {
+          return (item1 as any)[key] === (item2 as any)[key];
+        }
+        return (item1 as any)[key] === (item2 as any)[key];
+      });
+    });
+  }, []);
+
   // Guardar estado en historial cuando cambian los nodos o edges (excepto en undo/redo)
   React.useEffect(() => {
     if (!isUndoRedoOperation && history.length > 0) {
@@ -1203,8 +1234,8 @@ function BPMSDiagramInner() {
       const hasChanged = !currentState || 
         currentState.nodes.length !== nodes.length || 
         currentState.edges.length !== edges.length ||
-        JSON.stringify(currentState.nodes) !== JSON.stringify(nodes) ||
-        JSON.stringify(currentState.edges) !== JSON.stringify(edges);
+        !compareStates(currentState.nodes, nodes) ||
+        !compareStates(currentState.edges, edges);
       
       if (hasChanged) {
         console.log('Cambios detectados, guardando en historial...');
@@ -1215,7 +1246,7 @@ function BPMSDiagramInner() {
         return () => clearTimeout(timeoutId);
       }
     }
-  }, [nodes, edges, historyIndex, isUndoRedoOperation, history, saveToHistory]);
+  }, [nodes, edges, historyIndex, isUndoRedoOperation, history, saveToHistory, compareStates]);
 
   return (
     <div className="w-full h-screen">
