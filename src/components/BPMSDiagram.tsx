@@ -508,34 +508,8 @@ function BPMSDiagramInner() {
     saveToHistory([...updatedNodes, ...duplicatedNodes], edges);
   }, [nodes, edges, nodeIdCounter, setNodes, saveToHistory]);
 
-  // Función para guardar diagrama en localStorage
-  const onSaveToLocal = useCallback(() => {
-    const diagramData = {
-      nodes,
-      edges,
-      timestamp: new Date().toISOString(),
-    };
-    localStorage.setItem('bpmn-diagram', JSON.stringify(diagramData));
-    alert('✅ Diagrama guardado en el navegador');
-  }, [nodes, edges]);
-
-  // Función para cargar diagrama desde localStorage
-  const onLoadFromLocal = useCallback(() => {
-    const saved = localStorage.getItem('bpmn-diagram');
-    if (saved) {
-      const diagramData = JSON.parse(saved);
-      setNodes(diagramData.nodes);
-      setEdges(diagramData.edges);
-      saveToHistory(diagramData.nodes, diagramData.edges);
-      alert('✅ Diagrama cargado desde el navegador');
-    } else {
-      alert('❌ No hay diagrama guardado');
-    }
-  }, [setNodes, setEdges, saveToHistory]);
-
   // Función para exportar como JSON
   const onExportJSON = useCallback(() => {
-    console.log('onExportJSON llamado');
     try {
       const diagramData = {
         nodes,
@@ -575,7 +549,6 @@ function BPMSDiagramInner() {
 
   // Función para importar desde JSON
   const onImportJSON = useCallback(() => {
-    console.log('onImportJSON llamado');
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
@@ -901,13 +874,13 @@ function BPMSDiagramInner() {
       onDuplicate();
     } else if ((event.ctrlKey || event.metaKey) && event.key === 's') {
       event.preventDefault();
-      onSaveToLocal();
+      onExportJSON();
     } else if (event.key === 'Delete' || event.key === 'Backspace') {
       onDelete();
     } else if (event.key === 'Escape') {
       setToolMode('select');
     }
-  }, [undo, redo, onDelete, editingNode, editingEdge, handleSaveEdit, handleCancelEdit, handleSaveEdgeEdit, handleCancelEdgeEdit, onCopy, onPaste, onDuplicate, onSaveToLocal]);
+  }, [undo, redo, onDelete, editingNode, editingEdge, handleSaveEdit, handleCancelEdit, handleSaveEdgeEdit, handleCancelEdgeEdit, onCopy, onPaste, onDuplicate, onExportJSON]);
 
   // Obtener el estilo del cursor según el modo de herramienta
   const getCursorStyle = () => {
@@ -1458,68 +1431,15 @@ function BPMSDiagramInner() {
             <div className="border-t border-gray-200 my-2"></div>
             <div className="text-xs text-gray-600 mb-2 font-medium">Archivo</div>
 
-            {/* Botones de Guardar/Cargar */}
-            <div className="flex space-x-1">
-              <button
-                onClick={onSaveToLocal}
-                className="flex-1 px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-xs font-medium flex items-center justify-center gap-1"
-                title="Guardar en navegador (Ctrl+S)"
-              >
-                <Save className="w-3 h-3" />
-                Guardar
-              </button>
-              <button
-                onClick={onLoadFromLocal}
-                className="flex-1 px-2 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors text-xs font-medium flex items-center justify-center gap-1"
-                title="Cargar desde navegador"
-              >
-                <Upload className="w-3 h-3" />
-                Cargar
-              </button>
-            </div>
-
-            <div className="border-t border-gray-200 my-2"></div>
-            <div className="text-xs text-gray-600 mb-2 font-medium">Exportar/Importar</div>
-
-            {/* Botón de Exportar PNG */}
+            {/* Botón de Guardar */}
             <button
-              onClick={onExportPNG}
-              className="w-full px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs font-medium flex items-center justify-center gap-2"
-              title="Exportar como PNG"
+              onClick={onExportJSON}
+              className="w-full px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+              title="Guardar diagrama como JSON (Ctrl+S)"
             >
-              <Download className="w-3 h-3" />
-              PNG
+              <Save className="w-4 h-4" />
+              Guardar
             </button>
-
-            {/* Botón de Exportar SVG */}
-            <button
-              onClick={onExportSVG}
-              className="w-full px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs font-medium flex items-center justify-center gap-2"
-              title="Exportar como SVG"
-            >
-              <Download className="w-3 h-3" />
-              SVG
-            </button>
-
-            {/* Botones de JSON */}
-            <div className="flex space-x-1">
-              <button
-                onClick={onExportJSON}
-                className="flex-1 px-2 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors text-xs font-medium flex items-center justify-center gap-1"
-                title="Exportar JSON"
-              >
-                <FileJson className="w-3 h-3" />
-                Exportar
-              </button>
-              <button
-                onClick={onImportJSON}
-                className="flex-1 px-2 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors text-xs font-medium flex items-center justify-center gap-1"
-                title="Importar JSON"
-              >
-                <Upload className="w-3 h-3" />
-                Importar
-              </button>
-            </div>
 
             <div className="border-t border-gray-200 my-2"></div>
             <div className="text-xs text-gray-600 mb-2 font-medium">Edición</div>
@@ -1563,7 +1483,7 @@ function BPMSDiagramInner() {
             
             <div className="text-xs text-gray-500 mt-2">
               <div className="font-medium mb-1">Atajos de Teclado:</div>
-              <div>• Ctrl+S: Guardar</div>
+              <div>• Ctrl+S: Guardar JSON</div>
               <div>• Ctrl+C/V/D: Copy/Paste/Duplicar</div>
               <div>• Ctrl+Z/Y: Deshacer/Rehacer</div>
               <div>• Delete: Eliminar selección</div>
