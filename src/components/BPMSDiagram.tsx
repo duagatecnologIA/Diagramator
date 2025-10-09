@@ -1397,128 +1397,6 @@ function BPMSDiagramInner() {
             {/* Panel de Herramientas de Conexión */}
             {showConnectionTools && (
               <div className="bg-gray-50 rounded-lg p-3 space-y-3 border border-gray-200">
-                {/* Indicador de configuración actual */}
-                <div className="bg-white rounded-lg p-2 border border-gray-200">
-                  <div className="text-xs text-gray-500 mb-1">Configuración actual:</div>
-                  <div className="flex items-center gap-2">
-                    <div 
-                      className="w-8 h-1 rounded-full"
-                      style={{
-                        backgroundColor: getConnectionColor(),
-                        strokeDasharray: connectionStyle === 'dashed' ? '5,5' : 
-                                         connectionStyle === 'dotted' ? '2,2' : 'none',
-                        strokeWidth: connectionStyle === 'thick' ? 4 : 2
-                      }}
-                    ></div>
-                    <span className="text-xs text-gray-700">
-                      {connectionType === 'straight' ? 'Recta' :
-                       connectionType === 'smoothstep' ? 'Suave' :
-                       connectionType === 'step' ? 'Escalonada' : 'Curva'}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {connectionStyle === 'default' ? 'Normal' :
-                       connectionStyle === 'dashed' ? 'Discontinua' :
-                       connectionStyle === 'dotted' ? 'Punteada' : 'Gruesa'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="text-xs text-gray-600 font-medium">Tipo de Línea:</div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setConnectionType('straight')}
-                    className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
-                      connectionType === 'straight' 
-                        ? 'bg-gray-600 text-white' 
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                    }`}
-                  >
-                    <ArrowRight className="w-3 h-3" />
-                    Recta
-                  </button>
-                  <button
-                    onClick={() => setConnectionType('smoothstep')}
-                    className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
-                      connectionType === 'smoothstep' 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                    }`}
-                  >
-                    <ArrowDownRight className="w-3 h-3" />
-                    Suave
-                  </button>
-                  <button
-                    onClick={() => setConnectionType('step')}
-                    className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
-                      connectionType === 'step' 
-                        ? 'bg-green-600 text-white' 
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                    }`}
-                  >
-                    <ArrowUpRight className="w-3 h-3" />
-                    Escalonada
-                  </button>
-                  <button
-                    onClick={() => setConnectionType('bezier')}
-                    className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
-                      connectionType === 'bezier' 
-                        ? 'bg-purple-600 text-white' 
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                    }`}
-                  >
-                    <Zap className="w-3 h-3" />
-                    Curva
-                  </button>
-                </div>
-
-                <div className="text-xs text-gray-600 font-medium">Estilo:</div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setConnectionStyle('default')}
-                    className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                      connectionStyle === 'default' 
-                        ? 'bg-gray-600 text-white' 
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                    }`}
-                  >
-                    Normal
-                  </button>
-                  <button
-                    onClick={() => setConnectionStyle('dashed')}
-                    className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                      connectionStyle === 'dashed' 
-                        ? 'bg-yellow-600 text-white' 
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                    }`}
-                  >
-                    Discontinua
-                  </button>
-                  <button
-                    onClick={() => setConnectionStyle('dotted')}
-                    className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                      connectionStyle === 'dotted' 
-                        ? 'bg-orange-600 text-white' 
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                    }`}
-                  >
-                    Punteada
-                  </button>
-                  <button
-                    onClick={() => setConnectionStyle('thick')}
-                    className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                      connectionStyle === 'thick' 
-                        ? 'bg-red-600 text-white' 
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border'
-                    }`}
-                  >
-                    Gruesa
-                  </button>
-                </div>
-
-                <div className="text-xs text-gray-500 pt-2 border-t border-gray-300">
-                  💡 Selecciona tipo y estilo, luego conecta nodos
-                </div>
-
                 {/* Panel de Flechas Arrastrables */}
                 <div className="bg-white rounded-lg p-3 border border-gray-200">
                   <div className="text-xs text-gray-600 font-medium mb-2">Flechas Predefinidas:</div>
@@ -1618,6 +1496,136 @@ function BPMSDiagramInner() {
                   
                   <div className="text-xs text-gray-400 mt-2 text-center">
                     🖱️ Arrastra al canvas para crear conexión
+                  </div>
+                </div>
+
+                {/* Separador */}
+                <div className="border-t border-gray-300 my-3"></div>
+
+                {/* Configuración para conectar nodos existentes */}
+                <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                  <div className="text-xs text-blue-700 font-medium mb-2">Conectar Nodos Existentes:</div>
+                  
+                  {/* Indicador de configuración actual */}
+                  <div className="bg-white rounded-lg p-2 border border-blue-200 mb-2">
+                    <div className="text-xs text-blue-600 mb-1">Configuración actual:</div>
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-8 h-1 rounded-full"
+                        style={{
+                          backgroundColor: getConnectionColor(),
+                          strokeDasharray: connectionStyle === 'dashed' ? '5,5' : 
+                                           connectionStyle === 'dotted' ? '2,2' : 'none',
+                          strokeWidth: connectionStyle === 'thick' ? 4 : 2
+                        }}
+                      ></div>
+                      <span className="text-xs text-blue-700">
+                        {connectionType === 'straight' ? 'Recta' :
+                         connectionType === 'smoothstep' ? 'Suave' :
+                         connectionType === 'step' ? 'Escalonada' : 'Curva'}
+                      </span>
+                      <span className="text-xs text-blue-600">
+                        {connectionStyle === 'default' ? 'Normal' :
+                         connectionStyle === 'dashed' ? 'Discontinua' :
+                         connectionStyle === 'dotted' ? 'Punteada' : 'Gruesa'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-blue-700 font-medium mb-1">Tipo de Línea:</div>
+                  <div className="grid grid-cols-2 gap-1 mb-2">
+                    <button
+                      onClick={() => setConnectionType('straight')}
+                      className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
+                        connectionType === 'straight' 
+                          ? 'bg-gray-600 text-white' 
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
+                      }`}
+                    >
+                      <ArrowRight className="w-3 h-3" />
+                      Recta
+                    </button>
+                    <button
+                      onClick={() => setConnectionType('smoothstep')}
+                      className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
+                        connectionType === 'smoothstep' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
+                      }`}
+                    >
+                      <ArrowDownRight className="w-3 h-3" />
+                      Suave
+                    </button>
+                    <button
+                      onClick={() => setConnectionType('step')}
+                      className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
+                        connectionType === 'step' 
+                          ? 'bg-green-600 text-white' 
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
+                      }`}
+                    >
+                      <ArrowUpRight className="w-3 h-3" />
+                      Escalonada
+                    </button>
+                    <button
+                      onClick={() => setConnectionType('bezier')}
+                      className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
+                        connectionType === 'bezier' 
+                          ? 'bg-purple-600 text-white' 
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
+                      }`}
+                    >
+                      <Zap className="w-3 h-3" />
+                      Curva
+                    </button>
+                  </div>
+
+                  <div className="text-xs text-blue-700 font-medium mb-1">Estilo:</div>
+                  <div className="grid grid-cols-2 gap-1">
+                    <button
+                      onClick={() => setConnectionStyle('default')}
+                      className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                        connectionStyle === 'default' 
+                          ? 'bg-gray-600 text-white' 
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
+                      }`}
+                    >
+                      Normal
+                    </button>
+                    <button
+                      onClick={() => setConnectionStyle('dashed')}
+                      className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                        connectionStyle === 'dashed' 
+                          ? 'bg-yellow-600 text-white' 
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
+                      }`}
+                    >
+                      Discontinua
+                    </button>
+                    <button
+                      onClick={() => setConnectionStyle('dotted')}
+                      className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                        connectionStyle === 'dotted' 
+                          ? 'bg-orange-600 text-white' 
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
+                      }`}
+                    >
+                      Punteada
+                    </button>
+                    <button
+                      onClick={() => setConnectionStyle('thick')}
+                      className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                        connectionStyle === 'thick' 
+                          ? 'bg-red-600 text-white' 
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border'
+                      }`}
+                    >
+                      Gruesa
+                    </button>
+                  </div>
+
+                  <div className="text-xs text-blue-500 mt-2 text-center">
+                    💡 Arrastra desde un nodo a otro para conectar
                   </div>
                 </div>
               </div>
