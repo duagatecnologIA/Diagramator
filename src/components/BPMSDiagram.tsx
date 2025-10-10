@@ -26,16 +26,9 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { toPng, toSvg } from 'html-to-image';
 import { 
-  Ship, 
   FileText, 
-  Shield, 
-  Eye, 
   CheckCircle, 
   AlertTriangle,
-  DollarSign,
-  Truck,
-  Lock,
-  Camera,
   X,
   Download,
   MousePointer,
@@ -748,49 +741,17 @@ function BPMSDiagramInner() {
     }
   }, [nodes, edges, cleanNodesForExport, cleanEdgesForExport]);
 
-  // Función para obtener las clases de tamaño
-  const getSizeClasses = useCallback((size: string, nodeType: string) => {
-    const sizeMap = {
-      small: {
-        phase: 'min-w-[300px] p-4',
-        activity: 'min-w-[200px] p-2',
-        decision: 'min-w-[80px] min-h-[80px] p-3',
-        process: 'min-w-[180px] p-2'
-      },
-      medium: {
-        phase: 'min-w-[400px] p-6',
-        activity: 'min-w-[250px] p-3',
-        decision: 'min-w-[120px] min-h-[120px] p-4',
-        process: 'min-w-[200px] p-3'
-      },
-      large: {
-        phase: 'min-w-[500px] p-8',
-        activity: 'min-w-[300px] p-4',
-        decision: 'min-w-[160px] min-h-[160px] p-6',
-        process: 'min-w-[250px] p-4'
-      },
-      xlarge: {
-        phase: 'min-w-[600px] p-10',
-        activity: 'min-w-[350px] p-5',
-        decision: 'min-w-[200px] min-h-[200px] p-8',
-        process: 'min-w-[300px] p-5'
-      }
-    };
-    
-    return sizeMap[size as keyof typeof sizeMap]?.[nodeType as keyof typeof sizeMap.small] || sizeMap.medium[nodeType as keyof typeof sizeMap.medium];
-  }, []);
-
   // Función para reconstruir iconos basado en el tipo de nodo
   const getIconForNodeType = useCallback((type: string) => {
     switch (type) {
       case 'phase':
-        return <Ship className="w-6 h-6" />;
+        return <Circle className="w-6 h-6" />;
       case 'activity':
         return <FileText className="w-5 h-5 text-blue-600" />;
       case 'decision':
         return <AlertTriangle className="w-6 h-6 text-yellow-600" />;
       case 'process':
-        return <X className="w-5 h-5 text-red-600" />;
+        return <CheckCircle className="w-5 h-5 text-green-600" />;
       default:
         return <Circle className="w-5 h-5" />;
     }
@@ -958,7 +919,7 @@ function BPMSDiagramInner() {
             data: {
               label: 'Inicio del Proceso',
               description: 'Punto de inicio del workflow',
-              icon: <Ship className="w-6 h-6" />
+              icon: <Circle className="w-6 h-6" />
             },
           },
           {
@@ -978,7 +939,7 @@ function BPMSDiagramInner() {
             data: {
               label: 'Actividad 2',
               description: 'Segunda actividad del proceso',
-              icon: <Shield className="w-5 h-5 text-blue-600" />
+              icon: <FileText className="w-5 h-5 text-blue-600" />
             },
           },
           {
@@ -1175,6 +1136,46 @@ function BPMSDiagramInner() {
     setNodes(updatedNodes);
   }, [nodes, setNodes]);
 
+  // Función para manejar el pegado de JSON
+  const handlePasteJSON = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      
+      // Verificar si el texto parece ser JSON
+      if (text.trim().startsWith('{') && text.trim().endsWith('}')) {
+        const jsonData = JSON.parse(text);
+        
+        // Verificar si tiene la estructura esperada
+        if (jsonData.nodes && jsonData.edges) {
+          // Validar y limpiar los nodos
+          const validNodes = validateNodes(jsonData.nodes);
+          const validEdges = validateEdges(jsonData.edges);
+          
+          if (validNodes.length > 0 || validEdges.length > 0) {
+            // Guardar en el historial antes del cambio
+            saveToHistory(nodes, edges);
+            
+            // Aplicar los datos
+            setNodes(validNodes);
+            setEdges(validEdges);
+            
+            // Mostrar notificación de éxito
+            alert(`✅ JSON importado exitosamente: ${validNodes.length} nodos, ${validEdges.length} conexiones`);
+          } else {
+            alert('⚠️ El JSON no contiene nodos o conexiones válidos');
+          }
+        } else {
+          alert('⚠️ El JSON no tiene la estructura correcta. Debe contener "nodes" y "edges"');
+        }
+      } else {
+        alert('⚠️ El contenido del portapapeles no parece ser un JSON válido');
+      }
+    } catch (error) {
+      console.error('Error al procesar JSON:', error);
+      alert('❌ Error al procesar el JSON. Verifica que sea válido y tenga la estructura correcta');
+    }
+  }, [nodes, edges, setNodes, setEdges, saveToHistory, validateNodes, validateEdges]);
+
   // Manejar teclas de atajo
   const onKeyDown = useCallback((event: React.KeyboardEvent) => {
     // Si el modal de edición de nodo está abierto, manejar sus teclas
@@ -1229,47 +1230,7 @@ function BPMSDiagramInner() {
     } else if (event.key === 'Escape') {
       setToolMode('select');
     }
-  }, [undo, redo, onDelete, editingNode, editingEdge, handleSaveEdit, handleCancelEdit, handleSaveEdgeEdit, handleCancelEdgeEdit, onCopy, onPaste, onDuplicate, onExportJSON, onSelectAll]);
-
-  // Función para manejar el pegado de JSON
-  const handlePasteJSON = useCallback(async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      
-      // Verificar si el texto parece ser JSON
-      if (text.trim().startsWith('{') && text.trim().endsWith('}')) {
-        const jsonData = JSON.parse(text);
-        
-        // Verificar si tiene la estructura esperada
-        if (jsonData.nodes && jsonData.edges) {
-          // Validar y limpiar los nodos
-          const validNodes = validateNodes(jsonData.nodes);
-          const validEdges = validateEdges(jsonData.edges);
-          
-          if (validNodes.length > 0 || validEdges.length > 0) {
-            // Guardar en el historial antes del cambio
-            saveToHistory(nodes, edges);
-            
-            // Aplicar los datos
-            setNodes(validNodes);
-            setEdges(validEdges);
-            
-            // Mostrar notificación de éxito
-            alert(`✅ JSON importado exitosamente: ${validNodes.length} nodos, ${validEdges.length} conexiones`);
-          } else {
-            alert('⚠️ El JSON no contiene nodos o conexiones válidos');
-          }
-        } else {
-          alert('⚠️ El JSON no tiene la estructura correcta. Debe contener "nodes" y "edges"');
-        }
-      } else {
-        alert('⚠️ El contenido del portapapeles no parece ser un JSON válido');
-      }
-    } catch (error) {
-      console.error('Error al procesar JSON:', error);
-      alert('❌ Error al procesar el JSON. Verifica que sea válido y tenga la estructura correcta');
-    }
-  }, [nodes, edges, setNodes, setEdges, saveToHistory, validateNodes, validateEdges]);
+  }, [undo, redo, onDelete, editingNode, editingEdge, handleSaveEdit, handleCancelEdit, handleSaveEdgeEdit, handleCancelEdgeEdit, onCopy, onPaste, onDuplicate, onExportJSON, onSelectAll, handlePasteJSON]);
 
   // Función para ordenar nodos automáticamente con algoritmo inteligente
   const autoArrangeNodes = useCallback(() => {
@@ -1321,11 +1282,9 @@ function BPMSDiagramInner() {
       });
 
       // 4. Configuración de layout HORIZONTAL (izquierda a derecha)
-      const maxLevel = Math.max(...Array.from(nodeMap.values()).map(n => n.level));
       const levelWidth = 350;  // Espacio horizontal entre columnas
       const nodeHeight = 150;  // Espacio vertical entre nodos
       const startX = 100;
-      const startY = 80;
 
       // 5. Posicionamiento HORIZONTAL con centrado óptimo (izquierda → derecha)
       const updatedNodes = nodes.map(node => {
@@ -1353,7 +1312,6 @@ function BPMSDiagramInner() {
         
         // Intentar alinear hijos con sus padres para líneas más rectas HORIZONTAL
         const parentEdges = edges.filter(edge => edge.target === node.id);
-        const childEdges = edges.filter(edge => edge.source === node.id);
         
         if (parentEdges.length === 1) {
           // Si tiene un solo padre, intentar alinearse con él verticalmente
@@ -1399,7 +1357,7 @@ function BPMSDiagramInner() {
 
         // 6. Aplicar espaciado mínimo y evitar superposiciones VERTICAL
         const minDistance = 120;
-        let finalPosition = { ...newPosition };
+        const finalPosition = { ...newPosition };
         
         // Verificar superposiciones con otros nodos del mismo nivel (columna)
         const nodesInLevelWithPositions = Array.from(nodeMap.values())
