@@ -1,13 +1,16 @@
 'use client';
 
-import React, { useCallback, useMemo } from 'react';
-import ReactFlow, {
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+  ReactFlow,
   Node,
   Edge,
   addEdge,
   Connection,
-  useNodesState,
-  useEdgesState,
+  applyNodeChanges,
+  applyEdgeChanges,
+  NodeChange,
+  EdgeChange,
   Controls,
   Background,
   BackgroundVariant,
@@ -22,8 +25,8 @@ import ReactFlow, {
   getNodesBounds,
   MiniMap,
   SelectionMode,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import { toPng, toSvg } from 'html-to-image';
 import { 
   FileText, 
@@ -376,9 +379,19 @@ function BPMSDiagramInner({
   onLogout,
   currentDiagramId
 }: BPMSDiagramInnerProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
   const { deleteElements, getNodes, project } = useReactFlow();
+
+  // Funciones para manejar cambios de nodos y edges
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
+    []
+  );
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) => setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
+    []
+  );
 
   // Estados para el historial de undo/redo
   const [history, setHistory] = React.useState<{nodes: Node[], edges: Edge[]}[]>([]);
@@ -559,15 +572,28 @@ El formato final debe ser:
     (params: Connection) => {
       const newEdge = {
         ...params,
+        id: `edge-${nodes.length + edges.length}`,
         type: 'smoothstep',
-        style: { strokeWidth: 2, stroke: '#3B82F6' },
-        markerEnd: { type: MarkerType.ArrowClosed, color: '#3B82F6' },
+        style: { 
+          strokeWidth: 2, 
+          stroke: '#3B82F6',
+          strokeLinecap: 'round'
+        },
+        markerEnd: { 
+          type: MarkerType.ArrowClosed, 
+          color: '#3B82F6',
+          width: 12,
+          height: 12
+        },
+        animated: false
       };
-      const updatedEdges = addEdge(newEdge, edges);
-      saveToHistory(nodes, updatedEdges);
-      setEdges(updatedEdges);
+      setEdges((edgesSnapshot) => {
+        const updatedEdges = addEdge(newEdge, edgesSnapshot);
+        saveToHistory(nodes, updatedEdges);
+        return updatedEdges;
+      });
     },
-    [edges, nodes, setEdges, saveToHistory]
+    [edges, nodes, saveToHistory]
   );
 
   // Función para deshacer (Ctrl+Z)
@@ -2026,7 +2052,11 @@ El formato final debe ser:
               stroke: '#6B7280',
               strokeLinecap: 'round'
             },
-            animated: false
+            animated: false,
+            pathOptions: {
+              borderRadius: 20,
+              offset: 5
+            }
           }}
           nodesDraggable={true}
           nodesConnectable={true}
