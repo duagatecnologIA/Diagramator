@@ -1,312 +1,198 @@
-# 📊 Diagramator
+# 🎨 Diagramator - Diagramas de Procesos de Negocio Inteligentes
 
-Una aplicación web moderna para crear diagramas de procesos de negocio interactivos, inspirada en el diseño limpio de Google.
+> **Sistema completo de creación de diagramas de procesos de negocio con autenticación, guardado en tiempo real y colaboración.**
 
-## ✨ Características
+## 📋 Tabla de Contenidos
 
-### 🎨 **Interfaz Moderna**
-- Diseño limpio inspirado en Google
-- Banner elegante con gradientes sutiles y textura
-- Modales con fondo transparente y desenfoque
-- Tipografía optimizada y colores balanceados
+- [🚀 Inicio Rápido](#-inicio-rápido)
+- [🔧 Configuración de Base de Datos](#-configuración-de-base-de-datos)
+- [🚨 Corrección de Problemas](#-corrección-de-problemas)
+- [📁 Estructura del Proyecto](#-estructura-del-proyecto)
+- [🎯 Funcionalidades](#-funcionalidades)
+- [⌨️ Atajos de Teclado](#️-atajos-de-teclado)
+- [🔐 Autenticación](#-autenticación)
+- [💾 Sistema de Guardado](#-sistema-de-guardado)
+- [📊 Base de Datos](#-base-de-datos)
+- [🛠️ Desarrollo](#️-desarrollo)
 
-### 🔧 **Funcionalidades Principales**
+## 🚀 Inicio Rápido
 
-#### **Creación de Nodos**
-- **4 tipos de nodos**: Fase, Actividad, Decisión, Proceso
-- **Personalización completa**: Colores, texto, tamaño
-- **4 tamaños**: Pequeño, Mediano, Grande, Extra Grande
-- **Cambio de tipo**: Sin eliminar el nodo, manteniendo posición y contenido
-
-#### **Gestión de Diagramas**
-- **Plantillas predefinidas**: Workflow Básico, Árbol de Decisión, Vacío
-- **Importación JSON**: Pegar directamente desde el portapapeles (Ctrl+V)
-- **Exportación múltiple**: PNG, SVG, JSON
-- **Historial completo**: Undo/Redo con Ctrl+Z/Ctrl+Y
-
-#### **Interacciones Avanzadas**
-- **Selección múltiple**: Ctrl+Click para seleccionar varios nodos
-- **Seleccionar todo**: Ctrl+A para seleccionar todos los nodos
-- **Duplicación**: Ctrl+D para duplicar elementos seleccionados
-- **Copia/Pegado**: Ctrl+C/Ctrl+V para copiar y pegar elementos
-- **Atajos de teclado**: Sistema completo de shortcuts
-
-## 🚀 **Instalación y Uso**
-
-### **Requisitos**
+### Prerrequisitos
 - Node.js 18+ 
 - npm o yarn
+- Cuenta de Supabase
 
-### **Instalación**
+### Instalación
+
+1. **Clonar el repositorio**
 ```bash
-# Clonar el repositorio
-git clone https://github.com/tu-usuario/diagramator.git
-cd diagramator
-
-# Instalar dependencias
-npm install
-
-# Ejecutar en modo desarrollo
-npm run dev
-
-# Abrir en el navegador
-# http://localhost:3001
+git clone <repository-url>
+cd Diagramator/Diagramator
 ```
 
-### **Comandos Disponibles**
+2. **Instalar dependencias**
+```bash
+npm install
+```
+
+3. **Configurar variables de entorno**
+```bash
+# Crear archivo .env.local
+NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
+```
+
+4. **Configurar base de datos** (ver sección [🔧 Configuración de Base de Datos](#-configuración-de-base-de-datos))
+
+5. **Ejecutar en desarrollo**
+```bash
+npm run dev
+```
+
+6. **Abrir en el navegador**
+```
+http://localhost:3000
+```
+
+## 🔧 Configuración de Base de Datos
+
+### Opción 1: Instalación Completa (Recomendada)
+
+```sql
+-- Ejecutar en Supabase SQL Editor
+-- Copiar y pegar todo el contenido de: scripts/supabase-setup.sql
+```
+
+### Opción 2: Instalación por Partes
+
+Si prefieres ejecutar paso a paso:
+
+1. **Crear tablas**
+```sql
+-- Ejecutar: scripts/supabase-setup-parte1-tablas.sql
+```
+
+2. **Configurar índices y RLS**
+```sql
+-- Ejecutar: scripts/supabase-setup-parte2-indices-rls.sql
+```
+
+3. **Crear funciones y triggers**
+```sql
+-- Ejecutar: scripts/supabase-setup-parte3-funciones-triggers.sql
+```
+
+4. **Verificar instalación**
+```sql
+-- Ejecutar: scripts/verificar-instalacion.sql
+```
+
+## 🚨 Corrección de Problemas
+
+### Error: "infinite recursion detected in policy for relation 'diagrams'"
+
+**Síntomas:**
+- Error 500 al intentar guardar
+- Mensaje "Error al guardar" en el banner
+- Console muestra recursión infinita en RLS
+
+**Solución:**
+```sql
+-- Ejecutar en Supabase SQL Editor
+-- Copiar y pegar todo el contenido de: scripts/script-correccion-completa.sql
+```
+
+**Verificación:**
+```sql
+-- Ejecutar después de la corrección
+-- Copiar y pegar todo el contenido de: scripts/verificar-base-datos.sql
+```
+
+## 📁 Estructura del Proyecto
+
+```
+Diagramator/
+├── scripts/                          # Scripts de base de datos
+│   ├── supabase-setup.sql            # Instalación completa
+│   ├── supabase-setup-parte1-tablas.sql
+│   ├── supabase-setup-parte2-indices-rls.sql
+│   ├── supabase-setup-parte3-funciones-triggers.sql
+│   ├── script-correccion-completa.sql # Corrección de problemas
+│   ├── verificar-instalacion.sql     # Verificación básica
+│   └── verificar-base-datos.sql      # Verificación completa
+├── src/
+│   ├── app/                          # Páginas Next.js
+│   ├── components/                   # Componentes React
+│   ├── contexts/                     # Contextos React
+│   ├── hooks/                        # Hooks personalizados
+│   ├── lib/                          # Utilidades
+│   └── services/                     # Servicios
+├── package.json                      # Dependencias y scripts
+└── README.md                         # Este archivo
+```
+
+## ⌨️ Atajos de Teclado
+
+### Guardado
+- `Ctrl+S` / `⌘+S`: **Guardar en Supabase** (con autenticación)
+
+### Navegación y Selección
+- `Ctrl+A` / `⌘+A`: Seleccionar todo
+- `Esc`: Volver al modo selección
+- `Delete` / `Backspace`: Eliminar selección
+
+### Edición
+- `Ctrl+C` / `⌘+C`: Copiar
+- `Ctrl+V` / `⌘+V`: Pegar
+- `Ctrl+D` / `⌘+D`: Duplicar
+- `Ctrl+Z` / `⌘+Z`: Deshacer
+- `Ctrl+Y` / `⌘+Y`: Rehacer
+
+## 💾 Sistema de Guardado
+
+### Estados de Guardado
+
+| Estado | Color | Descripción |
+|--------|-------|-------------|
+| `saved` | 🟢 Verde | Guardado correctamente |
+| `saving` | 🔵 Azul | Guardando... |
+| `unsaved` | 🟠 Naranja | Cambios sin guardar |
+| `error` | 🔴 Rojo | Error al guardar |
+
+### Auto-guardado
+- **Intervalo**: Cada 30 segundos
+- **Trigger**: Cambios en el diagrama
+- **Feedback**: Indicador visual en banner
+
+## 🛠️ Desarrollo
+
+### Scripts Disponibles
+
 ```bash
 npm run dev          # Servidor de desarrollo
-npm run build        # Construcción para producción
-npm run preview      # Vista previa de producción
-npm run lint         # Verificar código
+npm run build        # Construir para producción
+npm run start        # Servidor de producción
+npm run lint         # Linter
 ```
 
-## 📖 **Guía de Uso**
+### Tecnologías Utilizadas
 
-### **Crear un Diagrama**
-
-1. **Seleccionar herramienta**: Click en los botones del panel izquierdo
-2. **Crear nodo**: Click en el canvas para colocar el nodo
-3. **Conectar nodos**: Drag desde los handles (puntos de conexión)
-4. **Editar nodo**: Doble click para abrir el modal de edición
-
-### **Atajos de Teclado**
-
-| Atajo | Función |
-|-------|---------|
-| `Ctrl+A` | Seleccionar todos los nodos |
-| `Ctrl+C` | Copiar elementos seleccionados |
-| `Ctrl+V` | Pegar elementos o importar JSON |
-| `Ctrl+D` | Duplicar elementos seleccionados |
-| `Ctrl+Z` | Deshacer |
-| `Ctrl+Y` | Rehacer |
-| `Ctrl+S` | Exportar como JSON |
-| `Delete` | Eliminar elementos seleccionados |
-| `Esc` | Cancelar modo de herramienta |
-
-### **Personalización de Nodos**
-
-#### **Modal de Edición**
-- **Título y Descripción**: Campos de texto editables
-- **Colores**: Selector de color para fondo y texto
-- **Tipo de nodo**: Cambio entre Fase, Actividad, Decisión, Proceso
-- **Tamaño**: 4 opciones de tamaño con vista previa
-- **Vista previa**: Mini nodo que muestra cambios en tiempo real
-
-#### **Tipos de Nodos**
-
-| Tipo | Forma | Uso | Colores por defecto |
-|------|-------|-----|-------------------|
-| **Fase** | Rectángulo redondeado | Procesos principales | Azul |
-| **Actividad** | Rectángulo con icono | Tareas específicas | Gris |
-| **Decisión** | Círculo con icono | Puntos de decisión | Amarillo |
-| **Proceso** | Rectángulo con check | Procesos finales | Verde |
-
-## 📋 **Estructura JSON para LLMs**
-
-### **Formato para IA**
-
-Para generar diagramas con IA (ChatGPT, Claude, etc.), usa esta estructura:
-
-```json
-{
-  "nodes": [
-    {
-      "id": "unique_id",
-      "type": "phase|activity|decision|process",
-      "position": { "x": 100, "y": 100 },
-      "data": {
-        "label": "Título del nodo",
-        "description": "Descripción opcional",
-        "color": "#3B82F6",
-        "textColor": "#FFFFFF",
-        "size": "small|medium|large|xlarge"
-      }
-    }
-  ],
-  "edges": [
-    {
-      "id": "unique_edge_id",
-      "source": "source_node_id",
-      "target": "target_node_id",
-      "label": "Etiqueta opcional",
-      "style": { "stroke": "#3B82F6", "strokeWidth": 2 }
-    }
-  ]
-}
-```
-
-### **Ejemplo Completo**
-
-```json
-{
-  "nodes": [
-    {
-      "id": "start",
-      "type": "phase",
-      "position": { "x": 200, "y": 100 },
-      "data": {
-        "label": "Inicio del Proceso",
-        "description": "Punto de partida del workflow",
-        "color": "#10B981",
-        "textColor": "#FFFFFF",
-        "size": "medium"
-      }
-    },
-    {
-      "id": "task1",
-      "type": "activity",
-      "position": { "x": 200, "y": 250 },
-      "data": {
-        "label": "Realizar Tarea",
-        "description": "Descripción de la actividad",
-        "color": "#3B82F6",
-        "textColor": "#FFFFFF",
-        "size": "medium"
-      }
-    },
-    {
-      "id": "decision",
-      "type": "decision",
-      "position": { "x": 200, "y": 400 },
-      "data": {
-        "label": "¿Aprobado?",
-        "color": "#EAB308",
-        "textColor": "#FFFFFF",
-        "size": "medium"
-      }
-    },
-    {
-      "id": "end",
-      "type": "process",
-      "position": { "x": 400, "y": 550 },
-      "data": {
-        "label": "Proceso Completado",
-        "description": "Fin del workflow",
-        "color": "#EF4444",
-        "textColor": "#FFFFFF",
-        "size": "medium"
-      }
-    }
-  ],
-  "edges": [
-    {
-      "id": "e1",
-      "source": "start",
-      "target": "task1",
-      "style": { "stroke": "#3B82F6", "strokeWidth": 2 }
-    },
-    {
-      "id": "e2",
-      "source": "task1",
-      "target": "decision",
-      "style": { "stroke": "#3B82F6", "strokeWidth": 2 }
-    },
-    {
-      "id": "e3",
-      "source": "decision",
-      "target": "end",
-      "label": "Sí",
-      "style": { "stroke": "#10B981", "strokeWidth": 2 }
-    }
-  ]
-}
-```
-
-### **Prompt para IA**
-
-```
-Crea un diagrama de proceso de negocio en formato JSON con esta estructura:
-
-- Usa tipos: "phase" (procesos principales), "activity" (tareas), "decision" (decisiones), "process" (finales)
-- Colores: azul (#3B82F6), verde (#10B981), amarillo (#EAB308), rojo (#EF4444), gris (#6B7280)
-- Tamaños: "small", "medium", "large", "xlarge"
-- Posiciones: coordenas x,y (recomiendo espaciado de 150-200px)
-- Conexiones: source y target deben coincidir con IDs de nodos
-
-[Describe tu proceso aquí]
-
-Responde SOLO con el JSON, sin explicaciones adicionales.
-```
-
-## 🛠 **Tecnologías**
-
-- **Frontend**: React 18, TypeScript
-- **UI**: Tailwind CSS
-- **Diagramas**: ReactFlow
-- **Iconos**: Lucide React
-- **Build**: Vite
-
-## 📁 **Estructura del Proyecto**
-
-```
-src/
-├── components/
-│   └── BPMSDiagram.tsx    # Componente principal
-├── app/
-│   ├── globals.css        # Estilos globales
-│   └── layout.tsx         # Layout de la aplicación
-└── main.tsx              # Punto de entrada
-```
-
-## 🎯 **Casos de Uso**
-
-- **Diagramas de procesos de negocio**
-- **Workflows de aprobación**
-- **Flujos de trabajo organizacionales**
-- **Mapas de procesos**
-- **Diagramas de decisión**
-- **Prototipos de UX**
-
-## 🔄 **Importación/Exportación**
-
-### **Importar JSON**
-1. Copia el JSON al portapapeles
-2. Presiona `Ctrl+V` o click en "📥 Importar JSON"
-3. El diagrama se carga automáticamente
-
-### **Exportar**
-- **PNG**: Imagen de alta calidad
-- **SVG**: Vector escalable
-- **JSON**: Datos del diagrama para reutilizar
-
-## 🎨 **Personalización**
-
-### **Colores Disponibles**
-- **Azul**: `#3B82F6` (por defecto)
-- **Verde**: `#10B981` 
-- **Amarillo**: `#EAB308`
-- **Rojo**: `#EF4444`
-- **Gris**: `#6B7280`
-- **Personalizados**: Cualquier color hexadecimal
-
-### **Tamaños de Nodos**
-- **Pequeño**: Compacto para diagramas densos
-- **Mediano**: Tamaño estándar (por defecto)
-- **Grande**: Más prominente
-- **Extra Grande**: Para elementos principales
-
-## 🚀 **Próximas Características**
-
-- [ ] Colaboración en tiempo real
-- [ ] Más tipos de nodos
-- [ ] Temas personalizables
-- [ ] Exportación a PDF
-- [ ] Integración con APIs
-- [ ] Modo presentación
-
-## 🤝 **Contribuir**
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📄 **Licencia**
-
-Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **UI**: Tailwind CSS, Lucide React
+- **Diagramas**: ReactFlow 11
+- **Backend**: Supabase (PostgreSQL, Auth, RLS)
 
 ---
 
-**Diagramator** - Crea diagramas de procesos de negocio de forma intuitiva y profesional 🚀
+## 🎉 ¡Listo para Usar!
+
+**Diagramator está completamente configurado y listo para crear diagramas de procesos de negocio profesionales.**
+
+### Próximos Pasos:
+
+1. ✅ **Configurar base de datos** con los scripts
+2. ✅ **Ejecutar corrección** si hay problemas
+3. ✅ **Crear tu primer diagrama** con Ctrl+S
+4. ✅ **Compartir con tu equipo** usando colaboración
+
+**¡Disfruta creando diagramas inteligentes!** 🎨✨

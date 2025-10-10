@@ -1,5 +1,12 @@
-import BPMSDiagram from '@/components/BPMSDiagram';
+'use client';
+
+import ProtectedRoute from '@/components/Auth/ProtectedRoute';
+import BPMSDiagramWithSave from '@/components/BPMSDiagramWithSave';
 
 export default function Home() {
-  return <BPMSDiagram />;
+  return (
+    <ProtectedRoute>
+      <BPMSDiagramWithSave />
+    </ProtectedRoute>
+  );
 }

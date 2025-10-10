@@ -58,3 +58,134 @@ body {
   stroke-width: 4px !important;
   filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.6));
 }
+
+/* Estilos modernos para edges */
+.react-flow__edge-path {
+  transition: stroke-width 0.2s ease, stroke 0.2s ease !important;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke-width: 4px !important;
+  filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.3));
+}
+
+/* Estilos para handles más modernos */
+.react-flow__handle {
+  width: 14px !important;
+  height: 14px !important;
+  border: 3px solid white !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.react-flow__handle:hover {
+  transform: scale(1.3) !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Animación suave para conexiones */
+.react-flow__edge-path {
+  stroke-dasharray: none !important;
+  animation: edge-appear 0.3s ease-out;
+}
+
+@keyframes edge-appear {
+  from {
+    opacity: 0;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  to {
+    opacity: 1;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Estilo para línea de conexión temporal */
+.react-flow__connectionline {
+  stroke: #3B82F6 !important;
+  stroke-width: 3px !important;
+  stroke-dasharray: 8, 8 !important;
+  animation: connection-dash 0.5s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.4));
+}
+
+@keyframes connection-dash {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+
+/* Mejoras visuales para el background */
+.react-flow__background {
+  background: linear-gradient(to bottom right, #f8fafc, #f1f5f9) !important;
+}
+
+/* Estilos para controles modernos */
+.react-flow__controls {
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.react-flow__controls-button {
+  transition: all 0.2s ease !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+.react-flow__controls-button:hover {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+  transform: scale(1.05) !important;
+}
+
+.react-flow__controls-button svg {
+  transition: all 0.2s ease !important;
+}
+
+.react-flow__controls-button:hover svg {
+  color: #3B82F6 !important;
+  transform: scale(1.1) !important;
+}
+
+/* Estilos para minimap moderno */
+.react-flow__minimap {
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.react-flow__minimap-mask {
+  fill: rgba(59, 130, 246, 0.08) !important;
+}
+
+/* Animación suave para panel de selección */
+.react-flow__nodesselection-rect {
+  fill: rgba(59, 130, 246, 0.08) !important;
+  stroke: #3B82F6 !important;
+  stroke-width: 2px !important;
+  stroke-dasharray: 5, 5 !important;
+  animation: selection-dash 0.5s linear infinite;
+}
+
+@keyframes selection-dash {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+/* Mejoras para el canvas */
+.react-flow__pane {
+  cursor: default !important;
+}
+
+.react-flow__pane.dragging {
+  cursor: grabbing !important;
+}
+
+/* Transiciones suaves para nodos */
+.react-flow__node {
+  transition: box-shadow 0.3s ease, transform 0.2s ease !important;
+}
+
+/* Efecto de glassmorphism para paneles */
+.react-flow__panel {
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}

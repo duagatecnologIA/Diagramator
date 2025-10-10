@@ -76,28 +76,29 @@ function PhaseNode({ data }: { data: NodeData }) {
   
   return (
     <div 
-      className={`rounded-xl shadow-xl border-4 text-center relative ${sizeClasses[size]}`}
+      className={`rounded-2xl shadow-2xl border-0 text-center relative ${sizeClasses[size]} transition-all duration-300 hover:scale-105 hover:shadow-3xl`}
       style={{
-        backgroundColor: color,
-        borderColor: color,
+        background: `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)`,
         color: textColor,
+        boxShadow: `0 20px 60px -10px ${color}40, 0 10px 30px -5px ${color}30`,
       }}
     >
       <Handle
         type="target"
         position={Position.Top}
-        className="w-3 h-3 border-2 border-white"
-        style={{ backgroundColor: color }}
+        className="w-4 h-4 border-3 border-white !bg-white transition-all duration-200 hover:scale-125"
+        style={{ boxShadow: `0 0 0 3px ${color}` }}
       />
-      <div className="flex items-center justify-center mb-3">
-        <h3 className="font-bold">{data.label}</h3>
+      <div className="flex items-center justify-center mb-3 relative">
+        <div className="absolute inset-0 bg-white/10 rounded-lg blur-xl"></div>
+        <h3 className="font-bold relative z-10 drop-shadow-lg">{data.label}</h3>
       </div>
-      <p className="text-sm opacity-90">{data.description}</p>
+      <p className="text-sm opacity-95 font-medium">{data.description}</p>
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3 h-3 border-2 border-white"
-        style={{ backgroundColor: color }}
+        className="w-4 h-4 border-3 border-white !bg-white transition-all duration-200 hover:scale-125"
+        style={{ boxShadow: `0 0 0 3px ${color}` }}
       />
     </div>
   );
@@ -106,47 +107,55 @@ function PhaseNode({ data }: { data: NodeData }) {
 // Nodo para actividades
 function ActivityNode({ data }: { data: NodeData }) {
   const color = data.color || '#3B82F6';
-  const textColor = data.textColor || '#000000';
+  const textColor = data.textColor || '#1F2937';
   const size = data.size || 'medium';
   
   const sizeClasses = {
-    small: 'min-w-[200px] p-2 text-sm',
-    medium: 'min-w-[250px] p-3 text-base',
-    large: 'min-w-[300px] p-4 text-lg',
-    xlarge: 'min-w-[350px] p-5 text-xl'
+    small: 'min-w-[200px] p-3 text-sm',
+    medium: 'min-w-[250px] p-4 text-base',
+    large: 'min-w-[300px] p-5 text-lg',
+    xlarge: 'min-w-[350px] p-6 text-xl'
   };
   
   const iconSizes = {
-    small: 'w-4 h-4',
-    medium: 'w-5 h-5',
-    large: 'w-6 h-6',
-    xlarge: 'w-7 h-7'
+    small: 'w-5 h-5',
+    medium: 'w-6 h-6',
+    large: 'w-7 h-7',
+    xlarge: 'w-8 h-8'
   };
   
   return (
     <div 
-      className={`bg-white rounded-lg shadow-md relative border-2 ${sizeClasses[size]}`}
+      className={`bg-white rounded-xl shadow-lg relative border-l-4 ${sizeClasses[size]} transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-sm`}
       style={{ 
-        borderColor: color,
+        borderLeftColor: color,
         color: textColor,
+        boxShadow: `0 10px 30px -5px ${color}20, 0 4px 10px -2px ${color}15`,
       }}
     >
       <Handle
         type="target"
         position={Position.Top}
-        className="w-3 h-3 border-2 border-white"
-        style={{ backgroundColor: color }}
+        className="w-3.5 h-3.5 border-2 border-white transition-all duration-200 hover:scale-125"
+        style={{ backgroundColor: color, boxShadow: `0 0 0 2px ${color}40` }}
       />
-      <div className="flex items-center gap-2 mb-1">
-        <FileText className={iconSizes[size]} style={{ color: textColor }} />
-        <h4 className="font-semibold">{data.label}</h4>
+      <div className="flex items-center gap-3 mb-2">
+        <div 
+          className={`${iconSizes[size]} flex items-center justify-center rounded-lg p-1.5 transition-all duration-300`}
+          style={{ backgroundColor: `${color}15` }}
+        >
+          <FileText className="w-full h-full" style={{ color: color }} />
       </div>
-      <p className="text-sm">{data.description}</p>
+        <h4 className="font-bold text-gray-800">{data.label}</h4>
+      </div>
+      {data.description && (
+        <p className="text-sm text-gray-600 leading-relaxed">{data.description}</p>
+      )}
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3 h-3 border-2 border-white"
-        style={{ backgroundColor: color }}
+        className="w-3.5 h-3.5 border-2 border-white transition-all duration-200 hover:scale-125"
+        style={{ backgroundColor: color, boxShadow: `0 0 0 2px ${color}40` }}
       />
     </div>
   );
@@ -154,22 +163,22 @@ function ActivityNode({ data }: { data: NodeData }) {
 
 // Nodo para decisiones
 function DecisionNode({ data }: { data: NodeData }) {
-  const color = data.color || '#EAB308';
+  const color = data.color || '#F59E0B';
   const textColor = data.textColor || '#FFFFFF';
   const size = data.size || 'medium';
   
   const sizeClasses = {
-    small: 'min-w-[80px] min-h-[80px] p-3',
-    medium: 'min-w-[120px] min-h-[120px] p-4',
-    large: 'min-w-[160px] min-h-[160px] p-6',
-    xlarge: 'min-w-[200px] min-h-[200px] p-8'
+    small: 'w-[100px] h-[100px] p-3',
+    medium: 'w-[140px] h-[140px] p-4',
+    large: 'w-[180px] h-[180px] p-6',
+    xlarge: 'w-[220px] h-[220px] p-8'
   };
   
   const iconSizes = {
-    small: 'w-4 h-4',
-    medium: 'w-6 h-6',
-    large: 'w-8 h-8',
-    xlarge: 'w-10 h-10'
+    small: 'w-5 h-5',
+    medium: 'w-7 h-7',
+    large: 'w-9 h-9',
+    xlarge: 'w-11 h-11'
   };
   
   const textSizes = {
@@ -181,40 +190,45 @@ function DecisionNode({ data }: { data: NodeData }) {
   
   return (
     <div 
-      className={`rounded-full shadow-md flex items-center justify-center relative border-2 ${sizeClasses[size]}`}
+      className={`rotate-45 shadow-2xl flex items-center justify-center relative ${sizeClasses[size]} transition-all duration-300 hover:scale-110`}
       style={{ 
-        backgroundColor: color,
-        borderColor: color,
+        background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)`,
         color: textColor,
+        boxShadow: `0 20px 50px -10px ${color}50, 0 10px 25px -5px ${color}40`,
       }}
     >
       <Handle
         type="target"
         position={Position.Top}
-        className="w-3 h-3 border-2 border-white"
-        style={{ backgroundColor: color }}
+        className="w-3.5 h-3.5 border-2 border-white !bg-white transition-all duration-200 hover:scale-125"
+        style={{ boxShadow: `0 0 0 3px ${color}` }}
       />
-      <div className="text-center">
-        <AlertTriangle className={`${iconSizes[size]} mx-auto`} />
-        <p className={`${textSizes[size]} font-semibold mt-1`}>{data.label}</p>
+      <div className="text-center -rotate-45">
+        <div 
+          className="mx-auto mb-2 p-2 rounded-full inline-flex items-center justify-center"
+          style={{ backgroundColor: `${textColor}20` }}
+        >
+          <AlertTriangle className={`${iconSizes[size]}`} />
+        </div>
+        <p className={`${textSizes[size]} font-bold drop-shadow-lg px-2 leading-tight`}>{data.label}</p>
       </div>
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3 h-3 border-2 border-white"
-        style={{ backgroundColor: color }}
+        className="w-3.5 h-3.5 border-2 border-white !bg-white transition-all duration-200 hover:scale-125"
+        style={{ boxShadow: `0 0 0 3px ${color}` }}
       />
       <Handle
         type="source"
         position={Position.Left}
-        className="w-3 h-3 border-2 border-white"
-        style={{ backgroundColor: color }}
+        className="w-3.5 h-3.5 border-2 border-white !bg-white transition-all duration-200 hover:scale-125"
+        style={{ boxShadow: `0 0 0 3px ${color}` }}
       />
       <Handle
         type="source"
         position={Position.Right}
-        className="w-3 h-3 border-2 border-white"
-        style={{ backgroundColor: color }}
+        className="w-3.5 h-3.5 border-2 border-white !bg-white transition-all duration-200 hover:scale-125"
+        style={{ boxShadow: `0 0 0 3px ${color}` }}
       />
     </div>
   );
@@ -227,51 +241,92 @@ function ProcessNode({ data }: { data: NodeData }) {
   const size = data.size || 'medium';
   
   const sizeClasses = {
-    small: 'min-w-[180px] p-2 text-sm',
-    medium: 'min-w-[200px] p-3 text-base',
-    large: 'min-w-[250px] p-4 text-lg',
-    xlarge: 'min-w-[300px] p-5 text-xl'
+    small: 'min-w-[180px] p-3 text-sm',
+    medium: 'min-w-[220px] p-4 text-base',
+    large: 'min-w-[270px] p-5 text-lg',
+    xlarge: 'min-w-[320px] p-6 text-xl'
   };
   
   const iconSizes = {
-    small: 'w-4 h-4',
-    medium: 'w-5 h-5',
-    large: 'w-6 h-6',
-    xlarge: 'w-7 h-7'
+    small: 'w-5 h-5',
+    medium: 'w-6 h-6',
+    large: 'w-7 h-7',
+    xlarge: 'w-8 h-8'
   };
   
   return (
     <div 
-      className={`rounded-lg shadow-md relative border-2 ${sizeClasses[size]}`}
+      className={`rounded-2xl shadow-xl relative ${sizeClasses[size]} transition-all duration-300 hover:shadow-2xl hover:scale-105 overflow-hidden`}
       style={{ 
-        backgroundColor: color,
-        borderColor: color,
+        background: `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)`,
         color: textColor,
+        boxShadow: `0 15px 40px -10px ${color}40, 0 8px 20px -5px ${color}30`,
       }}
     >
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-16 translate-x-16"></div>
       <Handle
         type="target"
         position={Position.Top}
-        className="w-3 h-3 border-2 border-white"
-        style={{ backgroundColor: color }}
+        className="w-4 h-4 border-2 border-white !bg-white transition-all duration-200 hover:scale-125"
+        style={{ boxShadow: `0 0 0 3px ${color}` }}
       />
-      <div className="flex items-center gap-2 mb-1">
-        <CheckCircle className={iconSizes[size]} />
-        <h4 className="font-semibold">{data.label}</h4>
+      <div className="relative z-10">
+        <div className="flex items-center gap-3 mb-2">
+          <div 
+            className={`${iconSizes[size]} flex items-center justify-center rounded-xl p-2 transition-all duration-300`}
+            style={{ backgroundColor: `${textColor}20` }}
+          >
+            <CheckCircle className="w-full h-full" />
+          </div>
+          <h4 className="font-bold drop-shadow-md">{data.label}</h4>
+        </div>
+        {data.description && (
+          <p className="text-sm opacity-95 leading-relaxed">{data.description}</p>
+        )}
       </div>
-      <p className="text-sm">{data.description}</p>
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3 h-3 border-2 border-white"
-        style={{ backgroundColor: color }}
+        className="w-4 h-4 border-2 border-white !bg-white transition-all duration-200 hover:scale-125"
+        style={{ boxShadow: `0 0 0 3px ${color}` }}
       />
     </div>
   );
 }
 
+// Props para el componente interno
+interface BPMSDiagramInnerProps {
+  onDiagramChange?: (nodes: any[], edges: any[]) => void;
+  initialNodes?: any[];
+  initialEdges?: any[];
+  saveStatus?: 'saved' | 'saving' | 'error' | 'unsaved';
+  saveStatusText?: string;
+  saveStatusColor?: string;
+  isSaving?: boolean;
+  onManualSave?: () => void;
+  onExportJSON?: () => void;
+  onLogout?: () => void;
+  currentDiagramId?: string | null;
+  diagramTitle?: string;
+  onTitleChange?: (newTitle: string) => void;
+}
+
 // Componente interno para manejar la lógica del diagrama
-function BPMSDiagramInner() {
+function BPMSDiagramInner({ 
+  onDiagramChange, 
+  initialNodes, 
+  initialEdges,
+  diagramTitle: propDiagramTitle,
+  onTitleChange,
+  saveStatus,
+  saveStatusText,
+  saveStatusColor,
+  isSaving,
+  onManualSave,
+  onExportJSON,
+  onLogout,
+  currentDiagramId
+}: BPMSDiagramInnerProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const { deleteElements, getNodes, project } = useReactFlow();
@@ -304,7 +359,18 @@ function BPMSDiagramInner() {
   
   // Estado para mostrar modal de templates
   const [showTemplates, setShowTemplates] = React.useState(false);
+  
+  // Estados para edición del título
+  const [diagramTitle, setDiagramTitle] = React.useState(propDiagramTitle || 'Sin título');
+  const [isEditingTitle, setIsEditingTitle] = React.useState(false);
+  const [tempTitle, setTempTitle] = React.useState('');
 
+  // Actualizar título cuando cambie la prop
+  React.useEffect(() => {
+    if (propDiagramTitle) {
+      setDiagramTitle(propDiagramTitle);
+    }
+  }, [propDiagramTitle]);
 
   // Función para guardar el estado actual en el historial
   const saveToHistory = useCallback((newNodes: Node[], newEdges: Edge[]) => {
@@ -323,7 +389,6 @@ function BPMSDiagramInner() {
     
     setHistoryIndex(prev => {
       const newIndex = Math.min(prev + 1, 49);
-      console.log(`Guardando en historial - Índice: ${newIndex}`);
       return newIndex;
     });
   }, [historyIndex, isUndoRedoOperation]);
@@ -345,7 +410,6 @@ function BPMSDiagramInner() {
 
   // Función para deshacer (Ctrl+Z)
   const undo = useCallback(() => {
-    console.log(`Undo - Índice actual: ${historyIndex}, Historial length: ${history.length}`);
     if (historyIndex > 0) {
       setIsUndoRedoOperation(true);
       const prevState = history[historyIndex - 1];
@@ -353,17 +417,14 @@ function BPMSDiagramInner() {
       setEdges(prevState.edges);
       setHistoryIndex(prev => {
         const newIndex = prev - 1;
-        console.log(`Undo - Nuevo índice: ${newIndex}`);
         return newIndex;
       });
     } else {
-      console.log('No hay más cambios para deshacer');
     }
   }, [historyIndex, history, setNodes, setEdges]);
 
   // Función para rehacer (Ctrl+Y)
   const redo = useCallback(() => {
-    console.log(`Redo - Índice actual: ${historyIndex}, Historial length: ${history.length}`);
     if (historyIndex < history.length - 1) {
       setIsUndoRedoOperation(true);
       const nextState = history[historyIndex + 1];
@@ -371,17 +432,14 @@ function BPMSDiagramInner() {
       setEdges(nextState.edges);
       setHistoryIndex(prev => {
         const newIndex = prev + 1;
-        console.log(`Redo - Nuevo índice: ${newIndex}`);
         return newIndex;
       });
     } else {
-      console.log('No hay más cambios para rehacer');
     }
   }, [historyIndex, history, setNodes, setEdges]);
 
   // Función para eliminar elementos seleccionados
   const onDelete = useCallback(() => {
-    console.log('Eliminando...');
     const selectedNodes = nodes.filter(node => node.selected);
     const selectedEdges = edges.filter(edge => edge.selected);
     
@@ -604,7 +662,6 @@ function BPMSDiagramInner() {
 
   // Función para copiar nodos seleccionados
   const onCopy = useCallback(() => {
-    console.log('Copiando...');
     const selectedNodes = nodes.filter(node => node.selected);
     if (selectedNodes.length > 0) {
       setClipboard(selectedNodes);
@@ -613,7 +670,6 @@ function BPMSDiagramInner() {
 
   // Función para pegar nodos
   const onPaste = useCallback(() => {
-    console.log('Pegando...');
     if (clipboard.length === 0) return;
 
     const newNodes = clipboard.map((node) => {
@@ -636,7 +692,6 @@ function BPMSDiagramInner() {
 
   // Función para duplicar nodos seleccionados
   const onDuplicate = useCallback(() => {
-    console.log('Duplicando...');
     const selectedNodes = nodes.filter(node => node.selected);
     if (selectedNodes.length === 0) return;
 
@@ -701,9 +756,8 @@ function BPMSDiagramInner() {
     }));
   }, []);
 
-  // Función para exportar como JSON
-  const onExportJSON = useCallback(() => {
-    console.log('Exportando JSON...');
+  // Función de fallback para exportar como JSON (cuando no se pasa como prop)
+  const defaultExportJSON = useCallback(() => {
     try {
       const diagramData = {
         nodes: cleanNodesForExport(nodes),
@@ -740,6 +794,9 @@ function BPMSDiagramInner() {
       alert('Error al exportar el diagrama. Intenta de nuevo.');
     }
   }, [nodes, edges, cleanNodesForExport, cleanEdgesForExport]);
+
+  // Usar la prop onExportJSON o la función de fallback
+  const exportJSONFunction = onExportJSON || defaultExportJSON;
 
   // Función para reconstruir iconos basado en el tipo de nodo
   const getIconForNodeType = useCallback((type: string) => {
@@ -810,7 +867,6 @@ function BPMSDiagramInner() {
 
   // Función para importar desde JSON
   const onImportJSON = useCallback(() => {
-    console.log('Importando JSON...');
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
@@ -820,7 +876,6 @@ function BPMSDiagramInner() {
       const target = e.target as HTMLInputElement;
       const file = target.files?.[0];
       if (!file) {
-        console.log('No se seleccionó archivo');
         return;
       }
 
@@ -833,9 +888,7 @@ function BPMSDiagramInner() {
             return;
           }
           
-          console.log('Parseando JSON...');
           const diagramData = JSON.parse(content);
-          console.log('Datos parseados:', diagramData);
           
           // Validar que el archivo tenga la estructura correcta
           if (!diagramData || typeof diagramData !== 'object') {
@@ -857,8 +910,6 @@ function BPMSDiagramInner() {
           const validNodes = validateNodes(diagramData.nodes);
           const validEdges = validateEdges(diagramData.edges);
           
-          console.log(`Nodos válidos: ${validNodes.length}/${diagramData.nodes.length}`);
-          console.log(`Edges válidos: ${validEdges.length}/${diagramData.edges.length}`);
           
           if (validNodes.length === 0 && validEdges.length === 0) {
             alert('❌ No se encontraron nodos o conexiones válidos en el archivo.');
@@ -1067,7 +1118,6 @@ function BPMSDiagramInner() {
 
   // Función para exportar el diagrama como PNG
   const onExportPNG = useCallback(() => {
-    console.log('Exportando PNG...');
     const reactFlowViewport = document.querySelector('.react-flow__viewport') as HTMLElement;
     
     if (!reactFlowViewport) return;
@@ -1098,7 +1148,6 @@ function BPMSDiagramInner() {
 
   // Función para exportar el diagrama como SVG
   const onExportSVG = useCallback(() => {
-    console.log('Exportando SVG...');
     const reactFlowViewport = document.querySelector('.react-flow__viewport') as HTMLElement;
     
     if (!reactFlowViewport) return;
@@ -1128,7 +1177,6 @@ function BPMSDiagramInner() {
 
   // Función para seleccionar todos los nodos
   const onSelectAll = useCallback(() => {
-    console.log('Seleccionando todos los nodos...');
     const updatedNodes = nodes.map(node => ({
       ...node,
       selected: true,
@@ -1224,13 +1272,17 @@ function BPMSDiagramInner() {
       onDuplicate();
     } else if ((event.ctrlKey || event.metaKey) && event.key === 's') {
       event.preventDefault();
-      onExportJSON();
+      if (onManualSave) {
+        onManualSave();
+      } else {
+        exportJSONFunction();
+      }
     } else if (event.key === 'Delete' || event.key === 'Backspace') {
       onDelete();
     } else if (event.key === 'Escape') {
       setToolMode('select');
     }
-  }, [undo, redo, onDelete, editingNode, editingEdge, handleSaveEdit, handleCancelEdit, handleSaveEdgeEdit, handleCancelEdgeEdit, onCopy, onPaste, onDuplicate, onExportJSON, onSelectAll, handlePasteJSON]);
+  }, [undo, redo, onDelete, editingNode, editingEdge, handleSaveEdit, handleCancelEdit, handleSaveEdgeEdit, handleCancelEdgeEdit, onCopy, onPaste, onDuplicate, exportJSONFunction, onSelectAll, handlePasteJSON]);
 
   // Función para ordenar nodos automáticamente con algoritmo inteligente
   const autoArrangeNodes = useCallback(() => {
@@ -1414,34 +1466,40 @@ function BPMSDiagramInner() {
     }
   };
 
-  // Canvas en blanco - sin nodos iniciales
-  const initialNodes: Node[] = useMemo(() => [], []);
+  // Usar nodos y edges iniciales de las props, o canvas en blanco
+  const defaultInitialEdges: Edge[] = useMemo(() => initialEdges || [], [initialEdges]);
 
-  // Canvas en blanco - sin conexiones iniciales
-  const initialEdges: Edge[] = useMemo(() => [], []);
-
-  // Inicializar nodos y edges
-  React.useEffect(() => {
-    console.log('Inicializando diagrama...');
-    
-    // Limpiar nodos iniciales para evitar problemas de renderizado
-    const cleanedInitialNodes = initialNodes.map(node => ({
+  // Inicializar nodos y edges usando useMemo para evitar bucles infinitos
+  const cleanedInitialNodes = useMemo(() => {
+    return (initialNodes || []).map(node => ({
       ...node,
       data: {
         ...node.data,
         icon: null, // Remover iconos React para evitar problemas de renderizado
       }
     }));
-    
+  }, [initialNodes]);
+
+  const cleanedInitialEdges = useMemo(() => {
+    return initialEdges || [];
+  }, [initialEdges]);
+
+  // Inicializar el estado solo una vez
+  React.useEffect(() => {
     setNodes(cleanedInitialNodes);
-    setEdges(initialEdges);
+    setEdges(cleanedInitialEdges);
+    
     // Guardar estado inicial en el historial
-    const initialState = { nodes: cleanedInitialNodes, edges: initialEdges };
+    const initialState = { nodes: cleanedInitialNodes, edges: cleanedInitialEdges };
     setHistory([initialState]);
     setHistoryIndex(0);
-    console.log('Estado inicial guardado en historial');
+    
+    // Notificar al componente padre sobre los datos iniciales
+    if (onDiagramChange) {
+      onDiagramChange(cleanedInitialNodes, cleanedInitialEdges);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // SOLO al montar el componente
 
   // Función auxiliar para comparar nodos y edges sin referencias circulares
   const compareStates = useCallback((state1: Node[] | Edge[], state2: Node[] | Edge[]) => {
@@ -1474,6 +1532,13 @@ function BPMSDiagramInner() {
     });
   }, []);
 
+  // Notificar cambios al componente padre
+  React.useEffect(() => {
+    if (onDiagramChange) {
+      onDiagramChange(nodes, edges);
+    }
+  }, [nodes, edges, onDiagramChange]);
+
   // Guardar estado en historial cuando cambian los nodos o edges (excepto en undo/redo)
   React.useEffect(() => {
     if (!isUndoRedoOperation && history.length > 0) {
@@ -1485,7 +1550,6 @@ function BPMSDiagramInner() {
         !compareStates(currentState.edges, edges);
       
       if (hasChanged) {
-        console.log('Cambios detectados, guardando en historial...');
         const timeoutId = setTimeout(() => {
           saveToHistory(nodes, edges);
         }, 300); // Debounce para evitar guardar demasiado frecuentemente
@@ -1518,13 +1582,124 @@ function BPMSDiagramInner() {
                   Diagramator
                 </span>
             </h1>
+              
               <p className="text-sm text-gray-500 font-normal mt-1 tracking-wide">
                 Diagramas de procesos de negocio inteligentes
-            </p>
+              </p>
+              
+              {/* Título editable del diagrama (donde antes estaba el ID) */}
+              {isEditingTitle ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    type="text"
+                    value={tempTitle}
+                    onChange={(e) => setTempTitle(e.target.value)}
+                    onBlur={() => {
+                      if (tempTitle.trim() && onTitleChange) {
+                        onTitleChange(tempTitle.trim());
+                      } else {
+                        setIsEditingTitle(false);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && tempTitle.trim() && onTitleChange) {
+                        onTitleChange(tempTitle.trim());
+                      } else if (e.key === 'Escape') {
+                        setIsEditingTitle(false);
+                      }
+                    }}
+                    autoFocus
+                    className="px-2 py-1 bg-white border-2 border-blue-500 rounded text-xs font-medium text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-300 min-w-[200px]"
+                    placeholder="Nombre del diagrama"
+                  />
+                  <button
+                    onClick={() => setIsEditingTitle(false)}
+                    className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors"
+                    title="Cancelar"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ) : (
+                <div 
+                  onClick={() => {
+                    if (onTitleChange) {
+                      setTempTitle(diagramTitle);
+                      setIsEditingTitle(true);
+                    }
+                  }}
+                  className={`mt-1 group flex items-center gap-1 ${onTitleChange ? 'cursor-pointer' : ''}`}
+                  title={onTitleChange ? "Click para editar" : ""}
+                >
+                  <p className="text-xs text-gray-400 font-mono">
+                    {diagramTitle}
+                  </p>
+                  {onTitleChange && (
+                    <svg className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  )}
+                </div>
+              )}
           </div>
         </div>
         
-          {/* Elementos decorativos del lado derecho */}
+          {/* Elementos del lado derecho */}
+          <div className="flex items-center space-x-4">
+            {/* Atajo de teclado */}
+            {onManualSave && (
+              <div className="text-sm text-gray-600">
+                <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs">
+                  {navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}+S
+                </kbd>
+                <span className="ml-2">para guardar</span>
+              </div>
+            )}
+
+            {/* Estado de guardado */}
+            {saveStatus && (
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${
+                  saveStatus === 'saving' ? 'bg-blue-500 animate-pulse' :
+                  saveStatus === 'saved' ? 'bg-green-500' :
+                  saveStatus === 'error' ? 'bg-red-500' :
+                  'bg-orange-500'
+                }`}></div>
+                <span className={`text-sm font-medium ${saveStatusColor || 'text-gray-600'}`}>
+                  {saveStatusText || 'Sin guardar'}
+                </span>
+              </div>
+            )}
+
+            {/* Botón Dashboard */}
+            <button
+              onClick={() => window.location.href = '/dashboard'}
+              className="px-4 py-2 bg-white/80 hover:bg-white text-gray-700 rounded-lg shadow-sm border border-gray-200 transition-all flex items-center gap-2"
+              title="Ver mis diagramas"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Mis Diagramas
+            </button>
+
+            {/* Botón Cerrar Sesión */}
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="px-4 py-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg shadow-sm border border-red-400 transition-all flex items-center gap-2"
+                title="Cerrar sesión"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Cerrar Sesión
+              </button>
+            )}
+
+            {/* Elementos decorativos */}
           <div className="hidden md:flex items-center space-x-4 opacity-60">
             <div className="flex space-x-1">
               <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
@@ -1533,6 +1708,7 @@ function BPMSDiagramInner() {
           </div>
             <div className="text-xs text-gray-400 font-mono">
               v1.0
+              </div>
             </div>
             </div>
             </div>
@@ -1574,8 +1750,18 @@ function BPMSDiagramInner() {
           connectionLineType={ConnectionLineType.SmoothStep}
           defaultEdgeOptions={{
             type: 'smoothstep',
-            markerEnd: { type: MarkerType.ArrowClosed, color: '#3B82F6' },
-            style: { strokeWidth: 2, stroke: '#3B82F6' }
+            markerEnd: { 
+              type: MarkerType.ArrowClosed, 
+              color: '#3B82F6',
+              width: 20,
+              height: 20
+            },
+            style: { 
+              strokeWidth: 3, 
+              stroke: '#3B82F6',
+              strokeLinecap: 'round'
+            },
+            animated: false
           }}
           nodesDraggable={true}
           nodesConnectable={true}
@@ -1598,6 +1784,10 @@ function BPMSDiagramInner() {
             showFitView={true}
             showZoom={true}
             position="bottom-left"
+            className="!shadow-2xl !rounded-xl !border-2 !border-gray-200/50 backdrop-blur-sm"
+            style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            }}
           />
           
           {/* MiniMap - Posición inferior derecha */}
@@ -1605,21 +1795,26 @@ function BPMSDiagramInner() {
             nodeColor={(node) => {
               switch (node.type) {
                 case 'phase':
-                  return '#2563EB';
+                  return '#3B82F6';
                 case 'activity':
-                  return '#6B7280';
+                  return '#8B5CF6';
                 case 'decision':
-                  return '#EAB308';
+                  return '#F59E0B';
                 case 'process':
                   return '#10B981';
                 default:
                   return '#6B7280';
               }
             }}
-            nodeBorderRadius={2}
+            nodeBorderRadius={8}
             position="bottom-right"
-            className="bg-white border-2 border-gray-300 rounded-lg shadow-lg"
-            style={{ marginBottom: '8px', marginRight: '8px' }}
+            className="!shadow-2xl !rounded-2xl !border-2 !border-gray-200/50 backdrop-blur-sm"
+            style={{ 
+              marginBottom: '12px', 
+              marginRight: '12px',
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            }}
+            maskColor="rgba(59, 130, 246, 0.05)"
           />
           
           {/* Panel de Herramientas - Izquierda */}
@@ -1757,12 +1952,26 @@ function BPMSDiagramInner() {
 
             {/* Botón de Guardar */}
             <button
-              onClick={onExportJSON}
-              className="w-full px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-sm font-medium flex items-center justify-center gap-2"
-              title="Guardar diagrama como JSON (Ctrl+S)"
+              onClick={onManualSave || exportJSONFunction}
+              disabled={isSaving}
+              className={`w-full px-3 py-2 text-white rounded transition-colors text-sm font-medium flex items-center justify-center gap-2 ${
+                isSaving 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-green-500 hover:bg-green-600'
+              }`}
+              title={onManualSave ? "Guardar diagrama en Supabase (Ctrl+S)" : "Guardar diagrama como JSON (Ctrl+S)"}
             >
+              {isSaving ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Guardando...
+                </>
+              ) : (
+                <>
               <Save className="w-4 h-4" />
               Guardar
+                </>
+              )}
             </button>
 
             <div className="border-t border-gray-200 my-2"></div>
@@ -1791,7 +2000,7 @@ function BPMSDiagramInner() {
             {/* Botones de JSON */}
             <div className="flex space-x-1">
               <button
-                onClick={onExportJSON}
+                onClick={exportJSONFunction}
                 className="flex-1 px-2 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors text-xs font-medium flex items-center justify-center gap-1"
                 title="Exportar JSON"
               >
@@ -1859,7 +2068,13 @@ function BPMSDiagramInner() {
               <div>• Esc: Modo selección</div>
             </div>
           </Panel>
-          <Background variant={BackgroundVariant.Dots} />
+          <Background 
+            variant={BackgroundVariant.Dots} 
+            gap={20} 
+            size={1.5}
+            color="#94a3b8"
+            className="opacity-30"
+          />
         </ReactFlow>
 
         {/* Modal de Plantillas */}
@@ -2379,11 +2594,56 @@ function BPMSDiagramInner() {
   );
 }
 
+// Props para el componente BPMSDiagram
+interface BPMSDiagramProps {
+  onDiagramChange?: (nodes: any[], edges: any[]) => void;
+  initialNodes?: any[];
+  initialEdges?: any[];
+  saveStatus?: 'saved' | 'saving' | 'error' | 'unsaved';
+  saveStatusText?: string;
+  saveStatusColor?: string;
+  isSaving?: boolean;
+  onManualSave?: () => void;
+  onExportJSON?: () => void;
+  onLogout?: () => void;
+  currentDiagramId?: string | null;
+  diagramTitle?: string;
+  onTitleChange?: (newTitle: string) => void;
+}
+
 // Componente principal que envuelve con ReactFlowProvider
-export default function BPMSDiagram() {
+export default function BPMSDiagram({ 
+  onDiagramChange, 
+  initialNodes, 
+  initialEdges, 
+  saveStatus,
+  saveStatusText,
+  saveStatusColor,
+  isSaving,
+  onManualSave,
+  onExportJSON,
+  onLogout,
+  currentDiagramId,
+  diagramTitle,
+  onTitleChange
+}: BPMSDiagramProps = {}) {
   return (
     <ReactFlowProvider>
-      <BPMSDiagramInner />
+      <BPMSDiagramInner 
+        onDiagramChange={onDiagramChange}
+        initialNodes={initialNodes}
+        initialEdges={initialEdges}
+        saveStatus={saveStatus}
+        saveStatusText={saveStatusText}
+        saveStatusColor={saveStatusColor}
+        isSaving={isSaving}
+        onManualSave={onManualSave}
+        onExportJSON={onExportJSON}
+        onLogout={onLogout}
+        currentDiagramId={currentDiagramId}
+        diagramTitle={diagramTitle}
+        onTitleChange={onTitleChange}
+      />
     </ReactFlowProvider>
   );
 }
