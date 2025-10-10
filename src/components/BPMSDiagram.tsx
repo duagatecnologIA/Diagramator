@@ -463,6 +463,7 @@ function BPMSDiagramInner() {
       if (node.id === editingNode.id) {
         return {
           ...node,
+          type: editingNode.type, // Actualizar el tipo de nodo
           data: {
             ...node.data,
             label: editLabel,
@@ -1147,254 +1148,11 @@ function BPMSDiagramInner() {
     }
   };
 
-  // Definir los nodos del diagrama organizados por fases
-  const initialNodes: Node[] = useMemo(() => [
-    // ========== FASE 1: PRE-ARRIBO ==========
-    {
-      id: 'phase1',
-      type: 'phase',
-      position: { x: 400, y: 50 },
-      data: {
-        label: 'FASE 1: PRE-ARRIBO',
-        description: 'Orquestación de declaraciones y validaciones previas',
-        icon: <Ship className="w-6 h-6" />
-      },
-    },
-    {
-      id: 'activity1-1',
-      type: 'activity',
-      position: { x: 200, y: 150 },
-      data: {
-        label: 'Orquestación de la declaración anticipada',
-        description: 'PPU recibe y valida declaraciones anticipadas, cruza con manifiestos y listas de carga',
-        icon: <FileText className="w-5 h-5 text-blue-600" />
-      },
-    },
-    {
-      id: 'activity1-2',
-      type: 'activity',
-      position: { x: 600, y: 150 },
-      data: {
-        label: 'Condicionalidad por vistos buenos',
-        description: 'Consulta VUCE en tiempo real, aplica reglas de control previo',
-        icon: <Shield className="w-5 h-5 text-blue-600" />
-      },
-    },
-    {
-      id: 'decision1',
-      type: 'decision',
-      position: { x: 400, y: 250 },
-      data: {
-        label: '¿Aprobaciones OK?',
-        icon: <AlertTriangle className="w-6 h-6 text-yellow-600" />
-      },
-    },
-    {
-      id: 'result1',
-      type: 'process',
-      position: { x: 200, y: 350 },
-      data: {
-        label: 'Rechazar',
-        description: 'No se cumple condicionalidad',
-        icon: <X className="w-5 h-5 text-red-600" />
-      },
-    },
-    {
-      id: 'result2',
-      type: 'process',
-      position: { x: 600, y: 350 },
-      data: {
-        label: 'Continuar',
-        description: 'Proceder a fase de arribo',
-        icon: <CheckCircle className="w-5 h-5 text-green-600" />
-      },
-    },
+  // Canvas en blanco - sin nodos iniciales
+  const initialNodes: Node[] = useMemo(() => [], []);
 
-    // ========== FASE 2: ARRIBO ==========
-    {
-      id: 'phase2',
-      type: 'phase',
-      position: { x: 400, y: 500 },
-      data: {
-        label: 'FASE 2: ARRIBO',
-        description: 'Selectividad, inspección y verificación de integridad física',
-        icon: <Eye className="w-6 h-6" />
-      },
-    },
-    {
-      id: 'activity2-1',
-      type: 'activity',
-      position: { x: 200, y: 600 },
-      data: {
-        label: 'Selectividad e inspección en muelle',
-        description: 'Inspección no intrusiva, registro audiovisual y rayos X',
-        icon: <Camera className="w-5 h-5 text-blue-600" />
-      },
-    },
-    {
-      id: 'activity2-2',
-      type: 'activity',
-      position: { x: 600, y: 600 },
-      data: {
-        label: 'Integridad física de unidades',
-        description: 'Lectura de sellos, verificación de dispositivos de seguridad',
-        icon: <Lock className="w-5 h-5 text-blue-600" />
-      },
-    },
-
-    // ========== FASE 3: POST-SELECTIVIDAD ==========
-    {
-      id: 'phase3',
-      type: 'phase',
-      position: { x: 400, y: 800 },
-      data: {
-        label: 'FASE 3: POST-SELECTIVIDAD',
-        description: 'Pago, levante, retiro y tránsito aduanero',
-        icon: <CheckCircle className="w-6 h-6" />
-      },
-    },
-    {
-      id: 'activity3-1',
-      type: 'activity',
-      position: { x: 200, y: 900 },
-      data: {
-        label: 'Pago posterior y levante',
-        description: 'Habilitación de pagos, consolidación de vistos buenos, emisión de levante',
-        icon: <DollarSign className="w-5 h-5 text-blue-600" />
-      },
-    },
-    {
-      id: 'activity3-2',
-      type: 'activity',
-      position: { x: 600, y: 900 },
-      data: {
-        label: 'Tránsito aduanero',
-        description: 'Autorización con número de sello, monitoreo de operación',
-        icon: <Truck className="w-5 h-5 text-blue-600" />
-      },
-    },
-  ], []);
-
-  // Definir las conexiones entre nodos organizadas por fases con flechas direccionales
-  const initialEdges: Edge[] = useMemo(() => [
-    // ========== CONEXIONES FASE 1: PRE-ARRIBO ==========
-    { 
-      id: 'e1-1', 
-      source: 'phase1', 
-      target: 'activity1-1', 
-      type: 'smoothstep',
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#3B82F6' },
-      style: { stroke: '#3B82F6', strokeWidth: 2 }
-    },
-    { 
-      id: 'e1-2', 
-      source: 'phase1', 
-      target: 'activity1-2', 
-      type: 'smoothstep',
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#3B82F6' },
-      style: { stroke: '#3B82F6', strokeWidth: 2 }
-    },
-    { 
-      id: 'e1-3', 
-      source: 'activity1-1', 
-      target: 'decision1', 
-      type: 'smoothstep',
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#6B7280' },
-      style: { stroke: '#6B7280', strokeWidth: 2 }
-    },
-    { 
-      id: 'e1-4', 
-      source: 'activity1-2', 
-      target: 'decision1', 
-      type: 'smoothstep',
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#6B7280' },
-      style: { stroke: '#6B7280', strokeWidth: 2 }
-    },
-    { 
-      id: 'e1-5', 
-      source: 'decision1', 
-      target: 'result1', 
-      type: 'smoothstep', 
-      label: 'No',
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#EF4444' },
-      style: { stroke: '#EF4444', strokeWidth: 2 },
-      labelStyle: { fill: '#EF4444', fontWeight: 600 }
-    },
-    { 
-      id: 'e1-6', 
-      source: 'decision1', 
-      target: 'result2', 
-      type: 'smoothstep', 
-      label: 'Sí',
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#10B981' },
-      style: { stroke: '#10B981', strokeWidth: 2 },
-      labelStyle: { fill: '#10B981', fontWeight: 600 }
-    },
-
-    // ========== CONEXIONES ENTRE FASES ==========
-    { 
-      id: 'e2-1', 
-      source: 'result2', 
-      target: 'phase2', 
-      type: 'smoothstep',
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#3B82F6' },
-      style: { stroke: '#3B82F6', strokeWidth: 3 }
-    },
-
-    // ========== CONEXIONES FASE 2: ARRIBO ==========
-    { 
-      id: 'e2-2', 
-      source: 'phase2', 
-      target: 'activity2-1', 
-      type: 'smoothstep',
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#3B82F6' },
-      style: { stroke: '#3B82F6', strokeWidth: 2 }
-    },
-    { 
-      id: 'e2-3', 
-      source: 'phase2', 
-      target: 'activity2-2', 
-      type: 'smoothstep',
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#3B82F6' },
-      style: { stroke: '#3B82F6', strokeWidth: 2 }
-    },
-
-    // ========== CONEXIONES ENTRE FASES ==========
-    { 
-      id: 'e3-1', 
-      source: 'activity2-1', 
-      target: 'phase3', 
-      type: 'smoothstep',
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#6B7280' },
-      style: { stroke: '#6B7280', strokeWidth: 2 }
-    },
-    { 
-      id: 'e3-2', 
-      source: 'activity2-2', 
-      target: 'phase3', 
-      type: 'smoothstep',
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#6B7280' },
-      style: { stroke: '#6B7280', strokeWidth: 2 }
-    },
-
-    // ========== CONEXIONES FASE 3: POST-SELECTIVIDAD ==========
-    { 
-      id: 'e3-3', 
-      source: 'phase3', 
-      target: 'activity3-1', 
-      type: 'smoothstep',
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#3B82F6' },
-      style: { stroke: '#3B82F6', strokeWidth: 2 }
-    },
-    { 
-      id: 'e3-4', 
-      source: 'phase3', 
-      target: 'activity3-2', 
-      type: 'smoothstep',
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#3B82F6' },
-      style: { stroke: '#3B82F6', strokeWidth: 2 }
-    },
-  ], []);
+  // Canvas en blanco - sin conexiones iniciales
+  const initialEdges: Edge[] = useMemo(() => [], []);
 
   // Inicializar nodos y edges
   React.useEffect(() => {
@@ -1473,45 +1231,14 @@ function BPMSDiagramInner() {
 
   return (
     <div className="w-full h-screen">
-      <div className="h-20 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 text-white flex items-center justify-between px-8 shadow-lg border-b border-blue-700/30">
-        <div className="flex items-center space-x-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-            <Ship className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-100 to-white bg-clip-text text-transparent">
-              Diagrama BPMS
-            </h1>
-            <p className="text-xs text-blue-200 font-medium">
-              Proceso Portuario y Aduanero
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-6">
-          <div className="flex items-center space-x-1 bg-black/20 px-3 py-2 rounded-lg backdrop-blur-sm">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="text-xs text-green-200 font-medium">Conectado</span>
-          </div>
-          
-          <div className="flex items-center space-x-4 text-sm">
-            <div className="flex items-center space-x-2 bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-all duration-200">
-              <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full"></div>
-              <span className="text-blue-100">Editar</span>
-            </div>
-            <div className="flex items-center space-x-2 bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-all duration-200">
-              <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-              <span className="text-blue-100">Conectar</span>
-            </div>
-            <div className="flex items-center space-x-2 bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-all duration-200">
-              <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
-              <span className="text-blue-100">Deshacer</span>
-            </div>
-            <div className="flex items-center space-x-2 bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-all duration-200">
-              <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
-              <span className="text-blue-100">Zoom</span>
-            </div>
-          </div>
+      <div className="h-20 bg-gradient-to-r from-blue-50 via-slate-50 to-blue-50 text-gray-800 flex items-center justify-between px-8 shadow-sm border-b border-gray-200">
+        <div className="flex flex-col">
+          <h1 className="text-3xl font-bold text-gray-800 tracking-wide">
+            DIAGRAMATOR
+          </h1>
+          <p className="text-sm text-gray-600 font-medium mt-1">
+            Diagrama del proceso de negocio
+          </p>
         </div>
       </div>
       <div 
@@ -1711,28 +1438,6 @@ function BPMSDiagramInner() {
 
           <Panel position="top-right" className="bg-white rounded-lg shadow-lg p-3 space-y-2">
             <div className="text-xs text-gray-600 mb-2 font-medium">Herramientas de Edición</div>
-            
-            {/* Botones de Undo/Redo */}
-            <div className="flex space-x-1">
-              <button
-                onClick={undo}
-                disabled={historyIndex <= 0}
-                className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-xs font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
-                title="Deshacer (Ctrl+Z)"
-              >
-                ↶
-              </button>
-              <button
-                onClick={redo}
-                disabled={historyIndex >= history.length - 1}
-                className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-xs font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
-                title="Rehacer (Ctrl+Y)"
-              >
-                ↷
-              </button>
-            </div>
-
-            <div className="border-t border-gray-200 my-2"></div>
             <div className="text-xs text-gray-600 mb-2 font-medium">Archivo</div>
 
             {/* Botón de Guardar */}
@@ -1986,22 +1691,161 @@ function BPMSDiagramInner() {
                   </p>
                 </div>
 
-                {/* Preview del color */}
-                <div className="bg-gray-50 rounded-lg p-3 border">
-                  <div className="text-xs text-gray-600 mb-2">Vista previa del nodo:</div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div 
-                      className="w-16 h-1 rounded-full"
-                      style={{ backgroundColor: editColor }}
-                    ></div>
-                    <span className="text-xs text-gray-600">Color de fondo</span>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Tipo de nodo
+                  </label>
+                  
+                  {/* Botones de cambio rápido */}
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <button
+                      onClick={() => {
+                        if (editingNode) {
+                          const newNode = { ...editingNode, type: 'phase' as const };
+                          setEditingNode(newNode);
+                        }
+                      }}
+                      className={`p-3 rounded-lg border-2 transition-all text-left ${
+                        editingNode?.type === 'phase' 
+                          ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-blue-500 rounded"></div>
+                        <div>
+                          <div className="font-medium text-sm">Fase</div>
+                          <div className="text-xs opacity-75">Principal</div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        if (editingNode) {
+                          const newNode = { ...editingNode, type: 'activity' as const };
+                          setEditingNode(newNode);
+                        }
+                      }}
+                      className={`p-3 rounded-lg border-2 transition-all text-left ${
+                        editingNode?.type === 'activity' 
+                          ? 'border-gray-500 bg-gray-50 text-gray-700' 
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-gray-500 rounded"></div>
+                        <div>
+                          <div className="font-medium text-sm">Actividad</div>
+                          <div className="text-xs opacity-75">Tarea</div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        if (editingNode) {
+                          const newNode = { ...editingNode, type: 'decision' as const };
+                          setEditingNode(newNode);
+                        }
+                      }}
+                      className={`p-3 rounded-lg border-2 transition-all text-left ${
+                        editingNode?.type === 'decision' 
+                          ? 'border-yellow-500 bg-yellow-50 text-yellow-700' 
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-yellow-500 rounded-full"></div>
+                        <div>
+                          <div className="font-medium text-sm">Decisión</div>
+                          <div className="text-xs opacity-75">Bifurcación</div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        if (editingNode) {
+                          const newNode = { ...editingNode, type: 'process' as const };
+                          setEditingNode(newNode);
+                        }
+                      }}
+                      className={`p-3 rounded-lg border-2 transition-all text-left ${
+                        editingNode?.type === 'process' 
+                          ? 'border-green-500 bg-green-50 text-green-700' 
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-green-500 rounded"></div>
+                        <div>
+                          <div className="font-medium text-sm">Proceso</div>
+                          <div className="text-xs opacity-75">Final</div>
+                        </div>
+                      </div>
+                    </button>
                   </div>
-                  <div className="flex items-center gap-3">
+
+                  <p className="text-xs text-gray-500">
+                    Haz click en cualquier tipo para cambiar el nodo manteniendo la posición y contenido
+                  </p>
+                </div>
+
+                {/* Preview del color y tipo */}
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <div className="text-xs text-gray-600 mb-3 font-medium">Vista previa del nodo:</div>
+                  
+                  {/* Mini preview del nodo */}
+                  <div className="mb-4 flex justify-center">
                     <div 
-                      className="w-16 h-1 rounded-full"
-                      style={{ backgroundColor: editTextColor }}
-                    ></div>
-                    <span className="text-xs text-gray-600">Color de texto</span>
+                      className={`relative border-2 shadow-sm ${
+                        editingNode?.type === 'phase' ? 'rounded-xl min-w-[120px] h-16' :
+                        editingNode?.type === 'activity' ? 'rounded-lg min-w-[100px] h-12' :
+                        editingNode?.type === 'decision' ? 'rounded-full w-16 h-16' :
+                        editingNode?.type === 'process' ? 'rounded-lg min-w-[100px] h-12' :
+                        'rounded-lg min-w-[100px] h-12'
+                      } flex items-center justify-center p-2`}
+                      style={{ 
+                        backgroundColor: editColor,
+                        borderColor: editColor,
+                        color: editTextColor 
+                      }}
+                    >
+                      <div className="text-center">
+                        <div className={`font-bold ${
+                          editingNode?.type === 'phase' ? 'text-sm' :
+                          editingNode?.type === 'decision' ? 'text-xs' :
+                          'text-xs'
+                        }`}>
+                          {editingNode?.type === 'phase' && 'FASE'}
+                          {editingNode?.type === 'activity' && 'ACT'}
+                          {editingNode?.type === 'decision' && '?'}
+                          {editingNode?.type === 'process' && '✓'}
+                        </div>
+                        {editingNode?.type === 'phase' && (
+                          <div className="text-xs opacity-75">Principal</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Preview de colores */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-16 h-2 rounded-full"
+                        style={{ backgroundColor: editColor }}
+                      ></div>
+                      <span className="text-xs text-gray-600">Color de fondo</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-16 h-2 rounded-full"
+                        style={{ backgroundColor: editTextColor }}
+                      ></div>
+                      <span className="text-xs text-gray-600">Color de texto</span>
+                    </div>
                   </div>
                 </div>
               </div>
