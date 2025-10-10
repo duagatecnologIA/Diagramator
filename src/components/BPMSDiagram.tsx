@@ -61,124 +61,134 @@ const nodeTypes: NodeTypes = {
   process: ProcessNode,
 };
 
-// Nodo para las fases principales
+// Nodo para las fases principales - Diseño moderno
 function PhaseNode({ data }: { data: NodeData }) {
   const color = data.color || '#3B82F6';
   const textColor = data.textColor || '#FFFFFF';
   const size = data.size || 'medium';
   
   const sizeClasses = {
-    small: 'min-w-[300px] p-4 text-lg',
-    medium: 'min-w-[400px] p-6 text-xl',
-    large: 'min-w-[500px] p-8 text-2xl',
-    xlarge: 'min-w-[600px] p-10 text-3xl'
+    small: 'min-w-[200px] p-4 text-base',
+    medium: 'min-w-[240px] p-5 text-lg',
+    large: 'min-w-[280px] p-6 text-xl',
+    xlarge: 'min-w-[320px] p-7 text-2xl'
   };
   
   return (
     <div 
-      className={`rounded-2xl shadow-2xl border-0 text-center relative ${sizeClasses[size]} transition-all duration-300 hover:scale-105 hover:shadow-3xl`}
+      className={`rounded-xl shadow-lg border-0 text-center relative ${sizeClasses[size]} transition-all duration-200 hover:shadow-xl hover:-translate-y-1`}
       style={{
-        background: `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)`,
+        background: color,
         color: textColor,
-        boxShadow: `0 20px 60px -10px ${color}40, 0 10px 30px -5px ${color}30`,
+        boxShadow: `0 4px 12px ${color}30, 0 2px 6px ${color}20`,
       }}
     >
       <Handle
         type="target"
         position={Position.Top}
-        className="w-4 h-4 border-3 border-white !bg-white transition-all duration-200 hover:scale-125"
-        style={{ boxShadow: `0 0 0 3px ${color}` }}
+        className="w-3 h-3 border-2 border-white !bg-white transition-all duration-200 hover:scale-110"
+        style={{ 
+          boxShadow: `0 0 0 2px ${color}`,
+          top: -6
+        }}
       />
-      <div className="flex items-center justify-center mb-3 relative">
-        <div className="absolute inset-0 bg-white/10 rounded-lg blur-xl"></div>
-        <h3 className="font-bold relative z-10 drop-shadow-lg">{data.label}</h3>
+      <div className="flex flex-col items-center justify-center">
+        <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center mb-2">
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm8 0a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1v-2z" clipRule="evenodd" />
+          </svg>
+        </div>
+        <h3 className="font-semibold text-sm leading-tight">{data.label}</h3>
+        {data.description && (
+          <p className="text-xs opacity-90 mt-1 leading-relaxed">{data.description}</p>
+        )}
       </div>
-      <p className="text-sm opacity-95 font-medium">{data.description}</p>
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-4 h-4 border-3 border-white !bg-white transition-all duration-200 hover:scale-125"
-        style={{ boxShadow: `0 0 0 3px ${color}` }}
+        className="w-3 h-3 border-2 border-white !bg-white transition-all duration-200 hover:scale-110"
+        style={{ 
+          boxShadow: `0 0 0 2px ${color}`,
+          bottom: -6
+        }}
       />
     </div>
   );
 }
 
-// Nodo para actividades
+// Nodo para actividades - Diseño moderno
 function ActivityNode({ data }: { data: NodeData }) {
   const color = data.color || '#3B82F6';
   const textColor = data.textColor || '#1F2937';
   const size = data.size || 'medium';
   
   const sizeClasses = {
-    small: 'min-w-[200px] p-3 text-sm',
-    medium: 'min-w-[250px] p-4 text-base',
-    large: 'min-w-[300px] p-5 text-lg',
-    xlarge: 'min-w-[350px] p-6 text-xl'
-  };
-  
-  const iconSizes = {
-    small: 'w-5 h-5',
-    medium: 'w-6 h-6',
-    large: 'w-7 h-7',
-    xlarge: 'w-8 h-8'
+    small: 'min-w-[180px] p-3 text-sm',
+    medium: 'min-w-[200px] p-4 text-base',
+    large: 'min-w-[220px] p-5 text-lg',
+    xlarge: 'min-w-[240px] p-6 text-xl'
   };
   
   return (
     <div 
-      className={`bg-white rounded-xl shadow-lg relative border-l-4 ${sizeClasses[size]} transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-sm`}
+      className={`bg-white rounded-lg shadow-sm border border-gray-200 relative ${sizeClasses[size]} transition-all duration-200 hover:shadow-md hover:-translate-y-0.5`}
       style={{ 
         borderLeftColor: color,
+        borderLeftWidth: '4px',
         color: textColor,
-        boxShadow: `0 10px 30px -5px ${color}20, 0 4px 10px -2px ${color}15`,
       }}
     >
       <Handle
         type="target"
         position={Position.Top}
-        className="w-3.5 h-3.5 border-2 border-white transition-all duration-200 hover:scale-125"
-        style={{ backgroundColor: color, boxShadow: `0 0 0 2px ${color}40` }}
+        className="w-3 h-3 border-2 border-white transition-all duration-200 hover:scale-110"
+        style={{ 
+          backgroundColor: color, 
+          boxShadow: `0 0 0 2px ${color}30`,
+          top: -6
+        }}
       />
-      <div className="flex items-center gap-3 mb-2">
+      <div className="flex items-start gap-3">
         <div 
-          className={`${iconSizes[size]} flex items-center justify-center rounded-lg p-1.5 transition-all duration-300`}
+          className="w-8 h-8 flex items-center justify-center rounded-md mt-0.5"
           style={{ backgroundColor: `${color}15` }}
         >
-          <FileText className="w-full h-full" style={{ color: color }} />
+          <svg className="w-4 h-4" style={{ color: color }} fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+          </svg>
+        </div>
+        <div className="flex-1">
+          <h4 className="font-semibold text-gray-900 text-sm leading-tight">{data.label}</h4>
+          {data.description && (
+            <p className="text-xs text-gray-600 mt-1 leading-relaxed">{data.description}</p>
+          )}
+        </div>
       </div>
-        <h4 className="font-bold text-gray-800">{data.label}</h4>
-      </div>
-      {data.description && (
-        <p className="text-sm text-gray-600 leading-relaxed">{data.description}</p>
-      )}
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3.5 h-3.5 border-2 border-white transition-all duration-200 hover:scale-125"
-        style={{ backgroundColor: color, boxShadow: `0 0 0 2px ${color}40` }}
+        className="w-3 h-3 border-2 border-white transition-all duration-200 hover:scale-110"
+        style={{ 
+          backgroundColor: color, 
+          boxShadow: `0 0 0 2px ${color}30`,
+          bottom: -6
+        }}
       />
     </div>
   );
 }
 
-// Nodo para decisiones
+// Nodo para decisiones - Diseño moderno
 function DecisionNode({ data }: { data: NodeData }) {
   const color = data.color || '#F59E0B';
   const textColor = data.textColor || '#FFFFFF';
   const size = data.size || 'medium';
   
   const sizeClasses = {
-    small: 'w-[100px] h-[100px] p-3',
-    medium: 'w-[140px] h-[140px] p-4',
-    large: 'w-[180px] h-[180px] p-6',
-    xlarge: 'w-[220px] h-[220px] p-8'
-  };
-  
-  const iconSizes = {
-    small: 'w-5 h-5',
-    medium: 'w-7 h-7',
-    large: 'w-9 h-9',
-    xlarge: 'w-11 h-11'
+    small: 'w-[80px] h-[80px] p-3',
+    medium: 'w-[100px] h-[100px] p-4',
+    large: 'w-[120px] h-[120px] p-5',
+    xlarge: 'w-[140px] h-[140px] p-6'
   };
   
   const textSizes = {
@@ -190,51 +200,62 @@ function DecisionNode({ data }: { data: NodeData }) {
   
   return (
     <div 
-      className={`rotate-45 shadow-2xl flex items-center justify-center relative ${sizeClasses[size]} transition-all duration-300 hover:scale-110`}
+      className={`rotate-45 shadow-lg flex items-center justify-center relative ${sizeClasses[size]} transition-all duration-200 hover:shadow-xl hover:scale-105`}
       style={{ 
-        background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)`,
+        background: color,
         color: textColor,
-        boxShadow: `0 20px 50px -10px ${color}50, 0 10px 25px -5px ${color}40`,
+        boxShadow: `0 4px 12px ${color}40, 0 2px 6px ${color}30`,
       }}
     >
       <Handle
         type="target"
         position={Position.Top}
-        className="w-3.5 h-3.5 border-2 border-white !bg-white transition-all duration-200 hover:scale-125"
-        style={{ boxShadow: `0 0 0 3px ${color}` }}
+        className="w-3 h-3 border-2 border-white !bg-white transition-all duration-200 hover:scale-110"
+        style={{ 
+          boxShadow: `0 0 0 2px ${color}`,
+          top: -6
+        }}
       />
       <div className="text-center -rotate-45">
-        <div 
-          className="mx-auto mb-2 p-2 rounded-full inline-flex items-center justify-center"
-          style={{ backgroundColor: `${textColor}20` }}
-        >
-          <AlertTriangle className={`${iconSizes[size]}`} />
+        <div className="w-6 h-6 mx-auto mb-2 flex items-center justify-center">
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
         </div>
-        <p className={`${textSizes[size]} font-bold drop-shadow-lg px-2 leading-tight`}>{data.label}</p>
+        <p className={`${textSizes[size]} font-semibold leading-tight px-1`}>{data.label}</p>
       </div>
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3.5 h-3.5 border-2 border-white !bg-white transition-all duration-200 hover:scale-125"
-        style={{ boxShadow: `0 0 0 3px ${color}` }}
+        className="w-3 h-3 border-2 border-white !bg-white transition-all duration-200 hover:scale-110"
+        style={{ 
+          boxShadow: `0 0 0 2px ${color}`,
+          bottom: -6
+        }}
       />
       <Handle
         type="source"
         position={Position.Left}
-        className="w-3.5 h-3.5 border-2 border-white !bg-white transition-all duration-200 hover:scale-125"
-        style={{ boxShadow: `0 0 0 3px ${color}` }}
+        className="w-3 h-3 border-2 border-white !bg-white transition-all duration-200 hover:scale-110"
+        style={{ 
+          boxShadow: `0 0 0 2px ${color}`,
+          left: -6
+        }}
       />
       <Handle
         type="source"
         position={Position.Right}
-        className="w-3.5 h-3.5 border-2 border-white !bg-white transition-all duration-200 hover:scale-125"
-        style={{ boxShadow: `0 0 0 3px ${color}` }}
+        className="w-3 h-3 border-2 border-white !bg-white transition-all duration-200 hover:scale-110"
+        style={{ 
+          boxShadow: `0 0 0 2px ${color}`,
+          right: -6
+        }}
       />
     </div>
   );
 }
 
-// Nodo para procesos
+// Nodo para procesos - Diseño moderno
 function ProcessNode({ data }: { data: NodeData }) {
   const color = data.color || '#10B981';
   const textColor = data.textColor || '#FFFFFF';
@@ -242,53 +263,55 @@ function ProcessNode({ data }: { data: NodeData }) {
   
   const sizeClasses = {
     small: 'min-w-[180px] p-3 text-sm',
-    medium: 'min-w-[220px] p-4 text-base',
-    large: 'min-w-[270px] p-5 text-lg',
-    xlarge: 'min-w-[320px] p-6 text-xl'
-  };
-  
-  const iconSizes = {
-    small: 'w-5 h-5',
-    medium: 'w-6 h-6',
-    large: 'w-7 h-7',
-    xlarge: 'w-8 h-8'
+    medium: 'min-w-[200px] p-4 text-base',
+    large: 'min-w-[220px] p-5 text-lg',
+    xlarge: 'min-w-[240px] p-6 text-xl'
   };
   
   return (
     <div 
-      className={`rounded-2xl shadow-xl relative ${sizeClasses[size]} transition-all duration-300 hover:shadow-2xl hover:scale-105 overflow-hidden`}
+      className={`rounded-lg shadow-sm border border-gray-200 relative ${sizeClasses[size]} transition-all duration-200 hover:shadow-md hover:-translate-y-0.5`}
       style={{ 
-        background: `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)`,
+        borderLeftColor: color,
+        borderLeftWidth: '4px',
         color: textColor,
-        boxShadow: `0 15px 40px -10px ${color}40, 0 8px 20px -5px ${color}30`,
       }}
     >
-      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-16 translate-x-16"></div>
       <Handle
         type="target"
         position={Position.Top}
-        className="w-4 h-4 border-2 border-white !bg-white transition-all duration-200 hover:scale-125"
-        style={{ boxShadow: `0 0 0 3px ${color}` }}
+        className="w-3 h-3 border-2 border-white transition-all duration-200 hover:scale-110"
+        style={{ 
+          backgroundColor: color, 
+          boxShadow: `0 0 0 2px ${color}30`,
+          top: -6
+        }}
       />
-      <div className="relative z-10">
-        <div className="flex items-center gap-3 mb-2">
-          <div 
-            className={`${iconSizes[size]} flex items-center justify-center rounded-xl p-2 transition-all duration-300`}
-            style={{ backgroundColor: `${textColor}20` }}
-          >
-            <CheckCircle className="w-full h-full" />
-          </div>
-          <h4 className="font-bold drop-shadow-md">{data.label}</h4>
+      <div className="flex items-start gap-3">
+        <div 
+          className="w-8 h-8 flex items-center justify-center rounded-md mt-0.5"
+          style={{ backgroundColor: `${color}15` }}
+        >
+          <svg className="w-4 h-4" style={{ color: color }} fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
         </div>
-        {data.description && (
-          <p className="text-sm opacity-95 leading-relaxed">{data.description}</p>
-        )}
+        <div className="flex-1">
+          <h4 className="font-semibold text-gray-900 text-sm leading-tight">{data.label}</h4>
+          {data.description && (
+            <p className="text-xs text-gray-600 mt-1 leading-relaxed">{data.description}</p>
+          )}
+        </div>
       </div>
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-4 h-4 border-2 border-white !bg-white transition-all duration-200 hover:scale-125"
-        style={{ boxShadow: `0 0 0 3px ${color}` }}
+        className="w-3 h-3 border-2 border-white transition-all duration-200 hover:scale-110"
+        style={{ 
+          backgroundColor: color, 
+          boxShadow: `0 0 0 2px ${color}30`,
+          bottom: -6
+        }}
       />
     </div>
   );
@@ -563,8 +586,32 @@ function BPMSDiagramInner({
       setEditingNode(node);
       setEditLabel(node.data.label || '');
       setEditDescription(node.data.description || '');
-      setEditColor(node.data.color || '#3B82F6');
-      setEditTextColor(node.data.textColor || '#FFFFFF');
+      
+      // Usar colores por defecto específicos para cada tipo de nodo
+      let defaultColor = '#3B82F6';
+      let defaultTextColor = '#FFFFFF';
+      
+      switch (node.type) {
+        case 'phase':
+          defaultColor = '#3B82F6';
+          defaultTextColor = '#FFFFFF';
+          break;
+        case 'activity':
+          defaultColor = '#3B82F6';
+          defaultTextColor = '#1F2937';
+          break;
+        case 'decision':
+          defaultColor = '#F59E0B';
+          defaultTextColor = '#FFFFFF';
+          break;
+        case 'process':
+          defaultColor = '#10B981';
+          defaultTextColor = '#FFFFFF';
+          break;
+      }
+      
+      setEditColor(node.data.color || defaultColor);
+      setEditTextColor(node.data.textColor || defaultTextColor);
       setEditSize(node.data.size || 'medium');
     }
   }, [toolMode]);
@@ -577,7 +624,7 @@ function BPMSDiagramInner({
       if (node.id === editingNode.id) {
         return {
           ...node,
-          type: editingNode.type, // Actualizar el tipo de nodo
+          type: editingNode.type, // Mantener el tipo actualizado del editingNode
           data: {
             ...node.data,
             label: editLabel,
@@ -591,8 +638,14 @@ function BPMSDiagramInner({
       return node;
     });
 
-    saveToHistory(nodes, edges);
+    saveToHistory(updatedNodes, edges);
     setNodes(updatedNodes);
+    
+    // Forzar re-renderizado de ReactFlow
+    setTimeout(() => {
+      setNodes([...updatedNodes]);
+    }, 0);
+    
     setEditingNode(null);
     setEditLabel('');
     setEditDescription('');
@@ -1791,13 +1844,13 @@ function BPMSDiagramInner({
             type: 'smoothstep',
             markerEnd: { 
               type: MarkerType.ArrowClosed, 
-              color: '#3B82F6',
-              width: 20,
-              height: 20
+              color: '#6B7280',
+              width: 12,
+              height: 12
             },
             style: { 
-              strokeWidth: 3, 
-              stroke: '#3B82F6',
+              strokeWidth: 2, 
+              stroke: '#6B7280',
               strokeLinecap: 'round'
             },
             animated: false
@@ -2109,10 +2162,10 @@ function BPMSDiagramInner({
           </Panel>
           <Background 
             variant={BackgroundVariant.Dots} 
-            gap={20} 
-            size={1.5}
-            color="#94a3b8"
-            className="opacity-30"
+            gap={24} 
+            size={1}
+            color="#E5E7EB"
+            className="opacity-50"
           />
         </ReactFlow>
 
