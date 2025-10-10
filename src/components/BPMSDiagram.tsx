@@ -8,6 +8,7 @@ import {
   Connection,
   applyNodeChanges,
   applyEdgeChanges,
+  addEdge,
   NodeChange,
   EdgeChange,
   Controls,
@@ -569,30 +570,36 @@ El formato final debe ser:
 
   const onConnect = useCallback(
     (params: Connection) => {
-      const newEdge = {
-        ...params,
-        id: `edge-${nodes.length + edges.length}`,
-        type: 'smoothstep',
-            style: { 
-              strokeWidth: 2, 
-              stroke: '#3B82F6',
-              strokeLinecap: 'round' as const
-            },
-        markerEnd: { 
-          type: MarkerType.ArrowClosed, 
-          color: '#3B82F6',
-          width: 12,
-          height: 12
-        },
-        animated: false
-      };
+      // Usar addEdge como en la documentación oficial, pero con estilos personalizados
       setEdges((edgesSnapshot) => {
-        const updatedEdges = [...edgesSnapshot, newEdge];
-        saveToHistory(nodes, updatedEdges);
-        return updatedEdges;
+        const newEdge = addEdge({
+          ...params,
+          type: 'smoothstep',
+          style: { 
+            strokeWidth: 2.5, 
+            stroke: '#3B82F6',
+            strokeLinecap: 'round' as const,
+            strokeDasharray: '0',
+            opacity: 0.8
+          },
+          markerEnd: { 
+            type: MarkerType.ArrowClosed, 
+            color: '#3B82F6',
+            width: 14,
+            height: 14,
+            strokeWidth: 1.5
+          },
+          animated: false,
+          data: {
+            label: ''
+          }
+        }, edgesSnapshot);
+        
+        saveToHistory(nodes, newEdge);
+        return newEdge;
       });
     },
-    [edges, nodes, saveToHistory]
+    [nodes, saveToHistory]
   );
 
   // Función para deshacer (Ctrl+Z)
@@ -2036,21 +2043,39 @@ El formato final debe ser:
           fitView
           attributionPosition="bottom-left"
           connectionLineType={ConnectionLineType.SmoothStep}
-          defaultEdgeOptions={{
-            type: 'smoothstep',
-            markerEnd: { 
-              type: MarkerType.ArrowClosed, 
-              color: '#6B7280',
-              width: 12,
-              height: 12
-            },
-              style: { 
-                strokeWidth: 2, 
-                stroke: '#6B7280',
-                strokeLinecap: 'round' as const
-              },
-            animated: false
+          connectionLineStyle={{
+            strokeWidth: 2.5,
+            stroke: '#3B82F6',
+            strokeDasharray: '5,5',
+            opacity: 0.6,
+            strokeLinecap: 'round'
           }}
+          // Configuraciones adicionales para suavidad
+          snapToGrid={false}
+          snapGrid={[15, 15]}
+          onlyRenderVisibleElements={false}
+            defaultEdgeOptions={{
+              type: 'smoothstep',
+              markerEnd: { 
+                type: MarkerType.ArrowClosed, 
+                color: '#6B7280',
+                width: 14,
+                height: 14,
+                strokeWidth: 1.5
+              },
+              style: { 
+                strokeWidth: 2.5, 
+                stroke: '#6B7280',
+                strokeLinecap: 'round' as const,
+                strokeDasharray: '0',
+                opacity: 0.9
+              },
+              animated: false,
+              // Configuración adicional para suavidad
+              data: {
+                label: ''
+              }
+            }}
           nodesDraggable={true}
           nodesConnectable={true}
           elementsSelectable={true}
