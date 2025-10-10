@@ -54,6 +54,7 @@ export default function DiagramsDashboard() {
     }).format(date);
   };
 
+
   return (
     <div className="min-h-screen bg-white">
       <div className="relative h-24 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-hidden shadow-sm border-b border-gray-200/60">
@@ -83,6 +84,7 @@ export default function DiagramsDashboard() {
               </p>
             </div>
         </div>
+
         
           {/* Elementos del lado derecho */}
           <div className="flex items-center space-x-4">
@@ -209,8 +211,8 @@ export default function DiagramsDashboard() {
                   ) : (
                     <div className="w-full h-full flex items-center justify-center relative">
                       <DiagramIcon 
-                        nodes={diagram.data?.nodes || []} 
-                        edges={diagram.data?.edges || []} 
+                        nodes={Array.isArray(diagram.data?.nodes) ? diagram.data.nodes : []} 
+                        edges={Array.isArray(diagram.data?.edges) ? diagram.data.edges : []} 
                         size={40}
                         className="text-gray-400"
                       />

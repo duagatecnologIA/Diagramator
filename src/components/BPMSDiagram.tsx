@@ -51,6 +51,7 @@ interface NodeData {
   color?: string;
   textColor?: string;
   size?: 'small' | 'medium' | 'large' | 'xlarge';
+  fontSize?: 'small' | 'medium' | 'large' | 'xlarge';
 }
 
 // Definir tipos de nodos personalizados
@@ -66,12 +67,20 @@ function PhaseNode({ data }: { data: NodeData }) {
   const color = data.color || '#3B82F6';
   const textColor = data.textColor || '#FFFFFF';
   const size = data.size || 'medium';
+  const fontSize = data.fontSize || 'medium';
   
   const sizeClasses = {
-    small: 'min-w-[200px] p-4 text-base',
-    medium: 'min-w-[240px] p-5 text-lg',
-    large: 'min-w-[280px] p-6 text-xl',
-    xlarge: 'min-w-[320px] p-7 text-2xl'
+    small: 'min-w-[200px] p-4',
+    medium: 'min-w-[240px] p-5',
+    large: 'min-w-[280px] p-6',
+    xlarge: 'min-w-[320px] p-7'
+  };
+
+  const fontSizes = {
+    small: 'text-xs',
+    medium: 'text-sm',
+    large: 'text-base',
+    xlarge: 'text-lg'
   };
   
   return (
@@ -98,9 +107,9 @@ function PhaseNode({ data }: { data: NodeData }) {
             <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm8 0a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1v-2z" clipRule="evenodd" />
           </svg>
         </div>
-        <h3 className="font-semibold text-sm leading-tight">{data.label}</h3>
+        <h3 className={`font-semibold ${fontSizes[fontSize]} leading-tight`}>{data.label}</h3>
         {data.description && (
-          <p className="text-xs opacity-90 mt-1 leading-relaxed">{data.description}</p>
+          <p className={`${fontSizes[fontSize === 'small' ? 'small' : 'small']} opacity-90 mt-1 leading-relaxed`}>{data.description}</p>
         )}
       </div>
       <Handle
@@ -121,12 +130,20 @@ function ActivityNode({ data }: { data: NodeData }) {
   const color = data.color || '#3B82F6';
   const textColor = data.textColor || '#1F2937';
   const size = data.size || 'medium';
+  const fontSize = data.fontSize || 'medium';
   
   const sizeClasses = {
-    small: 'min-w-[180px] p-3 text-sm',
-    medium: 'min-w-[200px] p-4 text-base',
-    large: 'min-w-[220px] p-5 text-lg',
-    xlarge: 'min-w-[240px] p-6 text-xl'
+    small: 'min-w-[180px] p-3',
+    medium: 'min-w-[200px] p-4',
+    large: 'min-w-[220px] p-5',
+    xlarge: 'min-w-[240px] p-6'
+  };
+
+  const fontSizes = {
+    small: 'text-xs',
+    medium: 'text-sm',
+    large: 'text-base',
+    xlarge: 'text-lg'
   };
   
   return (
@@ -158,9 +175,9 @@ function ActivityNode({ data }: { data: NodeData }) {
           </svg>
         </div>
         <div className="flex-1">
-          <h4 className="font-semibold text-gray-900 text-sm leading-tight">{data.label}</h4>
+          <h4 className={`font-semibold text-gray-900 ${fontSizes[fontSize]} leading-tight`}>{data.label}</h4>
           {data.description && (
-            <p className="text-xs text-gray-600 mt-1 leading-relaxed">{data.description}</p>
+            <p className={`${fontSizes[fontSize === 'small' ? 'small' : 'small']} text-gray-600 mt-1 leading-relaxed`}>{data.description}</p>
           )}
         </div>
       </div>
@@ -183,6 +200,7 @@ function DecisionNode({ data }: { data: NodeData }) {
   const color = data.color || '#F59E0B';
   const textColor = data.textColor || '#FFFFFF';
   const size = data.size || 'medium';
+  const fontSize = data.fontSize || 'medium';
   
   const sizeClasses = {
     small: 'w-[80px] h-[80px] p-3',
@@ -191,7 +209,7 @@ function DecisionNode({ data }: { data: NodeData }) {
     xlarge: 'w-[140px] h-[140px] p-6'
   };
   
-  const textSizes = {
+  const fontSizes = {
     small: 'text-xs',
     medium: 'text-sm',
     large: 'text-base',
@@ -222,7 +240,7 @@ function DecisionNode({ data }: { data: NodeData }) {
             <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>
         </div>
-        <p className={`${textSizes[size]} font-semibold leading-tight px-1`}>{data.label}</p>
+            <p className={`${fontSizes[fontSize]} font-semibold leading-tight px-1`}>{data.label}</p>
       </div>
       <Handle
         type="source"
@@ -260,12 +278,20 @@ function ProcessNode({ data }: { data: NodeData }) {
   const color = data.color || '#10B981';
   const textColor = data.textColor || '#FFFFFF';
   const size = data.size || 'medium';
+  const fontSize = data.fontSize || 'medium';
   
   const sizeClasses = {
-    small: 'min-w-[180px] p-3 text-sm',
-    medium: 'min-w-[200px] p-4 text-base',
-    large: 'min-w-[220px] p-5 text-lg',
-    xlarge: 'min-w-[240px] p-6 text-xl'
+    small: 'min-w-[180px] p-3',
+    medium: 'min-w-[200px] p-4',
+    large: 'min-w-[220px] p-5',
+    xlarge: 'min-w-[240px] p-6'
+  };
+
+  const fontSizes = {
+    small: 'text-xs',
+    medium: 'text-sm',
+    large: 'text-base',
+    xlarge: 'text-lg'
   };
   
   return (
@@ -297,9 +323,9 @@ function ProcessNode({ data }: { data: NodeData }) {
           </svg>
         </div>
         <div className="flex-1">
-          <h4 className="font-semibold text-gray-900 text-sm leading-tight">{data.label}</h4>
+          <h4 className={`font-semibold text-gray-900 ${fontSizes[fontSize]} leading-tight`}>{data.label}</h4>
           {data.description && (
-            <p className="text-xs text-gray-600 mt-1 leading-relaxed">{data.description}</p>
+            <p className={`${fontSizes[fontSize === 'small' ? 'small' : 'small']} text-gray-600 mt-1 leading-relaxed`}>{data.description}</p>
           )}
         </div>
       </div>
@@ -371,6 +397,7 @@ function BPMSDiagramInner({
   const [editColor, setEditColor] = React.useState('#3B82F6');
   const [editTextColor, setEditTextColor] = React.useState('#FFFFFF');
   const [editSize, setEditSize] = React.useState<'small' | 'medium' | 'large' | 'xlarge'>('medium');
+  const [editFontSize, setEditFontSize] = React.useState<'small' | 'medium' | 'large' | 'xlarge'>('medium');
   
   // Estado para edición de conexiones
   const [editingEdge, setEditingEdge] = React.useState<Edge | null>(null);
@@ -387,6 +414,9 @@ function BPMSDiagramInner({
   const [diagramTitle, setDiagramTitle] = React.useState(propDiagramTitle || 'Sin título');
   const [isEditingTitle, setIsEditingTitle] = React.useState(false);
   const [tempTitle, setTempTitle] = React.useState('');
+  
+  // Estado para Copy Prompt
+  const [copySuccess, setCopySuccess] = React.useState(false);
 
   // Actualizar título cuando cambie la prop
   React.useEffect(() => {
@@ -394,6 +424,115 @@ function BPMSDiagramInner({
       setDiagramTitle(propDiagramTitle);
     }
   }, [propDiagramTitle]);
+
+  // Función para copiar el prompt maestro
+  const handleCopyPrompt = React.useCallback(async () => {
+    const promptContent = `# 🧠 PROMPT MAESTRO — GENERADOR DE FLUJOS BPMN JSON VALIDADO
+
+📢 **Instrucción principal:**
+
+
+## 📄 INSTRUCCIONES Sobre el tema y numero de nodos.
+
+Explicar el tema, y numero de nodos.
+dar instrucciones adicionales si es necesario.
+
+Actúa como un generador de flujos BPMN en formato **JSON exacto** siguiendo la estructura validada que te proporcionaré a continuación.  
+Tu tarea es analizar un **texto descriptivo** o una **imagen** (si la incluyo) y crear un **diagrama de flujo** basado en ese contenido.  
+La salida **debe respetar la estructura y formato JSON validados**, sin agregar ningún texto adicional fuera del bloque JSON.  
+
+---
+
+## ⚙️ REGLAS OBLIGATORIAS
+
+1. **No cambies la estructura JSON base.**  
+   Todos los campos (\`id\`, \`type\`, \`position\`, \`data\`, \`style\`, \`markerEnd\`, etc.) deben respetarse exactamente como están definidos.
+
+2. **Solo puedes modificar:**
+   - Los textos (\`label\`, \`description\`).
+   - Los IDs (de forma consistente, como \`phase1\`, \`activity1-1\`, etc.).
+   - Las posiciones (\`x\`, \`y\`) si el flujo tiene más o menos nodos.
+   - Los nombres de fases, actividades, decisiones y procesos, según el contenido que se te dé.
+
+3. **Tipos de nodos válidos:**
+   - \`"phase"\` → Fases principales del flujo  
+   - \`"activity"\` → Acciones o tareas  
+   - \`"decision"\` → Puntos de bifurcación o evaluación  
+   - \`"process"\` → Resultados o salidas finales
+
+4. **Colores y tipos de edges (conexiones):**
+   - Azul \`#3B82F6\` → Flujo normal  
+   - Gris \`#6B7280\` → Enlaces secundarios  
+   - Verde \`#10B981\` → Decisión afirmativa (Sí)  
+   - Rojo \`#EF4444\` → Decisión negativa (No)
+
+5. **La salida debe ser SOLO el JSON.**  
+   No agregues explicaciones, comentarios, ni texto antes o después.
+
+6. **El número de nodos puede variar.**  
+   Puedes generar flujos con 3, 5, 10 o más nodos, siempre respetando la estructura y manteniendo la coherencia visual en las posiciones (\`x\`, \`y\`).
+
+---
+
+## 📄 ESTRUCTURA DE SALIDA OBLIGATORIA
+
+El formato final debe ser:
+
+\`\`\`json
+{
+  "nodes": [...],
+  "edges": [...],
+  "metadata": {
+    "name": "BPMN Diagram",
+    "created": "YYYY-MM-DDTHH:MM:SS.sssZ",
+    "version": "1.0"
+  }
+}
+
+
+
+{
+  "nodes": [
+    {
+      "id": "phase1",
+      "type": "phase",
+      "position": {"x": 400, "y": 50},
+      "data": {
+        "label": "FASE 1: PRE-ARRIBO",
+        "description": "Orquestación de declaraciones y validaciones previas",
+        "icon": null
+      },
+      "selected": false,
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1-1",
+      "source": "phase1",
+      "target": "activity1-1",
+      "type": "smoothstep",
+      "style": {"stroke": "#3B82F6", "strokeWidth": 2},
+      "markerEnd": {"type": "arrowclosed", "color": "#3B82F6"},
+      "selected": false
+    }
+  ],
+  "metadata": {
+    "name": "BPMN Diagram",
+    "created": "2025-10-10T02:10:15.339Z",
+    "version": "1.0"
+  }
+}
+\`\`\``;
+
+    try {
+      await navigator.clipboard.writeText(promptContent);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      alert('Error al copiar el prompt');
+    }
+  }, []);
 
   // Función para guardar el estado actual en el historial
   const saveToHistory = useCallback((newNodes: Node[], newEdges: Edge[]) => {
@@ -613,6 +752,7 @@ function BPMSDiagramInner({
       setEditColor(node.data.color || defaultColor);
       setEditTextColor(node.data.textColor || defaultTextColor);
       setEditSize(node.data.size || 'medium');
+      setEditFontSize(node.data.fontSize || 'medium');
     }
   }, [toolMode]);
 
@@ -632,6 +772,7 @@ function BPMSDiagramInner({
             color: editColor,
             textColor: editTextColor,
             size: editSize,
+            fontSize: editFontSize,
           }
         };
       }
@@ -652,7 +793,8 @@ function BPMSDiagramInner({
     setEditColor('#3B82F6');
     setEditTextColor('#FFFFFF');
     setEditSize('medium');
-  }, [editingNode, editLabel, editDescription, editColor, editTextColor, editSize, nodes, edges, setNodes, saveToHistory]);
+    setEditFontSize('medium');
+  }, [editingNode, editLabel, editDescription, editColor, editTextColor, editSize, editFontSize, nodes, edges, setNodes, saveToHistory]);
 
   // Cancelar edición
   const handleCancelEdit = useCallback(() => {
@@ -662,6 +804,7 @@ function BPMSDiagramInner({
     setEditColor('#3B82F6');
     setEditTextColor('#FFFFFF');
     setEditSize('medium');
+    setEditFontSize('medium');
   }, []);
 
   // Manejar doble click en conexiones para editar etiqueta
@@ -1737,6 +1880,31 @@ function BPMSDiagramInner({
               )}
           </div>
         </div>
+
+          {/* Botón Copy Prompt - Centro */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center">
+            <button
+              onClick={handleCopyPrompt}
+              className="px-4 py-2 bg-white/40 backdrop-blur-xl border border-white/60 rounded-xl text-sm text-gray-800 hover:bg-white/50 hover:border-white/70 hover:scale-105 transition-all duration-300 flex items-center gap-2 shadow-2xl shadow-black/20 font-medium"
+              title="Copiar prompt maestro para LLM"
+            >
+              {copySuccess ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  ¡Copiado!
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  Copy Prompt
+                </>
+              )}
+            </button>
+          </div>
         
           {/* Elementos del lado derecho */}
           <div className="flex items-center space-x-4">
@@ -2491,6 +2659,82 @@ function BPMSDiagramInner({
                       </div>
                     </div>
 
+                    {/* Tamaño de letra */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Tamaño de letra
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => setEditFontSize('small')}
+                          className={`p-2 rounded-lg border-2 transition-all text-left ${
+                            editFontSize === 'small' 
+                              ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="text-xs">Aa</div>
+                            <div>
+                              <div className="font-medium text-xs">Pequeña</div>
+                              <div className="text-xs opacity-75">Compacta</div>
+                            </div>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => setEditFontSize('medium')}
+                          className={`p-2 rounded-lg border-2 transition-all text-left ${
+                            editFontSize === 'medium' 
+                              ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="text-sm">Aa</div>
+                            <div>
+                              <div className="font-medium text-xs">Mediana</div>
+                              <div className="text-xs opacity-75">Estándar</div>
+                            </div>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => setEditFontSize('large')}
+                          className={`p-2 rounded-lg border-2 transition-all text-left ${
+                            editFontSize === 'large' 
+                              ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="text-base">Aa</div>
+                            <div>
+                              <div className="font-medium text-xs">Grande</div>
+                              <div className="text-xs opacity-75">Prominente</div>
+                            </div>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => setEditFontSize('xlarge')}
+                          className={`p-2 rounded-lg border-2 transition-all text-left ${
+                            editFontSize === 'xlarge' 
+                              ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="text-lg">Aa</div>
+                            <div>
+                              <div className="font-medium text-xs">Extra Grande</div>
+                              <div className="text-xs opacity-75">Destacada</div>
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+
                     {/* Vista previa */}
                     <div className="bg-gray-50 rounded-lg p-4 border">
                       <div className="text-sm text-gray-600 mb-3 font-medium">Vista previa del nodo:</div>
@@ -2532,10 +2776,10 @@ function BPMSDiagramInner({
                         >
                           <div className="text-center">
                             <div className={`font-bold ${
-                              editSize === 'small' ? 'text-xs' :
-                              editSize === 'medium' ? 'text-sm' :
-                              editSize === 'large' ? 'text-base' :
-                              editSize === 'xlarge' ? 'text-lg' :
+                              editFontSize === 'small' ? 'text-xs' :
+                              editFontSize === 'medium' ? 'text-sm' :
+                              editFontSize === 'large' ? 'text-base' :
+                              editFontSize === 'xlarge' ? 'text-lg' :
                               'text-sm'
                             }`}>
                               {editingNode?.type === 'phase' && 'FASE'}

@@ -1,198 +1,345 @@
-# 🎨 Diagramator - Diagramas de Procesos de Negocio Inteligentes
+# Diagramator
 
-> **Sistema completo de creación de diagramas de procesos de negocio con autenticación, guardado en tiempo real y colaboración.**
+Sistema de diagramas de procesos de negocio con integración LLM y base de datos.
 
-## 📋 Tabla de Contenidos
-
-- [🚀 Inicio Rápido](#-inicio-rápido)
-- [🔧 Configuración de Base de Datos](#-configuración-de-base-de-datos)
-- [🚨 Corrección de Problemas](#-corrección-de-problemas)
-- [📁 Estructura del Proyecto](#-estructura-del-proyecto)
-- [🎯 Funcionalidades](#-funcionalidades)
-- [⌨️ Atajos de Teclado](#️-atajos-de-teclado)
-- [🔐 Autenticación](#-autenticación)
-- [💾 Sistema de Guardado](#-sistema-de-guardado)
-- [📊 Base de Datos](#-base-de-datos)
-- [🛠️ Desarrollo](#️-desarrollo)
-
-## 🚀 Inicio Rápido
-
-### Prerrequisitos
-- Node.js 18+ 
-- npm o yarn
-- Cuenta de Supabase
+## 🚀 Uso Rápido
 
 ### Instalación
-
-1. **Clonar el repositorio**
-```bash
-git clone <repository-url>
-cd Diagramator/Diagramator
-```
-
-2. **Instalar dependencias**
 ```bash
 npm install
-```
-
-3. **Configurar variables de entorno**
-```bash
-# Crear archivo .env.local
-NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
-```
-
-4. **Configurar base de datos** (ver sección [🔧 Configuración de Base de Datos](#-configuración-de-base-de-datos))
-
-5. **Ejecutar en desarrollo**
-```bash
 npm run dev
 ```
 
-6. **Abrir en el navegador**
+### Acceso
+- **Desarrollo**: http://localhost:3000
+- **Dashboard**: http://localhost:3000/dashboard
+- **Editor**: http://localhost:3000/editor/[id]
+
+## 📋 Formatos JSON
+
+> ✅ **FORMATO VALIDADO**: Ver [FORMATO_FINAL_VALIDADO.md](./FORMATO_FINAL_VALIDADO.md) - ⭐ **PROBADO EN CANVAS**
+> 
+> 🎯 **Estructura Técnica**: Ver [ESTRUCTURA_JSON_CORRECTA.md](./ESTRUCTURA_JSON_CORRECTA.md) - Revisado del código fuente
+
+## 📤 Formato de Salida (Exportación)
+
+### Estructura Básica
+```json
+{
+  "nodes": [
+    {
+      "id": "node-1",
+      "type": "phase|activity|decision|process",
+      "position": { "x": 100, "y": 100 },
+      "data": {
+        "label": "Título del nodo",
+        "description": "Descripción opcional",
+        "color": "#3B82F6",
+        "textColor": "#FFFFFF",
+        "size": "small|medium|large|xlarge"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "node-1",
+      "target": "node-2",
+      "type": "smoothstep",
+      "label": "Etiqueta opcional",
+      "style": {
+        "stroke": "#6B7280",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#6B7280"
+      }
+    }
+  ],
+  "metadata": {
+    "title": "Nombre del diagrama",
+    "created": "2024-01-15T10:30:00.000Z",
+    "version": "1.0"
+  }
+}
 ```
-http://localhost:3000
+
+### Tipos de Nodos
+
+#### 1. Fase (`phase`)
+```json
+{
+  "id": "phase-1",
+  "type": "phase",
+  "position": { "x": 100, "y": 100 },
+  "data": {
+    "label": "Fase Principal",
+    "description": "Descripción de la fase",
+    "color": "#3B82F6",
+    "textColor": "#FFFFFF",
+    "size": "medium"
+  }
+}
 ```
 
-## 🔧 Configuración de Base de Datos
+#### 2. Actividad (`activity`)
+```json
+{
+  "id": "activity-1",
+  "type": "activity",
+  "position": { "x": 200, "y": 200 },
+  "data": {
+    "label": "Nueva Actividad",
+    "description": "Descripción de la actividad",
+    "color": "#3B82F6",
+    "textColor": "#1F2937",
+    "size": "medium"
+  }
+}
+```
 
-### Opción 1: Instalación Completa (Recomendada)
+#### 3. Decisión (`decision`)
+```json
+{
+  "id": "decision-1",
+  "type": "decision",
+  "position": { "x": 300, "y": 300 },
+  "data": {
+    "label": "¿Condición?",
+    "color": "#F59E0B",
+    "textColor": "#FFFFFF",
+    "size": "medium"
+  }
+}
+```
 
+#### 4. Proceso (`process`)
+```json
+{
+  "id": "process-1",
+  "type": "process",
+  "position": { "x": 400, "y": 400 },
+  "data": {
+    "label": "Proceso Final",
+    "description": "Descripción del proceso",
+    "color": "#10B981",
+    "textColor": "#FFFFFF",
+    "size": "medium"
+  }
+}
+```
+
+### Conexiones (Edges)
+```json
+{
+  "id": "edge-1",
+  "source": "node-1",
+  "target": "node-2",
+  "type": "smoothstep",
+  "label": "Sí",
+  "style": {
+    "stroke": "#10B981",
+    "strokeWidth": 2
+  },
+  "markerEnd": {
+    "type": "arrowclosed",
+    "color": "#10B981"
+  },
+  "labelStyle": {
+    "fill": "#10B981",
+    "fontWeight": 600
+  }
+}
+```
+
+## 🤖 Integración con LLMs
+
+### Estructura para Inyección LLM
+```json
+{
+  "diagram_type": "business_process",
+  "title": "Proceso de Ventas",
+  "description": "Flujo completo del proceso de ventas",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "phase",
+      "label": "Inicio del Proceso",
+      "description": "Punto de entrada del proceso de ventas",
+      "position": { "x": 0, "y": 0 }
+    },
+    {
+      "id": "qualify",
+      "type": "activity",
+      "label": "Calificar Prospecto",
+      "description": "Evaluar si el prospecto cumple criterios",
+      "position": { "x": 200, "y": 0 }
+    },
+    {
+      "id": "decision",
+      "type": "decision",
+      "label": "¿Cumple criterios?",
+      "position": { "x": 400, "y": 0 }
+    }
+  ],
+  "edges": [
+    {
+      "source": "start",
+      "target": "qualify",
+      "label": "Iniciar"
+    },
+    {
+      "source": "qualify",
+      "target": "decision",
+      "label": "Evaluar"
+    }
+  ]
+}
+```
+
+### Colores por Defecto
+```json
+{
+  "phase": "#3B82F6",
+  "activity": "#3B82F6", 
+  "decision": "#F59E0B",
+  "process": "#10B981"
+}
+```
+
+### Tamaños Disponibles
+- `small`: Compacto
+- `medium`: Estándar (recomendado)
+- `large`: Prominente
+- `xlarge`: Destacado
+
+## 🗄️ Base de Datos
+
+### Tabla: `diagrams`
 ```sql
--- Ejecutar en Supabase SQL Editor
--- Copiar y pegar todo el contenido de: scripts/supabase-setup.sql
+CREATE TABLE diagrams (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  description TEXT,
+  data JSONB NOT NULL,
+  user_id UUID REFERENCES auth.users(id),
+  is_public BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
 ```
 
-### Opción 2: Instalación por Partes
+### Inserción desde LLM
+```javascript
+// Ejemplo de inserción
+const diagramData = {
+  title: "Proceso Generado por LLM",
+  description: "Diagrama creado automáticamente",
+  data: {
+    nodes: [...],
+    edges: [...],
+    metadata: {...}
+  },
+  is_public: false
+};
 
-Si prefieres ejecutar paso a paso:
-
-1. **Crear tablas**
-```sql
--- Ejecutar: scripts/supabase-setup-parte1-tablas.sql
+await supabase.from('diagrams').insert(diagramData);
 ```
 
-2. **Configurar índices y RLS**
-```sql
--- Ejecutar: scripts/supabase-setup-parte2-indices-rls.sql
+## 📤 Exportación
+
+### Formatos Soportados
+- **PNG**: Imagen de alta resolución
+- **SVG**: Vector escalable
+- **JSON**: Datos completos del diagrama
+
+### Nombres de Archivo
+```
+{titulo_limpio}_{fecha}_{hora}.{extension}
+```
+Ejemplo: `proceso_ventas_2024-01-15_14-30-25.png`
+
+## 🔧 API Endpoints
+
+### Crear Diagrama
+```javascript
+POST /api/diagrams
+{
+  "title": "Mi Diagrama",
+  "data": { /* JSON del diagrama */ }
+}
 ```
 
-3. **Crear funciones y triggers**
-```sql
--- Ejecutar: scripts/supabase-setup-parte3-funciones-triggers.sql
+### Obtener Diagrama
+```javascript
+GET /api/diagrams/{id}
 ```
 
-4. **Verificar instalación**
-```sql
--- Ejecutar: scripts/verificar-instalacion.sql
+### Actualizar Diagrama
+```javascript
+PUT /api/diagrams/{id}
+{
+  "data": { /* JSON actualizado */ }
+}
 ```
 
-## 🚨 Corrección de Problemas
+## 🎯 Casos de Uso LLM
 
-### Error: "infinite recursion detected in policy for relation 'diagrams'"
+### 1. Generación Automática
+```python
+# Python ejemplo
+import json
 
-**Síntomas:**
-- Error 500 al intentar guardar
-- Mensaje "Error al guardar" en el banner
-- Console muestra recursión infinita en RLS
-
-**Solución:**
-```sql
--- Ejecutar en Supabase SQL Editor
--- Copiar y pegar todo el contenido de: scripts/script-correccion-completa.sql
+def generate_process_diagram(process_description):
+    # LLM genera la estructura
+    diagram = {
+        "nodes": [...],
+        "edges": [...],
+        "metadata": {...}
+    }
+    
+    # Insertar en base de datos
+    response = supabase.table('diagrams').insert({
+        'title': 'Diagrama Generado',
+        'data': diagram
+    }).execute()
+    
+    return response.data[0]['id']
 ```
 
-**Verificación:**
-```sql
--- Ejecutar después de la corrección
--- Copiar y pegar todo el contenido de: scripts/verificar-base-datos.sql
+### 2. Modificación Inteligente
+```javascript
+// JavaScript ejemplo
+async function modifyDiagram(diagramId, modificationRequest) {
+    // Obtener diagrama actual
+    const { data: diagram } = await supabase
+        .from('diagrams')
+        .select('data')
+        .eq('id', diagramId)
+        .single();
+    
+    // LLM modifica la estructura
+    const modifiedData = await llmModify(diagram.data, modificationRequest);
+    
+    // Actualizar en base de datos
+    await supabase
+        .from('diagrams')
+        .update({ data: modifiedData })
+        .eq('id', diagramId);
+}
 ```
 
-## 📁 Estructura del Proyecto
+## 📝 Notas Importantes
 
-```
-Diagramator/
-├── scripts/                          # Scripts de base de datos
-│   ├── supabase-setup.sql            # Instalación completa
-│   ├── supabase-setup-parte1-tablas.sql
-│   ├── supabase-setup-parte2-indices-rls.sql
-│   ├── supabase-setup-parte3-funciones-triggers.sql
-│   ├── script-correccion-completa.sql # Corrección de problemas
-│   ├── verificar-instalacion.sql     # Verificación básica
-│   └── verificar-base-datos.sql      # Verificación completa
-├── src/
-│   ├── app/                          # Páginas Next.js
-│   ├── components/                   # Componentes React
-│   ├── contexts/                     # Contextos React
-│   ├── hooks/                        # Hooks personalizados
-│   ├── lib/                          # Utilidades
-│   └── services/                     # Servicios
-├── package.json                      # Dependencias y scripts
-└── README.md                         # Este archivo
-```
+1. **IDs únicos**: Usar UUIDs o prefijos únicos para nodos
+2. **Posiciones**: Coordenadas x,y en píxeles
+3. **Colores**: Formato hexadecimal (#RRGGBB)
+4. **Validación**: Verificar estructura antes de insertar
+5. **Backup**: Exportar JSON antes de modificaciones masivas
 
-## ⌨️ Atajos de Teclado
+## 🔗 Enlaces Útiles
 
-### Guardado
-- `Ctrl+S` / `⌘+S`: **Guardar en Supabase** (con autenticación)
-
-### Navegación y Selección
-- `Ctrl+A` / `⌘+A`: Seleccionar todo
-- `Esc`: Volver al modo selección
-- `Delete` / `Backspace`: Eliminar selección
-
-### Edición
-- `Ctrl+C` / `⌘+C`: Copiar
-- `Ctrl+V` / `⌘+V`: Pegar
-- `Ctrl+D` / `⌘+D`: Duplicar
-- `Ctrl+Z` / `⌘+Z`: Deshacer
-- `Ctrl+Y` / `⌘+Y`: Rehacer
-
-## 💾 Sistema de Guardado
-
-### Estados de Guardado
-
-| Estado | Color | Descripción |
-|--------|-------|-------------|
-| `saved` | 🟢 Verde | Guardado correctamente |
-| `saving` | 🔵 Azul | Guardando... |
-| `unsaved` | 🟠 Naranja | Cambios sin guardar |
-| `error` | 🔴 Rojo | Error al guardar |
-
-### Auto-guardado
-- **Intervalo**: Cada 30 segundos
-- **Trigger**: Cambios en el diagrama
-- **Feedback**: Indicador visual en banner
-
-## 🛠️ Desarrollo
-
-### Scripts Disponibles
-
-```bash
-npm run dev          # Servidor de desarrollo
-npm run build        # Construir para producción
-npm run start        # Servidor de producción
-npm run lint         # Linter
-```
-
-### Tecnologías Utilizadas
-
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **UI**: Tailwind CSS, Lucide React
-- **Diagramas**: ReactFlow 11
-- **Backend**: Supabase (PostgreSQL, Auth, RLS)
-
----
-
-## 🎉 ¡Listo para Usar!
-
-**Diagramator está completamente configurado y listo para crear diagramas de procesos de negocio profesionales.**
-
-### Próximos Pasos:
-
-1. ✅ **Configurar base de datos** con los scripts
-2. ✅ **Ejecutar corrección** si hay problemas
-3. ✅ **Crear tu primer diagrama** con Ctrl+S
-4. ✅ **Compartir con tu equipo** usando colaboración
-
-**¡Disfruta creando diagramas inteligentes!** 🎨✨
+- [React Flow Documentation](https://reactflow.dev/learn)
+- [Supabase Documentation](https://supabase.com/docs)
+- [JSON Schema Validator](https://www.jsonschemavalidator.net/)
