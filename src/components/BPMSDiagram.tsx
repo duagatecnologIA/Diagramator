@@ -1329,18 +1329,51 @@ function BPMSDiagramInner() {
 
   return (
     <div className="w-full h-screen">
-      <div className="h-20 bg-gradient-to-r from-blue-50 via-slate-50 to-blue-50 text-gray-800 flex items-center justify-between px-8 shadow-sm border-b border-gray-200">
-        <div className="flex flex-col">
-          <h1 className="text-3xl font-bold text-gray-800 tracking-wide">
-            DIAGRAMATOR
-          </h1>
-          <p className="text-sm text-gray-600 font-medium mt-1">
-            Diagrama del proceso de negocio
-          </p>
+      <div className="relative h-24 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-hidden shadow-sm border-b border-gray-200/60">
+        {/* Textura sutil */}
+        <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(circle_at_1px_1px,rgba(59,130,246,0.3)_1px,transparent_0)] bg-[length:20px_20px]"></div>
+        
+        {/* Contenido principal */}
+        <div className="relative flex items-center justify-between px-8 h-full">
+          <div className="flex items-center space-x-6">
+            {/* Logo/Icono */}
+            <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            
+            {/* Título y subtítulo */}
+            <div className="flex flex-col">
+              <h1 className="text-4xl font-light text-gray-900 tracking-tight leading-none">
+                <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent font-medium">
+                  Diagramator
+                </span>
+              </h1>
+              <p className="text-sm text-gray-500 font-normal mt-1 tracking-wide">
+                Diagramas de procesos de negocio inteligentes
+              </p>
+            </div>
+          </div>
+          
+          {/* Elementos decorativos del lado derecho */}
+          <div className="hidden md:flex items-center space-x-4 opacity-60">
+            <div className="flex space-x-1">
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse delay-100"></div>
+              <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse delay-200"></div>
+            </div>
+            <div className="text-xs text-gray-400 font-mono">
+              v1.0
+            </div>
+          </div>
         </div>
+        
+        {/* Línea decorativa inferior */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent"></div>
       </div>
       <div 
-        className="h-[calc(100vh-5rem)] relative" 
+        className="h-[calc(100vh-6rem)] relative" 
         onKeyDown={onKeyDown} 
         tabIndex={0}
         style={{ cursor: getCursorStyle() }}
