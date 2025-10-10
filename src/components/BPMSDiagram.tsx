@@ -1271,6 +1271,175 @@ function BPMSDiagramInner() {
     }
   }, [nodes, edges, setNodes, setEdges, saveToHistory, validateNodes, validateEdges]);
 
+  // Función para ordenar nodos automáticamente con algoritmo inteligente
+  const autoArrangeNodes = useCallback(() => {
+    if (nodes.length === 0) return;
+
+    // Guardar en el historial antes del cambio
+    saveToHistory(nodes, edges);
+
+    // 1. Análisis de conectividad y niveles
+    const nodeMap = new Map(nodes.map(node => [node.id, { ...node, level: -1, incoming: 0, outgoing: 0, position: node.position || { x: 0, y: 0 } }]));
+    
+    // Algoritmo de layout jerárquico mejorado (inspirado en n8n)
+    const layoutNodes = () => {
+      
+      // Calcular conexiones entrantes y salientes
+      edges.forEach(edge => {
+        const sourceNode = nodeMap.get(edge.source);
+        const targetNode = nodeMap.get(edge.target);
+        if (sourceNode) sourceNode.outgoing++;
+        if (targetNode) targetNode.incoming++;
+      });
+
+      // 2. Determinar niveles jerárquicos (BFS desde nodos sin entrada)
+      const queue = Array.from(nodeMap.values()).filter(node => node.incoming === 0);
+      let level = 0;
+      
+      while (queue.length > 0) {
+        const currentLevel = queue.splice(0, queue.length);
+        currentLevel.forEach(node => {
+          node.level = level;
+          
+          // Agregar nodos conectados al siguiente nivel
+          const connectedEdges = edges.filter(edge => edge.source === node.id);
+          connectedEdges.forEach(edge => {
+            const connectedNode = nodeMap.get(edge.target);
+            if (connectedNode && connectedNode.level === -1 && !queue.includes(connectedNode)) {
+              queue.push(connectedNode);
+            }
+          });
+        });
+        level++;
+      }
+
+      // 3. Asignar niveles a nodos no conectados
+      Array.from(nodeMap.values()).forEach(node => {
+        if (node.level === -1) {
+          node.level = level++;
+        }
+      });
+
+      // 4. Configuración de layout HORIZONTAL (izquierda a derecha)
+      const maxLevel = Math.max(...Array.from(nodeMap.values()).map(n => n.level));
+      const levelWidth = 350;  // Espacio horizontal entre columnas
+      const nodeHeight = 150;  // Espacio vertical entre nodos
+      const startX = 100;
+      const startY = 80;
+
+      // 5. Posicionamiento HORIZONTAL con centrado óptimo (izquierda → derecha)
+      const updatedNodes = nodes.map(node => {
+        const nodeData = nodeMap.get(node.id);
+        if (!nodeData) return node;
+        
+        const level = nodeData.level;
+        
+        // Contar nodos en el mismo nivel (columna vertical)
+        const nodesInLevel = Array.from(nodeMap.values()).filter(n => n.level === level);
+        const nodeIndex = nodesInLevel.findIndex(n => n.id === node.id);
+        const totalNodesInLevel = nodesInLevel.length;
+        
+        // Calcular posición X (columna según el nivel) - HORIZONTAL
+        const levelCenterX = startX + (level * levelWidth);
+        
+        // Calcular centro del canvas vertical
+        const canvasVerticalCenter = 400;
+        
+        // Calcular altura total del nivel para centrar verticalmente
+        const totalHeight = (totalNodesInLevel - 1) * nodeHeight;
+        const levelStartY = canvasVerticalCenter - (totalHeight / 2);
+        
+        let newPosition;
+        
+        // Intentar alinear hijos con sus padres para líneas más rectas HORIZONTAL
+        const parentEdges = edges.filter(edge => edge.target === node.id);
+        const childEdges = edges.filter(edge => edge.source === node.id);
+        
+        if (parentEdges.length === 1) {
+          // Si tiene un solo padre, intentar alinearse con él verticalmente
+          const parentNode = nodeMap.get(parentEdges[0].source);
+          if (parentNode && parentNode.position) {
+            newPosition = {
+              x: levelCenterX,
+              y: parentNode.position.y  // Misma altura Y que el padre
+            };
+          } else {
+            // Centrado por defecto
+            newPosition = {
+              x: levelCenterX,
+              y: levelStartY + (nodeIndex * nodeHeight)
+            };
+          }
+        } else if (parentEdges.length > 1) {
+          // Si tiene múltiples padres, posicionarse en el centro vertical de ellos
+          const parentPositions = parentEdges
+            .map(edge => nodeMap.get(edge.source))
+            .filter(parent => parent && parent.position)
+            .map(parent => parent!.position.y);  // Usar Y en lugar de X
+          
+          if (parentPositions.length > 0) {
+            const avgParentY = parentPositions.reduce((a, b) => a + b, 0) / parentPositions.length;
+            newPosition = {
+              x: levelCenterX,
+              y: avgParentY
+            };
+          } else {
+            newPosition = {
+              x: levelCenterX,
+              y: levelStartY + (nodeIndex * nodeHeight)
+            };
+          }
+        } else {
+          // Sin padres, usar distribución centrada verticalmente
+          newPosition = {
+            x: levelCenterX,
+            y: levelStartY + (nodeIndex * nodeHeight)
+          };
+        }
+
+        // 6. Aplicar espaciado mínimo y evitar superposiciones VERTICAL
+        const minDistance = 120;
+        let finalPosition = { ...newPosition };
+        
+        // Verificar superposiciones con otros nodos del mismo nivel (columna)
+        const nodesInLevelWithPositions = Array.from(nodeMap.values())
+          .filter(n => n.id !== node.id && n.level === level && n.position);
+        
+        nodesInLevelWithPositions.forEach(nearby => {
+          const distance = Math.sqrt(
+            Math.pow(finalPosition.x - nearby.position.x, 2) + 
+            Math.pow(finalPosition.y - nearby.position.y, 2)
+          );
+          
+          if (distance < minDistance) {
+            // Mover VERTICALMENTE para evitar superposición
+            const direction = finalPosition.y >= nearby.position.y ? 1 : -1;
+            finalPosition.y += direction * (minDistance - distance);
+          }
+        });
+        
+        // Actualizar posición en el mapa para siguientes iteraciones
+        nodeData.position = finalPosition;
+
+        return {
+          ...node,
+          position: finalPosition
+        };
+      });
+
+      return updatedNodes;
+    };
+
+    // Aplicar el layout
+    const arrangedNodes = layoutNodes();
+    setNodes(arrangedNodes);
+    
+    // Mostrar notificación de éxito
+    const maxLevel = Math.max(...Array.from(nodeMap.values()).map(n => n.level));
+    alert(`✅ Nodos organizados automáticamente: ${nodes.length} nodos en ${maxLevel + 1} niveles`);
+    
+  }, [nodes, edges, setNodes, saveToHistory]);
+
   // Obtener el estilo del cursor según el modo de herramienta
   const getCursorStyle = () => {
     switch (toolMode) {
@@ -1470,7 +1639,10 @@ function BPMSDiagramInner() {
             showInteractive={true}
             showFitView={true}
             showZoom={true}
+            position="bottom-left"
           />
+          
+          {/* MiniMap - Posición inferior derecha */}
           <MiniMap 
             nodeColor={(node) => {
               switch (node.type) {
@@ -1488,7 +1660,8 @@ function BPMSDiagramInner() {
             }}
             nodeBorderRadius={2}
             position="bottom-right"
-            className="bg-white border-2 border-gray-300 rounded-lg"
+            className="bg-white border-2 border-gray-300 rounded-lg shadow-lg"
+            style={{ marginBottom: '8px', marginRight: '8px' }}
           />
           
           {/* Panel de Herramientas - Izquierda */}
@@ -1583,13 +1756,25 @@ function BPMSDiagramInner() {
 
             <div className="border-t border-gray-200 my-2"></div>
 
+            {/* Botón Ordenar */}
+            <button
+              onClick={autoArrangeNodes}
+              className="w-full px-3 py-2 rounded transition-colors text-sm font-medium flex items-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100"
+              title="Ordenar nodos automáticamente (simétrico)"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              Ordenar
+            </button>
+
             {/* Botón Eliminar */}
             <button
               onClick={() => setToolMode('delete')}
               className={`w-full px-3 py-2 rounded transition-colors text-sm font-medium flex items-center gap-2 ${
                 toolMode === 'delete' 
                   ? 'bg-red-600 text-white' 
-                  : 'bg-red-50 text-red-700 hover:bg-red-100'
+                  : 'bg-red-100 text-red-800 hover:bg-red-200'
               }`}
               title="Modo Eliminar"
             >
