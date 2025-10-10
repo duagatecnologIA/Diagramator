@@ -1883,27 +1883,32 @@ El formato final debe ser:
 
           {/* Botón Copy Prompt - Centro */}
           <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center">
-            <button
-              onClick={handleCopyPrompt}
-              className="px-4 py-2 bg-white/40 backdrop-blur-xl border border-white/60 rounded-xl text-sm text-gray-800 hover:bg-white/50 hover:border-white/70 hover:scale-105 transition-all duration-300 flex items-center gap-2 shadow-2xl shadow-black/20 font-medium"
-              title="Copiar prompt maestro para LLM"
-            >
-              {copySuccess ? (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  ¡Copiado!
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  Copy Prompt
-                </>
-              )}
-            </button>
+            <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-md border border-gray-200/50 p-0.5">
+              <div className="flex items-center gap-2 px-2 py-1">
+                {/* Radio button style indicator */}
+                <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
+                  copySuccess 
+                    ? 'bg-pink-500 border-pink-500' 
+                    : 'bg-white border-pink-300 hover:border-pink-400'
+                }`}>
+                  {copySuccess && (
+                    <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                  )}
+                </div>
+                
+                <button
+                  onClick={handleCopyPrompt}
+                  className="text-gray-800 hover:text-gray-900 transition-colors duration-200 text-xs font-medium"
+                  title="Copiar prompt maestro para LLM"
+                >
+                  {copySuccess ? (
+                    <>¡Copiado!</>
+                  ) : (
+                    <>Copy Prompt for LLM</>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         
           {/* Elementos del lado derecho */}
