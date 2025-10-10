@@ -1216,7 +1216,8 @@ function BPMSDiagramInner() {
       onCopy();
     } else if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
       event.preventDefault();
-      onPaste();
+      // Intentar pegar JSON primero, si falla usar el pegado normal
+      handlePasteJSON().catch(() => onPaste());
     } else if ((event.ctrlKey || event.metaKey) && event.key === 'd') {
       event.preventDefault();
       onDuplicate();
@@ -1229,6 +1230,46 @@ function BPMSDiagramInner() {
       setToolMode('select');
     }
   }, [undo, redo, onDelete, editingNode, editingEdge, handleSaveEdit, handleCancelEdit, handleSaveEdgeEdit, handleCancelEdgeEdit, onCopy, onPaste, onDuplicate, onExportJSON, onSelectAll]);
+
+  // Función para manejar el pegado de JSON
+  const handlePasteJSON = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      
+      // Verificar si el texto parece ser JSON
+      if (text.trim().startsWith('{') && text.trim().endsWith('}')) {
+        const jsonData = JSON.parse(text);
+        
+        // Verificar si tiene la estructura esperada
+        if (jsonData.nodes && jsonData.edges) {
+          // Validar y limpiar los nodos
+          const validNodes = validateNodes(jsonData.nodes);
+          const validEdges = validateEdges(jsonData.edges);
+          
+          if (validNodes.length > 0 || validEdges.length > 0) {
+            // Guardar en el historial antes del cambio
+            saveToHistory(nodes, edges);
+            
+            // Aplicar los datos
+            setNodes(validNodes);
+            setEdges(validEdges);
+            
+            // Mostrar notificación de éxito
+            alert(`✅ JSON importado exitosamente: ${validNodes.length} nodos, ${validEdges.length} conexiones`);
+          } else {
+            alert('⚠️ El JSON no contiene nodos o conexiones válidos');
+          }
+        } else {
+          alert('⚠️ El JSON no tiene la estructura correcta. Debe contener "nodes" y "edges"');
+        }
+      } else {
+        alert('⚠️ El contenido del portapapeles no parece ser un JSON válido');
+      }
+    } catch (error) {
+      console.error('Error al procesar JSON:', error);
+      alert('❌ Error al procesar el JSON. Verifica que sea válido y tenga la estructura correcta');
+    }
+  }, [nodes, edges, setNodes, setEdges, saveToHistory, validateNodes, validateEdges]);
 
   // Obtener el estilo del cursor según el modo de herramienta
   const getCursorStyle = () => {
@@ -1341,7 +1382,7 @@ function BPMSDiagramInner() {
               <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-            </div>
+          </div>
             
             {/* Título y subtítulo */}
             <div className="flex flex-col">
@@ -1349,25 +1390,25 @@ function BPMSDiagramInner() {
                 <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent font-medium">
                   Diagramator
                 </span>
-              </h1>
+            </h1>
               <p className="text-sm text-gray-500 font-normal mt-1 tracking-wide">
                 Diagramas de procesos de negocio inteligentes
-              </p>
-            </div>
+            </p>
           </div>
-          
+        </div>
+        
           {/* Elementos decorativos del lado derecho */}
           <div className="hidden md:flex items-center space-x-4 opacity-60">
             <div className="flex space-x-1">
               <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
               <div className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse delay-100"></div>
               <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse delay-200"></div>
-            </div>
+          </div>
             <div className="text-xs text-gray-400 font-mono">
               v1.0
             </div>
-          </div>
-        </div>
+            </div>
+            </div>
         
         {/* Línea decorativa inferior */}
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent"></div>
@@ -1736,45 +1777,45 @@ function BPMSDiagramInner() {
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">
-                  Editar {editingNode.type === 'phase' ? 'Fase' : 
-                          editingNode.type === 'activity' ? 'Actividad' :
-                          editingNode.type === 'decision' ? 'Decisión' : 'Proceso'}
-                </h2>
-                
+                Editar {editingNode.type === 'phase' ? 'Fase' : 
+                        editingNode.type === 'activity' ? 'Actividad' :
+                        editingNode.type === 'decision' ? 'Decisión' : 'Proceso'}
+              </h2>
+              
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Columna Izquierda - Contenido y Colores */}
                   <div className="space-y-6">
                     {/* Título y Descripción */}
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Título
-                        </label>
-                        <input
-                          type="text"
-                          value={editLabel}
-                          onChange={(e) => setEditLabel(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Título del nodo"
-                          autoFocus
-                        />
-                      </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Título
+                  </label>
+                  <input
+                    type="text"
+                    value={editLabel}
+                    onChange={(e) => setEditLabel(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Título del nodo"
+                    autoFocus
+                  />
+                </div>
 
-                      {editingNode.type !== 'decision' && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Descripción
-                          </label>
-                          <textarea
-                            value={editDescription}
-                            onChange={(e) => setEditDescription(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                            placeholder="Descripción del nodo"
-                            rows={3}
-                          />
-                        </div>
-                      )}
-                    </div>
+                {editingNode.type !== 'decision' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Descripción
+                    </label>
+                    <textarea
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      placeholder="Descripción del nodo"
+                      rows={3}
+                    />
+                  </div>
+                )}
+              </div>
 
                     {/* Colores */}
                     <div className="space-y-4">
@@ -2082,20 +2123,20 @@ function BPMSDiagramInner() {
                 <div className="mt-8 pt-6 border-t border-gray-200">
                   <div className="text-xs text-gray-500 mb-4 text-center">
                     Presiona <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs">Ctrl+Enter</kbd> para guardar o <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs">Esc</kbd> para cancelar
-                  </div>
-                  <div className="flex justify-end gap-3">
-                    <button
-                      onClick={handleCancelEdit}
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={handleCancelEdit}
                       className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors font-medium"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      onClick={handleSaveEdit}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleSaveEdit}
                       className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
-                    >
+                  >
                       Guardar Cambios
-                    </button>
+                  </button>
                   </div>
                 </div>
               </div>
