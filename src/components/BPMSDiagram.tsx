@@ -5,7 +5,6 @@ import {
   ReactFlow,
   Node,
   Edge,
-  addEdge,
   Connection,
   applyNodeChanges,
   applyEdgeChanges,
@@ -377,11 +376,11 @@ function BPMSDiagramInner({
   onManualSave,
   onExportJSON,
   onLogout,
-  currentDiagramId
+  currentDiagramId: _currentDiagramId
 }: BPMSDiagramInnerProps) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
-  const { deleteElements, getNodes, project } = useReactFlow();
+  const { deleteElements, getNodes, screenToFlowPosition } = useReactFlow();
 
   // Funciones para manejar cambios de nodos y edges
   const onNodesChange = useCallback(
@@ -542,7 +541,7 @@ El formato final debe ser:
       await navigator.clipboard.writeText(promptContent);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
-    } catch (err) {
+    } catch (_err) {
       alert('Error al copiar el prompt');
     }
   }, []);
@@ -574,11 +573,11 @@ El formato final debe ser:
         ...params,
         id: `edge-${nodes.length + edges.length}`,
         type: 'smoothstep',
-        style: { 
-          strokeWidth: 2, 
-          stroke: '#3B82F6',
-          strokeLinecap: 'round'
-        },
+            style: { 
+              strokeWidth: 2, 
+              stroke: '#3B82F6',
+              strokeLinecap: 'round' as const
+            },
         markerEnd: { 
           type: MarkerType.ArrowClosed, 
           color: '#3B82F6',
@@ -588,7 +587,7 @@ El formato final debe ser:
         animated: false
       };
       setEdges((edgesSnapshot) => {
-        const updatedEdges = addEdge(newEdge, edgesSnapshot);
+        const updatedEdges = [...edgesSnapshot, newEdge];
         saveToHistory(nodes, updatedEdges);
         return updatedEdges;
       });
@@ -728,13 +727,13 @@ El formato final debe ser:
       return;
     }
     
-    const position = project({
+    const position = screenToFlowPosition({
       x: clientX - reactFlowBounds.left,
       y: clientY - reactFlowBounds.top,
     });
     
     addNode(toolMode, position);
-  }, [toolMode, project, addNode]);
+  }, [toolMode, screenToFlowPosition, addNode]);
 
 
   // Manejar clic en nodos
@@ -749,8 +748,8 @@ El formato final debe ser:
   const onNodeDoubleClick = useCallback((_event: React.MouseEvent, node: Node) => {
     if (toolMode === 'select') {
       setEditingNode(node);
-      setEditLabel(node.data.label || '');
-      setEditDescription(node.data.description || '');
+      setEditLabel(String(node.data.label || ''));
+      setEditDescription(String(node.data.description || ''));
       
       // Usar colores por defecto específicos para cada tipo de nodo
       let defaultColor = '#3B82F6';
@@ -775,10 +774,10 @@ El formato final debe ser:
           break;
       }
       
-      setEditColor(node.data.color || defaultColor);
-      setEditTextColor(node.data.textColor || defaultTextColor);
-      setEditSize(node.data.size || 'medium');
-      setEditFontSize(node.data.fontSize || 'medium');
+      setEditColor(String(node.data.color || defaultColor));
+      setEditTextColor(String(node.data.textColor || defaultTextColor));
+      setEditSize((node.data.size as 'small' | 'medium' | 'large' | 'xlarge') || 'medium');
+      setEditFontSize((node.data.fontSize as 'small' | 'medium' | 'large' | 'xlarge') || 'medium');
     }
   }, [toolMode]);
 
@@ -1727,8 +1726,6 @@ El formato final debe ser:
     }
   };
 
-  // Usar nodos y edges iniciales de las props, o canvas en blanco
-  const defaultInitialEdges: Edge[] = useMemo(() => initialEdges || [], [initialEdges]);
 
   // Inicializar nodos y edges usando useMemo para evitar bucles infinitos
   const cleanedInitialNodes = useMemo(() => {
@@ -2047,16 +2044,12 @@ El formato final debe ser:
               width: 12,
               height: 12
             },
-            style: { 
-              strokeWidth: 2, 
-              stroke: '#6B7280',
-              strokeLinecap: 'round'
-            },
-            animated: false,
-            pathOptions: {
-              borderRadius: 20,
-              offset: 5
-            }
+              style: { 
+                strokeWidth: 2, 
+                stroke: '#6B7280',
+                strokeLinecap: 'round' as const
+              },
+            animated: false
           }}
           nodesDraggable={true}
           nodesConnectable={true}

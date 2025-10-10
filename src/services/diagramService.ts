@@ -1,4 +1,4 @@
-import { supabase, Diagram } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 export const diagramService = {
   // Crear un nuevo diagrama

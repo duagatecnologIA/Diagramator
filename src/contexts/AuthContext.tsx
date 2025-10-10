@@ -13,7 +13,7 @@ type AuthContextType = {
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
   signInWithGoogle: () => Promise<{ error: any }>;
   signInWithGithub: () => Promise<{ error: any }>;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<{ error: any }>;
   updateProfile: (data: Partial<Profile>) => Promise<{ error: any }>;
 };
 
@@ -27,7 +27,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Obtener sesión inicial
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.log('Error getting session:', error);
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+      
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -40,7 +48,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Escuchar cambios de autenticación
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state change:', event, session ? 'Session exists' : 'No session');
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -114,20 +123,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Error al cerrar sesión:', error);
-        return { error };
-      }
       
-      // Limpiar estado local
+      // Limpiar estado local primero para evitar errores
       setUser(null);
       setProfile(null);
       setSession(null);
       
+      // Intentar cerrar sesión en Supabase sin generar errores si falla
+      try {
+        await supabase.auth.signOut();
+      } catch (authError) {
+        // Ignorar errores de auth ya que limpiamos el estado local
+        console.log('Auth cleanup completed (ignoring potential session errors)');
+      }
+      
       return { error: null };
     } catch (error) {
       console.error('Error inesperado al cerrar sesión:', error);
+      // Asegurar que el estado local esté limpio
+      setUser(null);
+      setProfile(null);
+      setSession(null);
       return { error };
     } finally {
       setLoading(false);

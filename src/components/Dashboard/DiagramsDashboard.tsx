@@ -9,20 +9,15 @@ import {
   Trash2, 
   Copy, 
   Share2, 
-  Download,
   Search,
-  LogOut,
-  User,
-  Calendar,
-  Eye,
-  MoreVertical
+  Eye
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import DiagramIcon from './DiagramIcon';
 
 export default function DiagramsDashboard() {
-  const { user, profile, signOut } = useAuth();
-  const { diagrams, loading, createDiagram, deleteDiagram, duplicateDiagram } = useDiagrams();
+  const { signOut } = useAuth();
+  const { diagrams, loading, deleteDiagram, duplicateDiagram } = useDiagrams();
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
 

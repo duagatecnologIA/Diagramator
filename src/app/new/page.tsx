@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { diagramService } from '@/services/diagramService';
 
@@ -9,13 +9,7 @@ export default function NewDiagramPage() {
   const router = useRouter();
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      createNewDiagram();
-    }
-  }, [user]);
-
-  const createNewDiagram = async () => {
+  const createNewDiagram = useCallback(async () => {
     try {
       const { diagram, error } = await diagramService.createDiagram({
         title: 'Nuevo Diagrama',
@@ -30,10 +24,16 @@ export default function NewDiagramPage() {
         // Fallback: redirect to dashboard
         router.push('/');
       }
-    } catch (error) {
+    } catch (_error) {
       router.push('/');
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    if (user) {
+      createNewDiagram();
+    }
+  }, [user, createNewDiagram]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
