@@ -21,6 +21,7 @@ import ReactFlow, {
   Panel,
   getNodesBounds,
   MiniMap,
+  SelectionMode,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { toPng, toSvg } from 'html-to-image';
@@ -54,6 +55,8 @@ interface NodeData {
   label: string;
   description?: string;
   icon?: React.ReactNode;
+  color?: string;
+  textColor?: string;
 }
 
 // Definir tipos de nodos personalizados
@@ -66,22 +69,33 @@ const nodeTypes: NodeTypes = {
 
 // Nodo para las fases principales
 function PhaseNode({ data }: { data: NodeData }) {
+  const color = data.color || '#3B82F6';
+  const textColor = data.textColor || '#FFFFFF';
+  
   return (
-    <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-xl shadow-xl border-4 border-blue-300 min-w-[400px] text-center relative">
+    <div 
+      className="p-6 rounded-xl shadow-xl border-4 min-w-[400px] text-center relative"
+      style={{
+        backgroundColor: color,
+        borderColor: color,
+        color: textColor,
+      }}
+    >
       <Handle
         type="target"
         position={Position.Top}
-        className="w-3 h-3 bg-blue-300 border-2 border-white"
+        className="w-3 h-3 border-2 border-white"
+        style={{ backgroundColor: color }}
       />
-      <div className="flex items-center justify-center gap-3 mb-3">
-        <Ship className="w-6 h-6" />
+      <div className="flex items-center justify-center mb-3">
         <h3 className="text-xl font-bold">{data.label}</h3>
       </div>
-      <p className="text-sm text-blue-100">{data.description}</p>
+      <p className="text-sm opacity-90">{data.description}</p>
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3 h-3 bg-blue-300 border-2 border-white"
+        className="w-3 h-3 border-2 border-white"
+        style={{ backgroundColor: color }}
       />
     </div>
   );
@@ -89,22 +103,33 @@ function PhaseNode({ data }: { data: NodeData }) {
 
 // Nodo para actividades
 function ActivityNode({ data }: { data: NodeData }) {
+  const color = data.color || '#3B82F6';
+  const textColor = data.textColor || '#000000';
+  
   return (
-    <div className="bg-white border-2 border-gray-300 rounded-lg p-3 shadow-md min-w-[250px] relative">
+    <div 
+      className="bg-white rounded-lg p-3 shadow-md min-w-[250px] relative border-2"
+      style={{ 
+        borderColor: color,
+        color: textColor,
+      }}
+    >
       <Handle
         type="target"
         position={Position.Top}
-        className="w-3 h-3 bg-gray-400 border-2 border-white"
+        className="w-3 h-3 border-2 border-white"
+        style={{ backgroundColor: color }}
       />
       <div className="flex items-center gap-2 mb-1">
-        <FileText className="w-5 h-5 text-blue-600" />
-        <h4 className="font-semibold text-gray-800">{data.label}</h4>
+        <FileText className="w-5 h-5" style={{ color: textColor }} />
+        <h4 className="font-semibold">{data.label}</h4>
       </div>
-      <p className="text-sm text-gray-600">{data.description}</p>
+      <p className="text-sm">{data.description}</p>
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3 h-3 bg-gray-400 border-2 border-white"
+        className="w-3 h-3 border-2 border-white"
+        style={{ backgroundColor: color }}
       />
     </div>
   );
@@ -112,31 +137,45 @@ function ActivityNode({ data }: { data: NodeData }) {
 
 // Nodo para decisiones
 function DecisionNode({ data }: { data: NodeData }) {
+  const color = data.color || '#EAB308';
+  const textColor = data.textColor || '#FFFFFF';
+  
   return (
-    <div className="bg-yellow-100 border-2 border-yellow-400 rounded-full p-4 shadow-md min-w-[120px] min-h-[120px] flex items-center justify-center relative">
+    <div 
+      className="rounded-full p-4 shadow-md min-w-[120px] min-h-[120px] flex items-center justify-center relative border-2"
+      style={{ 
+        backgroundColor: color,
+        borderColor: color,
+        color: textColor,
+      }}
+    >
       <Handle
         type="target"
         position={Position.Top}
-        className="w-3 h-3 bg-yellow-500 border-2 border-white"
+        className="w-3 h-3 border-2 border-white"
+        style={{ backgroundColor: color }}
       />
       <div className="text-center">
-        <AlertTriangle className="w-6 h-6 text-yellow-600 mx-auto" />
-        <p className="text-sm font-semibold text-yellow-800 mt-1">{data.label}</p>
+        <AlertTriangle className="w-6 h-6 mx-auto" />
+        <p className="text-sm font-semibold mt-1">{data.label}</p>
       </div>
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3 h-3 bg-yellow-500 border-2 border-white"
+        className="w-3 h-3 border-2 border-white"
+        style={{ backgroundColor: color }}
       />
       <Handle
         type="source"
         position={Position.Left}
-        className="w-3 h-3 bg-yellow-500 border-2 border-white"
+        className="w-3 h-3 border-2 border-white"
+        style={{ backgroundColor: color }}
       />
       <Handle
         type="source"
         position={Position.Right}
-        className="w-3 h-3 bg-yellow-500 border-2 border-white"
+        className="w-3 h-3 border-2 border-white"
+        style={{ backgroundColor: color }}
       />
     </div>
   );
@@ -144,22 +183,34 @@ function DecisionNode({ data }: { data: NodeData }) {
 
 // Nodo para procesos
 function ProcessNode({ data }: { data: NodeData }) {
+  const color = data.color || '#10B981';
+  const textColor = data.textColor || '#FFFFFF';
+  
   return (
-    <div className="bg-green-100 border-2 border-green-400 rounded-lg p-3 shadow-md min-w-[200px] relative">
+    <div 
+      className="rounded-lg p-3 shadow-md min-w-[200px] relative border-2"
+      style={{ 
+        backgroundColor: color,
+        borderColor: color,
+        color: textColor,
+      }}
+    >
       <Handle
         type="target"
         position={Position.Top}
-        className="w-3 h-3 bg-green-500 border-2 border-white"
+        className="w-3 h-3 border-2 border-white"
+        style={{ backgroundColor: color }}
       />
       <div className="flex items-center gap-2 mb-1">
-        <CheckCircle className="w-5 h-5 text-green-600" />
-        <h4 className="font-semibold text-green-800">{data.label}</h4>
+        <CheckCircle className="w-5 h-5" />
+        <h4 className="font-semibold">{data.label}</h4>
       </div>
-      <p className="text-sm text-green-700">{data.description}</p>
+      <p className="text-sm">{data.description}</p>
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3 h-3 bg-green-500 border-2 border-white"
+        className="w-3 h-3 border-2 border-white"
+        style={{ backgroundColor: color }}
       />
     </div>
   );
@@ -185,6 +236,8 @@ function BPMSDiagramInner() {
   const [editingNode, setEditingNode] = React.useState<Node | null>(null);
   const [editLabel, setEditLabel] = React.useState('');
   const [editDescription, setEditDescription] = React.useState('');
+  const [editColor, setEditColor] = React.useState('#3B82F6');
+  const [editTextColor, setEditTextColor] = React.useState('#FFFFFF');
   
   // Estado para edición de conexiones
   const [editingEdge, setEditingEdge] = React.useState<Edge | null>(null);
@@ -397,6 +450,8 @@ function BPMSDiagramInner() {
       setEditingNode(node);
       setEditLabel(node.data.label || '');
       setEditDescription(node.data.description || '');
+      setEditColor(node.data.color || '#3B82F6');
+      setEditTextColor(node.data.textColor || '#FFFFFF');
     }
   }, [toolMode]);
 
@@ -412,6 +467,8 @@ function BPMSDiagramInner() {
             ...node.data,
             label: editLabel,
             description: editDescription,
+            color: editColor,
+            textColor: editTextColor,
           }
         };
       }
@@ -423,13 +480,17 @@ function BPMSDiagramInner() {
     setEditingNode(null);
     setEditLabel('');
     setEditDescription('');
-  }, [editingNode, editLabel, editDescription, nodes, edges, setNodes, saveToHistory]);
+    setEditColor('#3B82F6');
+    setEditTextColor('#FFFFFF');
+  }, [editingNode, editLabel, editDescription, editColor, editTextColor, nodes, edges, setNodes, saveToHistory]);
 
   // Cancelar edición
   const handleCancelEdit = useCallback(() => {
     setEditingNode(null);
     setEditLabel('');
     setEditDescription('');
+    setEditColor('#3B82F6');
+    setEditTextColor('#FFFFFF');
   }, []);
 
   // Manejar doble click en conexiones para editar etiqueta
@@ -1005,6 +1066,16 @@ function BPMSDiagramInner() {
     });
   }, [getNodes]);
 
+  // Función para seleccionar todos los nodos
+  const onSelectAll = useCallback(() => {
+    console.log('Seleccionando todos los nodos...');
+    const updatedNodes = nodes.map(node => ({
+      ...node,
+      selected: true,
+    }));
+    setNodes(updatedNodes);
+  }, [nodes, setNodes]);
+
   // Manejar teclas de atajo
   const onKeyDown = useCallback((event: React.KeyboardEvent) => {
     // Si el modal de edición de nodo está abierto, manejar sus teclas
@@ -1032,7 +1103,10 @@ function BPMSDiagramInner() {
     }
 
     // Teclas de atajo normales
-    if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
+      event.preventDefault();
+      onSelectAll();
+    } else if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
       event.preventDefault();
       undo();
     } else if ((event.ctrlKey || event.metaKey) && (event.key === 'y' || (event.key === 'z' && event.shiftKey))) {
@@ -1055,7 +1129,7 @@ function BPMSDiagramInner() {
     } else if (event.key === 'Escape') {
       setToolMode('select');
     }
-  }, [undo, redo, onDelete, editingNode, editingEdge, handleSaveEdit, handleCancelEdit, handleSaveEdgeEdit, handleCancelEdgeEdit, onCopy, onPaste, onDuplicate, onExportJSON]);
+  }, [undo, redo, onDelete, editingNode, editingEdge, handleSaveEdit, handleCancelEdit, handleSaveEdgeEdit, handleCancelEdgeEdit, onCopy, onPaste, onDuplicate, onExportJSON, onSelectAll]);
 
   // Obtener el estilo del cursor según el modo de herramienta
   const getCursorStyle = () => {
@@ -1489,8 +1563,9 @@ function BPMSDiagramInner() {
           minZoom={0.1}
           maxZoom={2}
           deleteKeyCode={null}
-          multiSelectionKeyCode={['Meta', 'Ctrl']}
-          selectionKeyCode={['Meta', 'Ctrl']}
+          multiSelectionKeyCode={['Meta', 'Control']}
+          selectionKeyCode={null}
+          selectionMode={SelectionMode.Partial}
         >
           <Controls 
             showInteractive={true}
@@ -1627,6 +1702,7 @@ function BPMSDiagramInner() {
               <div className="mb-1 font-medium">Instrucciones:</div>
               <div>• Selecciona herramienta</div>
               <div>• Click en canvas para crear</div>
+              <div>• Ctrl/Cmd+Click: Multi-selección</div>
               <div>• Doble click para editar</div>
               <div>• Conecta nodos por handles</div>
               <div>• Esc para volver a selección</div>
@@ -1754,6 +1830,7 @@ function BPMSDiagramInner() {
             
             <div className="text-xs text-gray-500 mt-2">
               <div className="font-medium mb-1">Atajos de Teclado:</div>
+              <div>• Ctrl+A: Seleccionar todo</div>
               <div>• Ctrl+S: Guardar JSON</div>
               <div>• Ctrl+C/V/D: Copy/Paste/Duplicar</div>
               <div>• Ctrl+Z/Y: Deshacer/Rehacer</div>
@@ -1856,6 +1933,77 @@ function BPMSDiagramInner() {
                     />
                   </div>
                 )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Color del nodo
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={editColor}
+                      onChange={(e) => setEditColor(e.target.value)}
+                      className="w-12 h-10 border border-gray-300 rounded-md cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={editColor}
+                        onChange={(e) => setEditColor(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                        placeholder="#3B82F6"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Selecciona o escribe un color hexadecimal
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Color del texto
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={editTextColor}
+                      onChange={(e) => setEditTextColor(e.target.value)}
+                      className="w-12 h-10 border border-gray-300 rounded-md cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={editTextColor}
+                        onChange={(e) => setEditTextColor(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                        placeholder="#FFFFFF"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Selecciona o escribe un color hexadecimal para el texto
+                  </p>
+                </div>
+
+                {/* Preview del color */}
+                <div className="bg-gray-50 rounded-lg p-3 border">
+                  <div className="text-xs text-gray-600 mb-2">Vista previa del nodo:</div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div 
+                      className="w-16 h-1 rounded-full"
+                      style={{ backgroundColor: editColor }}
+                    ></div>
+                    <span className="text-xs text-gray-600">Color de fondo</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-16 h-1 rounded-full"
+                      style={{ backgroundColor: editTextColor }}
+                    ></div>
+                    <span className="text-xs text-gray-600">Color de texto</span>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-6">

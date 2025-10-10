@@ -24,3 +24,37 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Estilos para nodos seleccionados en ReactFlow */
+.react-flow__node.selected {
+  outline: 2px solid #3B82F6 !important;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px rgba(100, 116, 139, 0.08), 0 2px 8px -1px rgba(0, 0, 0, 0.06) !important;
+  animation: pulse-selection 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-selection {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(100, 116, 139, 0.08), 0 2px 8px -1px rgba(0, 0, 0, 0.06);
+  }
+  50% {
+    box-shadow: 0 0 0 2px rgba(100, 116, 139, 0.12), 0 3px 10px -1px rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* Efecto hover en nodos para indicar que son seleccionables */
+.react-flow__node:hover {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.react-flow__node:active {
+  transform: scale(0.98);
+}
+
+/* Estilos para edges seleccionados */
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #3B82F6 !important;
+  stroke-width: 4px !important;
+  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.6));
+}
