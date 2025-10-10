@@ -178,9 +178,18 @@ export default function BPMSDiagramWithSupabase({ diagramId }: BPMSDiagramWithSu
   // Función para cerrar sesión
   const handleLogout = async () => {
     try {
-      await signOut();
+      const { error } = await signOut();
+      if (error) {
+        console.error('Error al cerrar sesión:', error);
+        alert('Error al cerrar sesión. Por favor, inténtalo de nuevo.');
+        return;
+      }
+      
+      // Redirigir al login después de cerrar sesión exitosamente
+      router.push('/login');
     } catch (error) {
-      // Manejar error si es necesario
+      console.error('Error inesperado al cerrar sesión:', error);
+      alert('Error inesperado al cerrar sesión. Por favor, inténtalo de nuevo.');
     }
   };
 

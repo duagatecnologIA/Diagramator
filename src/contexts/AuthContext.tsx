@@ -112,7 +112,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error al cerrar sesión:', error);
+        return { error };
+      }
+      
+      // Limpiar estado local
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      
+      return { error: null };
+    } catch (error) {
+      console.error('Error inesperado al cerrar sesión:', error);
+      return { error };
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateProfile = async (data: Partial<Profile>) => {
