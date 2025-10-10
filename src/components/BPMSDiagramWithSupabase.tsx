@@ -141,12 +141,13 @@ export default function BPMSDiagramWithSupabase({ diagramId }: BPMSDiagramWithSu
 
   // Función para exportar diagrama como JSON
   const exportDiagramAsJSON = () => {
+    const now = new Date();
     const exportData = {
       nodes: nodes,
       edges: edges,
       metadata: {
         title: diagram?.title || 'Diagrama Exportado',
-        exported_at: new Date().toISOString(),
+        exported_at: now.toISOString(),
         version: '1.0',
         user_id: user?.id || 'anonymous'
       }
@@ -155,7 +156,18 @@ export default function BPMSDiagramWithSupabase({ diagramId }: BPMSDiagramWithSu
     const dataStr = JSON.stringify(exportData, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
     
-    const exportFileDefaultName = `diagrama_${new Date().toISOString().split('T')[0]}.json`;
+    // Crear nombre de archivo con título + fecha
+    const diagramTitle = diagram?.title || 'Diagrama';
+    const formattedDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    const formattedTime = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS
+    
+    // Limpiar título para usar como nombre de archivo (remover caracteres especiales)
+    const cleanTitle = diagramTitle
+      .replace(/[^a-zA-Z0-9\s]/g, '') // Remover caracteres especiales
+      .replace(/\s+/g, '_') // Reemplazar espacios con guiones bajos
+      .toLowerCase();
+    
+    const exportFileDefaultName = `${cleanTitle}_${formattedDate}_${formattedTime}.json`;
     
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);

@@ -759,12 +759,15 @@ function BPMSDiagramInner({
   // Función de fallback para exportar como JSON (cuando no se pasa como prop)
   const defaultExportJSON = useCallback(() => {
     try {
+      const now = new Date();
+      const currentTitle = diagramTitle || 'Diagrama';
+      
       const diagramData = {
         nodes: cleanNodesForExport(nodes),
         edges: cleanEdgesForExport(edges),
         metadata: {
-          name: 'BPMN Diagram',
-          created: new Date().toISOString(),
+          name: currentTitle,
+          created: now.toISOString(),
           version: '1.0',
         },
       };
@@ -773,8 +776,18 @@ function BPMSDiagramInner({
       const dataBlob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
       const url = URL.createObjectURL(dataBlob);
       
+      // Crear nombre de archivo con título + fecha
+      const formattedDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
+      const formattedTime = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS
+      
+      // Limpiar título para usar como nombre de archivo
+      const cleanTitle = currentTitle
+        .replace(/[^a-zA-Z0-9\s]/g, '') // Remover caracteres especiales
+        .replace(/\s+/g, '_') // Reemplazar espacios con guiones bajos
+        .toLowerCase();
+      
       const link = document.createElement('a');
-      const fileName = `diagrama-bpmn-${new Date().toISOString().split('T')[0]}.json`;
+      const fileName = `${cleanTitle}_${formattedDate}_${formattedTime}.json`;
       link.download = fileName;
       link.href = url;
       link.style.display = 'none';
@@ -793,7 +806,7 @@ function BPMSDiagramInner({
       console.error('Error al exportar JSON:', error);
       alert('Error al exportar el diagrama. Intenta de nuevo.');
     }
-  }, [nodes, edges, cleanNodesForExport, cleanEdgesForExport]);
+  }, [nodes, edges, cleanNodesForExport, cleanEdgesForExport, diagramTitle]);
 
   // Usar la prop onExportJSON o la función de fallback
   const exportJSONFunction = onExportJSON || defaultExportJSON;
@@ -1137,14 +1150,27 @@ function BPMSDiagramInner({
       },
       pixelRatio: 2,
     }).then((dataUrl) => {
+      const now = new Date();
+      const currentTitle = diagramTitle || 'Diagrama';
+      
+      // Crear nombre de archivo con título + fecha
+      const formattedDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
+      const formattedTime = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS
+      
+      // Limpiar título para usar como nombre de archivo
+      const cleanTitle = currentTitle
+        .replace(/[^a-zA-Z0-9\s]/g, '') // Remover caracteres especiales
+        .replace(/\s+/g, '_') // Reemplazar espacios con guiones bajos
+        .toLowerCase();
+      
       const link = document.createElement('a');
-      link.download = `diagrama-bpmn-${new Date().toISOString().split('T')[0]}.png`;
+      link.download = `${cleanTitle}_${formattedDate}_${formattedTime}.png`;
       link.href = dataUrl;
       link.click();
     }).catch((err) => {
       console.error('Error al exportar PNG:', err);
     });
-  }, [getNodes]);
+  }, [getNodes, diagramTitle]);
 
   // Función para exportar el diagrama como SVG
   const onExportSVG = useCallback(() => {
@@ -1166,14 +1192,27 @@ function BPMSDiagramInner({
         transform: `translate(${-nodesBounds.x + 50}px, ${-nodesBounds.y + 50}px)`,
       },
     }).then((dataUrl) => {
+      const now = new Date();
+      const currentTitle = diagramTitle || 'Diagrama';
+      
+      // Crear nombre de archivo con título + fecha
+      const formattedDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
+      const formattedTime = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS
+      
+      // Limpiar título para usar como nombre de archivo
+      const cleanTitle = currentTitle
+        .replace(/[^a-zA-Z0-9\s]/g, '') // Remover caracteres especiales
+        .replace(/\s+/g, '_') // Reemplazar espacios con guiones bajos
+        .toLowerCase();
+      
       const link = document.createElement('a');
-      link.download = `diagrama-bpmn-${new Date().toISOString().split('T')[0]}.svg`;
+      link.download = `${cleanTitle}_${formattedDate}_${formattedTime}.svg`;
       link.href = dataUrl;
       link.click();
     }).catch((err) => {
       console.error('Error al exportar SVG:', err);
     });
-  }, [getNodes]);
+  }, [getNodes, diagramTitle]);
 
   // Función para seleccionar todos los nodos
   const onSelectAll = useCallback(() => {
