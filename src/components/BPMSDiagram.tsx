@@ -57,6 +57,7 @@ interface NodeData {
   icon?: React.ReactNode;
   color?: string;
   textColor?: string;
+  size?: 'small' | 'medium' | 'large' | 'xlarge';
 }
 
 // Definir tipos de nodos personalizados
@@ -71,10 +72,18 @@ const nodeTypes: NodeTypes = {
 function PhaseNode({ data }: { data: NodeData }) {
   const color = data.color || '#3B82F6';
   const textColor = data.textColor || '#FFFFFF';
+  const size = data.size || 'medium';
+  
+  const sizeClasses = {
+    small: 'min-w-[300px] p-4 text-lg',
+    medium: 'min-w-[400px] p-6 text-xl',
+    large: 'min-w-[500px] p-8 text-2xl',
+    xlarge: 'min-w-[600px] p-10 text-3xl'
+  };
   
   return (
     <div 
-      className="p-6 rounded-xl shadow-xl border-4 min-w-[400px] text-center relative"
+      className={`rounded-xl shadow-xl border-4 text-center relative ${sizeClasses[size]}`}
       style={{
         backgroundColor: color,
         borderColor: color,
@@ -88,7 +97,7 @@ function PhaseNode({ data }: { data: NodeData }) {
         style={{ backgroundColor: color }}
       />
       <div className="flex items-center justify-center mb-3">
-        <h3 className="text-xl font-bold">{data.label}</h3>
+        <h3 className="font-bold">{data.label}</h3>
       </div>
       <p className="text-sm opacity-90">{data.description}</p>
       <Handle
@@ -105,10 +114,25 @@ function PhaseNode({ data }: { data: NodeData }) {
 function ActivityNode({ data }: { data: NodeData }) {
   const color = data.color || '#3B82F6';
   const textColor = data.textColor || '#000000';
+  const size = data.size || 'medium';
+  
+  const sizeClasses = {
+    small: 'min-w-[200px] p-2 text-sm',
+    medium: 'min-w-[250px] p-3 text-base',
+    large: 'min-w-[300px] p-4 text-lg',
+    xlarge: 'min-w-[350px] p-5 text-xl'
+  };
+  
+  const iconSizes = {
+    small: 'w-4 h-4',
+    medium: 'w-5 h-5',
+    large: 'w-6 h-6',
+    xlarge: 'w-7 h-7'
+  };
   
   return (
     <div 
-      className="bg-white rounded-lg p-3 shadow-md min-w-[250px] relative border-2"
+      className={`bg-white rounded-lg shadow-md relative border-2 ${sizeClasses[size]}`}
       style={{ 
         borderColor: color,
         color: textColor,
@@ -121,7 +145,7 @@ function ActivityNode({ data }: { data: NodeData }) {
         style={{ backgroundColor: color }}
       />
       <div className="flex items-center gap-2 mb-1">
-        <FileText className="w-5 h-5" style={{ color: textColor }} />
+        <FileText className={iconSizes[size]} style={{ color: textColor }} />
         <h4 className="font-semibold">{data.label}</h4>
       </div>
       <p className="text-sm">{data.description}</p>
@@ -139,10 +163,32 @@ function ActivityNode({ data }: { data: NodeData }) {
 function DecisionNode({ data }: { data: NodeData }) {
   const color = data.color || '#EAB308';
   const textColor = data.textColor || '#FFFFFF';
+  const size = data.size || 'medium';
+  
+  const sizeClasses = {
+    small: 'min-w-[80px] min-h-[80px] p-3',
+    medium: 'min-w-[120px] min-h-[120px] p-4',
+    large: 'min-w-[160px] min-h-[160px] p-6',
+    xlarge: 'min-w-[200px] min-h-[200px] p-8'
+  };
+  
+  const iconSizes = {
+    small: 'w-4 h-4',
+    medium: 'w-6 h-6',
+    large: 'w-8 h-8',
+    xlarge: 'w-10 h-10'
+  };
+  
+  const textSizes = {
+    small: 'text-xs',
+    medium: 'text-sm',
+    large: 'text-base',
+    xlarge: 'text-lg'
+  };
   
   return (
     <div 
-      className="rounded-full p-4 shadow-md min-w-[120px] min-h-[120px] flex items-center justify-center relative border-2"
+      className={`rounded-full shadow-md flex items-center justify-center relative border-2 ${sizeClasses[size]}`}
       style={{ 
         backgroundColor: color,
         borderColor: color,
@@ -156,8 +202,8 @@ function DecisionNode({ data }: { data: NodeData }) {
         style={{ backgroundColor: color }}
       />
       <div className="text-center">
-        <AlertTriangle className="w-6 h-6 mx-auto" />
-        <p className="text-sm font-semibold mt-1">{data.label}</p>
+        <AlertTriangle className={`${iconSizes[size]} mx-auto`} />
+        <p className={`${textSizes[size]} font-semibold mt-1`}>{data.label}</p>
       </div>
       <Handle
         type="source"
@@ -185,10 +231,25 @@ function DecisionNode({ data }: { data: NodeData }) {
 function ProcessNode({ data }: { data: NodeData }) {
   const color = data.color || '#10B981';
   const textColor = data.textColor || '#FFFFFF';
+  const size = data.size || 'medium';
+  
+  const sizeClasses = {
+    small: 'min-w-[180px] p-2 text-sm',
+    medium: 'min-w-[200px] p-3 text-base',
+    large: 'min-w-[250px] p-4 text-lg',
+    xlarge: 'min-w-[300px] p-5 text-xl'
+  };
+  
+  const iconSizes = {
+    small: 'w-4 h-4',
+    medium: 'w-5 h-5',
+    large: 'w-6 h-6',
+    xlarge: 'w-7 h-7'
+  };
   
   return (
     <div 
-      className="rounded-lg p-3 shadow-md min-w-[200px] relative border-2"
+      className={`rounded-lg shadow-md relative border-2 ${sizeClasses[size]}`}
       style={{ 
         backgroundColor: color,
         borderColor: color,
@@ -202,7 +263,7 @@ function ProcessNode({ data }: { data: NodeData }) {
         style={{ backgroundColor: color }}
       />
       <div className="flex items-center gap-2 mb-1">
-        <CheckCircle className="w-5 h-5" />
+        <CheckCircle className={iconSizes[size]} />
         <h4 className="font-semibold">{data.label}</h4>
       </div>
       <p className="text-sm">{data.description}</p>
@@ -238,6 +299,7 @@ function BPMSDiagramInner() {
   const [editDescription, setEditDescription] = React.useState('');
   const [editColor, setEditColor] = React.useState('#3B82F6');
   const [editTextColor, setEditTextColor] = React.useState('#FFFFFF');
+  const [editSize, setEditSize] = React.useState<'small' | 'medium' | 'large' | 'xlarge'>('medium');
   
   // Estado para edición de conexiones
   const [editingEdge, setEditingEdge] = React.useState<Edge | null>(null);
@@ -452,6 +514,7 @@ function BPMSDiagramInner() {
       setEditDescription(node.data.description || '');
       setEditColor(node.data.color || '#3B82F6');
       setEditTextColor(node.data.textColor || '#FFFFFF');
+      setEditSize(node.data.size || 'medium');
     }
   }, [toolMode]);
 
@@ -470,6 +533,7 @@ function BPMSDiagramInner() {
             description: editDescription,
             color: editColor,
             textColor: editTextColor,
+            size: editSize,
           }
         };
       }
@@ -483,7 +547,8 @@ function BPMSDiagramInner() {
     setEditDescription('');
     setEditColor('#3B82F6');
     setEditTextColor('#FFFFFF');
-  }, [editingNode, editLabel, editDescription, editColor, editTextColor, nodes, edges, setNodes, saveToHistory]);
+    setEditSize('medium');
+  }, [editingNode, editLabel, editDescription, editColor, editTextColor, editSize, nodes, edges, setNodes, saveToHistory]);
 
   // Cancelar edición
   const handleCancelEdit = useCallback(() => {
@@ -492,6 +557,7 @@ function BPMSDiagramInner() {
     setEditDescription('');
     setEditColor('#3B82F6');
     setEditTextColor('#FFFFFF');
+    setEditSize('medium');
   }, []);
 
   // Manejar doble click en conexiones para editar etiqueta
@@ -681,6 +747,38 @@ function BPMSDiagramInner() {
       alert('Error al exportar el diagrama. Intenta de nuevo.');
     }
   }, [nodes, edges, cleanNodesForExport, cleanEdgesForExport]);
+
+  // Función para obtener las clases de tamaño
+  const getSizeClasses = useCallback((size: string, nodeType: string) => {
+    const sizeMap = {
+      small: {
+        phase: 'min-w-[300px] p-4',
+        activity: 'min-w-[200px] p-2',
+        decision: 'min-w-[80px] min-h-[80px] p-3',
+        process: 'min-w-[180px] p-2'
+      },
+      medium: {
+        phase: 'min-w-[400px] p-6',
+        activity: 'min-w-[250px] p-3',
+        decision: 'min-w-[120px] min-h-[120px] p-4',
+        process: 'min-w-[200px] p-3'
+      },
+      large: {
+        phase: 'min-w-[500px] p-8',
+        activity: 'min-w-[300px] p-4',
+        decision: 'min-w-[160px] min-h-[160px] p-6',
+        process: 'min-w-[250px] p-4'
+      },
+      xlarge: {
+        phase: 'min-w-[600px] p-10',
+        activity: 'min-w-[350px] p-5',
+        decision: 'min-w-[200px] min-h-[200px] p-8',
+        process: 'min-w-[300px] p-5'
+      }
+    };
+    
+    return sizeMap[size as keyof typeof sizeMap]?.[nodeType as keyof typeof sizeMap.small] || sizeMap.medium[nodeType as keyof typeof sizeMap.medium];
+  }, []);
 
   // Función para reconstruir iconos basado en el tipo de nodo
   const getIconForNodeType = useCallback((type: string) => {
@@ -1601,272 +1699,371 @@ function BPMSDiagramInner() {
 
         {/* Modal de Edición */}
         {editingNode && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
-                Editar {editingNode.type === 'phase' ? 'Fase' : 
-                        editingNode.type === 'activity' ? 'Actividad' :
-                        editingNode.type === 'decision' ? 'Decisión' : 'Proceso'}
-              </h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Título
-                  </label>
-                  <input
-                    type="text"
-                    value={editLabel}
-                    onChange={(e) => setEditLabel(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Título del nodo"
-                    autoFocus
-                  />
-                </div>
+          <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                  Editar {editingNode.type === 'phase' ? 'Fase' : 
+                          editingNode.type === 'activity' ? 'Actividad' :
+                          editingNode.type === 'decision' ? 'Decisión' : 'Proceso'}
+                </h2>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Columna Izquierda - Contenido y Colores */}
+                  <div className="space-y-6">
+                    {/* Título y Descripción */}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Título
+                        </label>
+                        <input
+                          type="text"
+                          value={editLabel}
+                          onChange={(e) => setEditLabel(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Título del nodo"
+                          autoFocus
+                        />
+                      </div>
 
-                {editingNode.type !== 'decision' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Descripción
-                    </label>
-                    <textarea
-                      value={editDescription}
-                      onChange={(e) => setEditDescription(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                      placeholder="Descripción del nodo"
-                      rows={3}
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Color del nodo
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={editColor}
-                      onChange={(e) => setEditColor(e.target.value)}
-                      className="w-12 h-10 border border-gray-300 rounded-md cursor-pointer"
-                    />
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        value={editColor}
-                        onChange={(e) => setEditColor(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-                        placeholder="#3B82F6"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Selecciona o escribe un color hexadecimal
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Color del texto
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={editTextColor}
-                      onChange={(e) => setEditTextColor(e.target.value)}
-                      className="w-12 h-10 border border-gray-300 rounded-md cursor-pointer"
-                    />
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        value={editTextColor}
-                        onChange={(e) => setEditTextColor(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-                        placeholder="#FFFFFF"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Selecciona o escribe un color hexadecimal para el texto
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Tipo de nodo
-                  </label>
-                  
-                  {/* Botones de cambio rápido */}
-                  <div className="grid grid-cols-2 gap-2 mb-3">
-                    <button
-                      onClick={() => {
-                        if (editingNode) {
-                          const newNode = { ...editingNode, type: 'phase' as const };
-                          setEditingNode(newNode);
-                        }
-                      }}
-                      className={`p-3 rounded-lg border-2 transition-all text-left ${
-                        editingNode?.type === 'phase' 
-                          ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-blue-500 rounded"></div>
+                      {editingNode.type !== 'decision' && (
                         <div>
-                          <div className="font-medium text-sm">Fase</div>
-                          <div className="text-xs opacity-75">Principal</div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Descripción
+                          </label>
+                          <textarea
+                            value={editDescription}
+                            onChange={(e) => setEditDescription(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            placeholder="Descripción del nodo"
+                            rows={3}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Colores */}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Color del nodo
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="color"
+                            value={editColor}
+                            onChange={(e) => setEditColor(e.target.value)}
+                            className="w-12 h-10 border border-gray-300 rounded-md cursor-pointer"
+                          />
+                          <div className="flex-1">
+                            <input
+                              type="text"
+                              value={editColor}
+                              onChange={(e) => setEditColor(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                              placeholder="#3B82F6"
+                            />
+                          </div>
                         </div>
                       </div>
-                    </button>
 
-                    <button
-                      onClick={() => {
-                        if (editingNode) {
-                          const newNode = { ...editingNode, type: 'activity' as const };
-                          setEditingNode(newNode);
-                        }
-                      }}
-                      className={`p-3 rounded-lg border-2 transition-all text-left ${
-                        editingNode?.type === 'activity' 
-                          ? 'border-gray-500 bg-gray-50 text-gray-700' 
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-gray-500 rounded"></div>
-                        <div>
-                          <div className="font-medium text-sm">Actividad</div>
-                          <div className="text-xs opacity-75">Tarea</div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Color del texto
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="color"
+                            value={editTextColor}
+                            onChange={(e) => setEditTextColor(e.target.value)}
+                            className="w-12 h-10 border border-gray-300 rounded-md cursor-pointer"
+                          />
+                          <div className="flex-1">
+                            <input
+                              type="text"
+                              value={editTextColor}
+                              onChange={(e) => setEditTextColor(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                              placeholder="#FFFFFF"
+                            />
+                          </div>
                         </div>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        if (editingNode) {
-                          const newNode = { ...editingNode, type: 'decision' as const };
-                          setEditingNode(newNode);
-                        }
-                      }}
-                      className={`p-3 rounded-lg border-2 transition-all text-left ${
-                        editingNode?.type === 'decision' 
-                          ? 'border-yellow-500 bg-yellow-50 text-yellow-700' 
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-yellow-500 rounded-full"></div>
-                        <div>
-                          <div className="font-medium text-sm">Decisión</div>
-                          <div className="text-xs opacity-75">Bifurcación</div>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        if (editingNode) {
-                          const newNode = { ...editingNode, type: 'process' as const };
-                          setEditingNode(newNode);
-                        }
-                      }}
-                      className={`p-3 rounded-lg border-2 transition-all text-left ${
-                        editingNode?.type === 'process' 
-                          ? 'border-green-500 bg-green-50 text-green-700' 
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-green-500 rounded"></div>
-                        <div>
-                          <div className="font-medium text-sm">Proceso</div>
-                          <div className="text-xs opacity-75">Final</div>
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-
-                  <p className="text-xs text-gray-500">
-                    Haz click en cualquier tipo para cambiar el nodo manteniendo la posición y contenido
-                  </p>
-                </div>
-
-                {/* Preview del color y tipo */}
-                <div className="bg-gray-50 rounded-lg p-4 border">
-                  <div className="text-xs text-gray-600 mb-3 font-medium">Vista previa del nodo:</div>
-                  
-                  {/* Mini preview del nodo */}
-                  <div className="mb-4 flex justify-center">
-                    <div 
-                      className={`relative border-2 shadow-sm ${
-                        editingNode?.type === 'phase' ? 'rounded-xl min-w-[120px] h-16' :
-                        editingNode?.type === 'activity' ? 'rounded-lg min-w-[100px] h-12' :
-                        editingNode?.type === 'decision' ? 'rounded-full w-16 h-16' :
-                        editingNode?.type === 'process' ? 'rounded-lg min-w-[100px] h-12' :
-                        'rounded-lg min-w-[100px] h-12'
-                      } flex items-center justify-center p-2`}
-                      style={{ 
-                        backgroundColor: editColor,
-                        borderColor: editColor,
-                        color: editTextColor 
-                      }}
-                    >
-                      <div className="text-center">
-                        <div className={`font-bold ${
-                          editingNode?.type === 'phase' ? 'text-sm' :
-                          editingNode?.type === 'decision' ? 'text-xs' :
-                          'text-xs'
-                        }`}>
-                          {editingNode?.type === 'phase' && 'FASE'}
-                          {editingNode?.type === 'activity' && 'ACT'}
-                          {editingNode?.type === 'decision' && '?'}
-                          {editingNode?.type === 'process' && '✓'}
-                        </div>
-                        {editingNode?.type === 'phase' && (
-                          <div className="text-xs opacity-75">Principal</div>
-                        )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Preview de colores */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-16 h-2 rounded-full"
-                        style={{ backgroundColor: editColor }}
-                      ></div>
-                      <span className="text-xs text-gray-600">Color de fondo</span>
+                  {/* Columna Derecha - Tipo, Tamaño y Vista Previa */}
+                  <div className="space-y-6">
+                    {/* Tipo de nodo */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Tipo de nodo
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => {
+                            if (editingNode) {
+                              const newNode = { ...editingNode, type: 'phase' as const };
+                              setEditingNode(newNode);
+                            }
+                          }}
+                          className={`p-3 rounded-lg border-2 transition-all text-left ${
+                            editingNode?.type === 'phase' 
+                              ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 bg-blue-500 rounded"></div>
+                            <div>
+                              <div className="font-medium text-sm">Fase</div>
+                              <div className="text-xs opacity-75">Principal</div>
+                            </div>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            if (editingNode) {
+                              const newNode = { ...editingNode, type: 'activity' as const };
+                              setEditingNode(newNode);
+                            }
+                          }}
+                          className={`p-3 rounded-lg border-2 transition-all text-left ${
+                            editingNode?.type === 'activity' 
+                              ? 'border-gray-500 bg-gray-50 text-gray-700' 
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 bg-gray-500 rounded"></div>
+                            <div>
+                              <div className="font-medium text-sm">Actividad</div>
+                              <div className="text-xs opacity-75">Tarea</div>
+                            </div>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            if (editingNode) {
+                              const newNode = { ...editingNode, type: 'decision' as const };
+                              setEditingNode(newNode);
+                            }
+                          }}
+                          className={`p-3 rounded-lg border-2 transition-all text-left ${
+                            editingNode?.type === 'decision' 
+                              ? 'border-yellow-500 bg-yellow-50 text-yellow-700' 
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 bg-yellow-500 rounded-full"></div>
+                            <div>
+                              <div className="font-medium text-sm">Decisión</div>
+                              <div className="text-xs opacity-75">Bifurcación</div>
+                            </div>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            if (editingNode) {
+                              const newNode = { ...editingNode, type: 'process' as const };
+                              setEditingNode(newNode);
+                            }
+                          }}
+                          className={`p-3 rounded-lg border-2 transition-all text-left ${
+                            editingNode?.type === 'process' 
+                              ? 'border-green-500 bg-green-50 text-green-700' 
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 bg-green-500 rounded"></div>
+                            <div>
+                              <div className="font-medium text-sm">Proceso</div>
+                              <div className="text-xs opacity-75">Final</div>
+                            </div>
+                          </div>
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-16 h-2 rounded-full"
-                        style={{ backgroundColor: editTextColor }}
-                      ></div>
-                      <span className="text-xs text-gray-600">Color de texto</span>
+
+                    {/* Tamaño del nodo */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Tamaño del nodo
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => setEditSize('small')}
+                          className={`p-2 rounded-lg border-2 transition-all text-left ${
+                            editSize === 'small' 
+                              ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-3 bg-gray-400 rounded"></div>
+                            <div>
+                              <div className="font-medium text-xs">Pequeño</div>
+                              <div className="text-xs opacity-75">Compacto</div>
+                            </div>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => setEditSize('medium')}
+                          className={`p-2 rounded-lg border-2 transition-all text-left ${
+                            editSize === 'medium' 
+                              ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-4 bg-gray-400 rounded"></div>
+                            <div>
+                              <div className="font-medium text-xs">Mediano</div>
+                              <div className="text-xs opacity-75">Estándar</div>
+                            </div>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => setEditSize('large')}
+                          className={`p-2 rounded-lg border-2 transition-all text-left ${
+                            editSize === 'large' 
+                              ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-5 bg-gray-400 rounded"></div>
+                            <div>
+                              <div className="font-medium text-xs">Grande</div>
+                              <div className="text-xs opacity-75">Prominente</div>
+                            </div>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => setEditSize('xlarge')}
+                          className={`p-2 rounded-lg border-2 transition-all text-left ${
+                            editSize === 'xlarge' 
+                              ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-10 h-6 bg-gray-400 rounded"></div>
+                            <div>
+                              <div className="font-medium text-xs">Extra Grande</div>
+                              <div className="text-xs opacity-75">Destacado</div>
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Vista previa */}
+                    <div className="bg-gray-50 rounded-lg p-4 border">
+                      <div className="text-sm text-gray-600 mb-3 font-medium">Vista previa del nodo:</div>
+                      
+                      <div className="mb-4 flex justify-center">
+                        <div 
+                          className={`relative border-2 shadow-sm flex items-center justify-center ${
+                            editingNode?.type === 'phase' ? 'rounded-xl' :
+                            editingNode?.type === 'decision' ? 'rounded-full' :
+                            'rounded-lg'
+                          } ${
+                            editSize === 'small' ? (
+                              editingNode?.type === 'phase' ? 'min-w-[80px] h-12' :
+                              editingNode?.type === 'decision' ? 'w-12 h-12' :
+                              'min-w-[60px] h-10'
+                            ) :
+                            editSize === 'medium' ? (
+                              editingNode?.type === 'phase' ? 'min-w-[100px] h-14' :
+                              editingNode?.type === 'decision' ? 'w-14 h-14' :
+                              'min-w-[80px] h-12'
+                            ) :
+                            editSize === 'large' ? (
+                              editingNode?.type === 'phase' ? 'min-w-[120px] h-16' :
+                              editingNode?.type === 'decision' ? 'w-16 h-16' :
+                              'min-w-[100px] h-14'
+                            ) :
+                            editSize === 'xlarge' ? (
+                              editingNode?.type === 'phase' ? 'min-w-[140px] h-18' :
+                              editingNode?.type === 'decision' ? 'w-18 h-18' :
+                              'min-w-[120px] h-16'
+                            ) :
+                            'min-w-[80px] h-12'
+                          } p-2`}
+                          style={{ 
+                            backgroundColor: editColor,
+                            borderColor: editColor,
+                            color: editTextColor 
+                          }}
+                        >
+                          <div className="text-center">
+                            <div className={`font-bold ${
+                              editSize === 'small' ? 'text-xs' :
+                              editSize === 'medium' ? 'text-sm' :
+                              editSize === 'large' ? 'text-base' :
+                              editSize === 'xlarge' ? 'text-lg' :
+                              'text-sm'
+                            }`}>
+                              {editingNode?.type === 'phase' && 'FASE'}
+                              {editingNode?.type === 'activity' && 'ACT'}
+                              {editingNode?.type === 'decision' && '?'}
+                              {editingNode?.type === 'process' && '✓'}
+                            </div>
+                            {editingNode?.type === 'phase' && editSize !== 'small' && (
+                              <div className="text-xs opacity-75">Principal</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-16 h-2 rounded-full"
+                            style={{ backgroundColor: editColor }}
+                          ></div>
+                          <span className="text-xs text-gray-600">Color de fondo</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-16 h-2 rounded-full"
+                            style={{ backgroundColor: editTextColor }}
+                          ></div>
+                          <span className="text-xs text-gray-600">Color de texto</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="mt-6">
-                <div className="text-xs text-gray-500 mb-3 text-center">
-                  Presiona <kbd className="px-1 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs">Ctrl+Enter</kbd> para guardar o <kbd className="px-1 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs">Esc</kbd> para cancelar
-                </div>
-                <div className="flex justify-end gap-3">
-                  <button
-                    onClick={handleCancelEdit}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors font-medium"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={handleSaveEdit}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
-                  >
-                    Guardar
-                  </button>
+                <div className="mt-8 pt-6 border-t border-gray-200">
+                  <div className="text-xs text-gray-500 mb-4 text-center">
+                    Presiona <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs">Ctrl+Enter</kbd> para guardar o <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs">Esc</kbd> para cancelar
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={handleCancelEdit}
+                      className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors font-medium"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleSaveEdit}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
+                    >
+                      Guardar Cambios
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1875,7 +2072,7 @@ function BPMSDiagramInner() {
 
         {/* Modal de Edición de Conexión */}
         {editingEdge && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 ✏️ Editar Etiqueta de Conexión
