@@ -45,8 +45,9 @@ import {
   Copy,
   FileJson,
 } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
-// Interfaz para los datos de los nodos
+// Interfaz simple para los datos de los nodos
 interface NodeData {
   label: string;
   description?: string;
@@ -65,7 +66,7 @@ const nodeTypes: NodeTypes = {
   process: ProcessNode,
 };
 
-// Nodo para las fases principales - Diseño moderno
+// Nodo simple para las fases principales
 function PhaseNode({ data }: { data: NodeData }) {
   const color = data.color || '#3B82F6';
   const textColor = data.textColor || '#FFFFFF';
@@ -85,7 +86,7 @@ function PhaseNode({ data }: { data: NodeData }) {
     large: 'text-base',
     xlarge: 'text-lg'
   };
-  
+
   return (
     <div 
       className={`rounded-xl shadow-lg border-0 text-center relative ${sizeClasses[size]} transition-all duration-200 hover:shadow-xl hover:-translate-y-1`}
@@ -379,6 +380,20 @@ function BPMSDiagramInner({
   onLogout,
   currentDiagramId: _currentDiagramId
 }: BPMSDiagramInnerProps) {
+  // Función para sanitizar nodos inmediatamente
+  const sanitizeNodes = useCallback((nodeList: Node[]) => {
+    const seenIds = new Set<string>();
+    return nodeList.map(node => {
+      let finalId = node.id;
+      if (seenIds.has(node.id)) {
+        finalId = `node-${uuidv4()}`;
+        // ID duplicado detectado y corregido silenciosamente
+      }
+      seenIds.add(finalId);
+      return { ...node, id: finalId };
+    });
+  }, []);
+
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const { deleteElements, getNodes, screenToFlowPosition } = useReactFlow();
@@ -400,7 +415,6 @@ function BPMSDiagramInner({
   
   // Estado para el modo de herramienta actual
   const [toolMode, setToolMode] = React.useState<'select' | 'phase' | 'activity' | 'decision' | 'process' | 'delete'>('select');
-  const [nodeIdCounter, setNodeIdCounter] = React.useState(1000);
   
   
   // Estado para edición de nodos
@@ -644,10 +658,14 @@ El formato final debe ser:
     }
   }, [deleteElements, nodes, edges, saveToHistory]);
 
+  // Función para generar un ID único usando UUID
+  const generateUniqueNodeId = useCallback(() => {
+    return `node-${uuidv4()}`;
+  }, []);
+
   // Función para agregar un nuevo nodo
   const addNode = useCallback((type: string, position: { x: number; y: number }) => {
-    const newId = `node-${nodeIdCounter}`;
-    setNodeIdCounter(prev => prev + 1);
+    const newId = generateUniqueNodeId();
     
     let newNode: Node;
     
@@ -706,7 +724,7 @@ El formato final debe ser:
     setNodes((nds) => [...nds, newNode]);
     saveToHistory([...nodes, newNode], edges);
     // NO cambiar el toolMode automáticamente - mantener el modo activo
-  }, [nodeIdCounter, setNodes, nodes, edges, saveToHistory]);
+  }, [generateUniqueNodeId, setNodes, nodes, edges, saveToHistory]);
 
   // Manejar clic en el canvas
   const onPaneClick = useCallback((event: React.MouseEvent | MouseEvent) => {
@@ -901,10 +919,9 @@ El formato final debe ser:
     if (clipboard.length === 0) return;
 
     const newNodes = clipboard.map((node) => {
-      const newId = `node-${nodeIdCounter + clipboard.indexOf(node)}`;
       return {
         ...node,
-        id: newId,
+        id: `node-${uuidv4()}`,
         position: {
           x: node.position.x + 50,
           y: node.position.y + 50,
@@ -912,22 +929,19 @@ El formato final debe ser:
         selected: false,
       };
     });
-
-    setNodeIdCounter(prev => prev + clipboard.length);
     setNodes((nds) => [...nds, ...newNodes]);
     saveToHistory([...nodes, ...newNodes], edges);
-  }, [clipboard, nodes, edges, nodeIdCounter, setNodes, saveToHistory]);
+  }, [clipboard, nodes, edges, setNodes, saveToHistory]);
 
   // Función para duplicar nodos seleccionados
   const onDuplicate = useCallback(() => {
     const selectedNodes = nodes.filter(node => node.selected);
     if (selectedNodes.length === 0) return;
 
-    const duplicatedNodes = selectedNodes.map((node, index) => {
-      const newId = `node-${nodeIdCounter + index}`;
+    const duplicatedNodes = selectedNodes.map((node) => {
       return {
         ...node,
-        id: newId,
+        id: `node-${uuidv4()}`,
         position: {
           x: node.position.x + 50,
           y: node.position.y + 50,
@@ -935,14 +949,12 @@ El formato final debe ser:
         selected: true,
       };
     });
-
-    setNodeIdCounter(prev => prev + selectedNodes.length);
     
     // Deseleccionar nodos originales y agregar los duplicados
     const updatedNodes = nodes.map(node => ({ ...node, selected: false }));
     setNodes([...updatedNodes, ...duplicatedNodes]);
     saveToHistory([...updatedNodes, ...duplicatedNodes], edges);
-  }, [nodes, edges, nodeIdCounter, setNodes, saveToHistory]);
+  }, [nodes, edges, setNodes, saveToHistory]);
 
   // Función para limpiar nodos para exportación
   const cleanNodesForExport = useCallback((nodes: Node[]) => {
@@ -1354,7 +1366,7 @@ El formato final debe ser:
     setEdges(templateEdges);
     saveToHistory(templateNodes, templateEdges);
     setShowTemplates(false);
-    setNodeIdCounter(1000);
+    // UUIDs garantizan unicidad automáticamente
   }, [setNodes, setEdges, saveToHistory]);
 
   // Función para exportar el diagrama como PNG
@@ -1736,35 +1748,58 @@ El formato final debe ser:
 
   // Inicializar nodos y edges usando useMemo para evitar bucles infinitos
   const cleanedInitialNodes = useMemo(() => {
-    return (initialNodes || []).map(node => ({
-      ...node,
-      data: {
-        ...node.data,
-        icon: null, // Remover iconos React para evitar problemas de renderizado
+    const nodes = initialNodes || [];
+    const seenIds = new Set<string>();
+    
+    return nodes.map(node => {
+      // Verificar si el ID ya existe y generar uno nuevo si es necesario
+      let finalId = node.id;
+      if (seenIds.has(node.id)) {
+        finalId = `node-${uuidv4()}`;
+        // ID duplicado detectado y corregido silenciosamente
       }
-    }));
+      seenIds.add(finalId);
+      
+      return {
+        ...node,
+        id: finalId,
+        data: {
+          ...node.data,
+          icon: null, // Remover iconos React para evitar problemas de renderizado
+        }
+      };
+    });
   }, [initialNodes]);
 
   const cleanedInitialEdges = useMemo(() => {
-    return initialEdges || [];
+    const edges = initialEdges || [];
+    
+    return edges.map(edge => {
+      // Los edges ya deberían referenciar los IDs correctos después de la limpieza de nodos
+      return {
+        ...edge,
+      };
+    });
   }, [initialEdges]);
 
   // Inicializar el estado solo una vez
   React.useEffect(() => {
-    setNodes(cleanedInitialNodes);
+    // Sanitizar nodos inmediatamente antes de establecer el estado
+    const sanitizedNodes = sanitizeNodes(cleanedInitialNodes);
+    setNodes(sanitizedNodes);
     setEdges(cleanedInitialEdges);
     
     // Guardar estado inicial en el historial
-    const initialState = { nodes: cleanedInitialNodes, edges: cleanedInitialEdges };
+    const initialState = { nodes: sanitizedNodes, edges: cleanedInitialEdges };
     setHistory([initialState]);
     setHistoryIndex(0);
     
     // Notificar al componente padre sobre los datos iniciales
     if (onDiagramChange) {
-      onDiagramChange(cleanedInitialNodes, cleanedInitialEdges);
+      onDiagramChange(sanitizedNodes, cleanedInitialEdges);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // SOLO al montar el componente
+  }, [sanitizeNodes]); // Incluir sanitizeNodes para evitar warnings
 
   // Función auxiliar para comparar nodos y edges sin referencias circulares
   const compareStates = useCallback((state1: Node[] | Edge[], state2: Node[] | Edge[]) => {
@@ -2044,52 +2079,49 @@ El formato final debe ser:
           attributionPosition="bottom-left"
           connectionLineType={ConnectionLineType.SmoothStep}
           connectionLineStyle={{
-            strokeWidth: 2.5,
+            strokeWidth: 2,
             stroke: '#3B82F6',
             strokeDasharray: '5,5',
             opacity: 0.6,
             strokeLinecap: 'round'
           }}
-          // Configuraciones adicionales para suavidad
-          snapToGrid={false}
-          snapGrid={[15, 15]}
+          defaultEdgeOptions={{
+            type: 'smoothstep',
+            animated: false,
+            markerEnd: { 
+              type: MarkerType.ArrowClosed, 
+              color: '#6B7280',
+              width: 12,
+              height: 12,
+              strokeWidth: 1.5
+            },
+            style: { 
+              strokeWidth: 2, 
+              stroke: '#6B7280',
+              strokeLinecap: 'round' as const,
+              strokeDasharray: '0',
+              opacity: 0.9
+            }
+          }}
+          // Configuraciones simples
           onlyRenderVisibleElements={false}
-            defaultEdgeOptions={{
-              type: 'smoothstep',
-              markerEnd: { 
-                type: MarkerType.ArrowClosed, 
-                color: '#6B7280',
-                width: 14,
-                height: 14,
-                strokeWidth: 1.5
-              },
-              style: { 
-                strokeWidth: 2.5, 
-                stroke: '#6B7280',
-                strokeLinecap: 'round' as const,
-                strokeDasharray: '0',
-                opacity: 0.9
-              },
-              animated: false,
-              // Configuración adicional para suavidad
-              data: {
-                label: ''
-              }
-            }}
           nodesDraggable={true}
           nodesConnectable={true}
           elementsSelectable={true}
           selectNodesOnDrag={false}
           panOnDrag={toolMode === 'select'}
-          nodesFocusable={false}
-          zoomOnScroll={true}
-          panOnScroll={false}
-          preventScrolling={false}
-          minZoom={0.1}
+          connectionRadius={20}
+          snapToGrid={false}
+          fitViewOptions={{
+            padding: 0.2,
+            includeHiddenNodes: false,
+            minZoom: 0.1,
+            maxZoom: 2
+          }}
           maxZoom={2}
           deleteKeyCode={null}
           multiSelectionKeyCode={['Meta', 'Control']}
-          selectionKeyCode={null}
+          selectionKeyCode={'Meta'}
           selectionMode={SelectionMode.Partial}
         >
           <Controls 
