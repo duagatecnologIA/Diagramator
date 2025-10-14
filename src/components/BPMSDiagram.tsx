@@ -2784,7 +2784,7 @@ El formato final debe ser:
             {/* Botones de Auto-Layout */}
             <div className="flex space-x-1">
               <button
-                onClick={applyDagreLayout}
+                onClick={() => applyDagreLayout('TB')}
                 className="flex-1 px-2 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors text-xs font-medium flex items-center justify-center gap-1"
                 title="Organizar automáticamente con Dagre (Jerárquico)"
               >
@@ -2792,7 +2792,7 @@ El formato final debe ser:
                 Dagre
               </button>
               <button
-                onClick={applyELKLayout}
+                onClick={() => applyELKLayout('layered')}
                 className="flex-1 px-2 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors text-xs font-medium flex items-center justify-center gap-1"
                 title="Organizar automáticamente con ELK (Avanzado)"
               >
