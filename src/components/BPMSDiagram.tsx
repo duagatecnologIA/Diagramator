@@ -50,6 +50,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import dagre from 'dagre';
 import ELK from 'elkjs/lib/elk.bundled.js';
+import type { ElkNode } from 'elkjs';
 
 // Interfaz simple para los datos de los nodos
 interface NodeData {
@@ -1747,7 +1748,7 @@ El formato final debe ser:
     };
 
     // Preparar el grafo para ELK con configuración mejorada
-    const graph = {
+    const graph: ElkNode = {
       id: 'root',
       layoutOptions: {
         ...algorithmOptions[algorithm],
@@ -1760,7 +1761,7 @@ El formato final debe ser:
         id: node.id,
         width: node.width || 240,
         height: node.height || 80,
-        labels: node.data?.label ? [{ text: node.data.label }] : undefined,
+        labels: node.data?.label ? [{ text: String(node.data.label) }] : undefined,
       })),
       edges: edges.map((edge) => ({
         id: edge.id,
