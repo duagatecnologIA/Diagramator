@@ -23,6 +23,7 @@ import {
   useReactFlow,
   Panel,
   getNodesBounds,
+  getViewportForBounds,
   MiniMap,
   SelectionMode,
 } from '@xyflow/react';
@@ -44,8 +45,11 @@ import {
   Upload,
   Copy,
   FileJson,
+  Network,
 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import dagre from 'dagre';
+import ELK from 'elkjs/lib/elk.bundled.js';
 
 // Interfaz simple para los datos de los nodos
 interface NodeData {
@@ -396,7 +400,7 @@ function BPMSDiagramInner({
 
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
-  const { deleteElements, getNodes, screenToFlowPosition } = useReactFlow();
+  const { deleteElements, getNodes, screenToFlowPosition, setViewport, getViewport } = useReactFlow();
 
   // Funciones para manejar cambios de nodos y edges
   const onNodesChange = useCallback(
@@ -1371,24 +1375,61 @@ El formato final debe ser:
 
   // Función para exportar el diagrama como PNG
   const onExportPNG = useCallback(() => {
-    const reactFlowViewport = document.querySelector('.react-flow__viewport') as HTMLElement;
+    const nodeElements = getNodes();
     
+    if (nodeElements.length === 0) {
+      alert('No hay elementos para exportar');
+      return;
+    }
+
+    const reactFlowViewport = document.querySelector('.react-flow__viewport') as HTMLElement;
     if (!reactFlowViewport) return;
 
-    const nodesBounds = getNodesBounds(getNodes());
-    const imageWidth = nodesBounds.width + 100;
-    const imageHeight = nodesBounds.height + 100;
+    // Obtener bounds de los nodos
+    const nodesBounds = getNodesBounds(nodeElements);
+    const padding = 50;
+    const imageWidth = nodesBounds.width + padding * 2;
+    const imageHeight = nodesBounds.height + padding * 2;
 
-    toPng(reactFlowViewport, {
+    // Calcular el viewport para enfocar los nodos
+    const viewport = getViewportForBounds(
+      nodesBounds,
+      imageWidth,
+      imageHeight,
+      0.5,
+      2,
+      padding
+    );
+
+    // Guardar viewport actual
+    const originalViewport = getViewport();
+
+    // Establecer nuevo viewport
+    setViewport(viewport, { duration: 0 });
+
+    // Esperar un frame para que se actualice el DOM
+    setTimeout(() => {
+      const flowContainer = document.querySelector('.react-flow') as HTMLElement;
+      
+      if (!flowContainer) {
+        setViewport(originalViewport, { duration: 0 });
+        return;
+      }
+
+      toPng(flowContainer, {
       backgroundColor: '#ffffff',
       width: imageWidth,
       height: imageHeight,
-      style: {
-        width: `${imageWidth}px`,
-        height: `${imageHeight}px`,
-        transform: `translate(${-nodesBounds.x + 50}px, ${-nodesBounds.y + 50}px)`,
-      },
       pixelRatio: 2,
+        filter: (node) => {
+          // Filtrar elementos que no queremos en la exportación
+          if (node.classList?.contains('react-flow__controls')) return false;
+          if (node.classList?.contains('react-flow__minimap')) return false;
+          if (node.classList?.contains('react-flow__panel')) return false;
+          if (node.classList?.contains('react-flow__attribution')) return false;
+          if (node.classList?.contains('react-flow__background')) return false;
+          return true;
+        },
     }).then((dataUrl) => {
       const now = new Date();
       const currentTitle = diagramTitle || 'Diagrama';
@@ -1407,29 +1448,71 @@ El formato final debe ser:
       link.download = `${cleanTitle}_${formattedDate}_${formattedTime}.png`;
       link.href = dataUrl;
       link.click();
+
+        // Restaurar viewport original
+        setViewport(originalViewport, { duration: 300 });
     }).catch((err) => {
       console.error('Error al exportar PNG:', err);
+        setViewport(originalViewport, { duration: 0 });
     });
-  }, [getNodes, diagramTitle]);
+    }, 100);
+  }, [getNodes, getViewport, setViewport, diagramTitle]);
 
   // Función para exportar el diagrama como SVG
   const onExportSVG = useCallback(() => {
-    const reactFlowViewport = document.querySelector('.react-flow__viewport') as HTMLElement;
+    const nodeElements = getNodes();
     
+    if (nodeElements.length === 0) {
+      alert('No hay elementos para exportar');
+      return;
+    }
+
+    const reactFlowViewport = document.querySelector('.react-flow__viewport') as HTMLElement;
     if (!reactFlowViewport) return;
 
-    const nodesBounds = getNodesBounds(getNodes());
-    const imageWidth = nodesBounds.width + 100;
-    const imageHeight = nodesBounds.height + 100;
+    // Obtener bounds de los nodos
+    const nodesBounds = getNodesBounds(nodeElements);
+    const padding = 50;
+    const imageWidth = nodesBounds.width + padding * 2;
+    const imageHeight = nodesBounds.height + padding * 2;
 
-    toSvg(reactFlowViewport, {
+    // Calcular el viewport para enfocar los nodos
+    const viewport = getViewportForBounds(
+      nodesBounds,
+      imageWidth,
+      imageHeight,
+      0.5,
+      2,
+      padding
+    );
+
+    // Guardar viewport actual
+    const originalViewport = getViewport();
+
+    // Establecer nuevo viewport
+    setViewport(viewport, { duration: 0 });
+
+    // Esperar un frame para que se actualice el DOM
+    setTimeout(() => {
+      const flowContainer = document.querySelector('.react-flow') as HTMLElement;
+      
+      if (!flowContainer) {
+        setViewport(originalViewport, { duration: 0 });
+        return;
+      }
+
+      toSvg(flowContainer, {
       backgroundColor: '#ffffff',
       width: imageWidth,
       height: imageHeight,
-      style: {
-        width: `${imageWidth}px`,
-        height: `${imageHeight}px`,
-        transform: `translate(${-nodesBounds.x + 50}px, ${-nodesBounds.y + 50}px)`,
+        filter: (node) => {
+          // Filtrar elementos que no queremos en la exportación
+          if (node.classList?.contains('react-flow__controls')) return false;
+          if (node.classList?.contains('react-flow__minimap')) return false;
+          if (node.classList?.contains('react-flow__panel')) return false;
+          if (node.classList?.contains('react-flow__attribution')) return false;
+          if (node.classList?.contains('react-flow__background')) return false;
+          return true;
       },
     }).then((dataUrl) => {
       const now = new Date();
@@ -1449,10 +1532,325 @@ El formato final debe ser:
       link.download = `${cleanTitle}_${formattedDate}_${formattedTime}.svg`;
       link.href = dataUrl;
       link.click();
+
+        // Restaurar viewport original
+        setViewport(originalViewport, { duration: 300 });
     }).catch((err) => {
       console.error('Error al exportar SVG:', err);
+        setViewport(originalViewport, { duration: 0 });
+      });
+    }, 100);
+  }, [getNodes, getViewport, setViewport, diagramTitle]);
+
+  // Función para auto-layout usando Dagre (Layout Jerárquico Mejorado)
+  const applyDagreLayout = useCallback((direction: 'TB' | 'LR' | 'RL' | 'BT' = 'TB') => {
+    const nodeElements = getNodes();
+    
+    if (nodeElements.length === 0) {
+      alert('No hay nodos para organizar');
+      return;
+    }
+
+    // Guardar en historial antes de aplicar layout
+    saveToHistory(nodes, edges);
+
+    // Crear un nuevo grafo dirigido
+    const dagreGraph = new dagre.graphlib.Graph();
+    dagreGraph.setDefaultEdgeLabel(() => ({}));
+
+    // Calcular espaciado adaptativo basado en el número de nodos
+    const nodeCount = nodeElements.length;
+    const edgeCount = edges.length;
+    
+    // Espaciado dinámico: más nodos = más separación para evitar sobreposición
+    const baseNodeSep = nodeCount < 10 ? 120 : nodeCount < 30 ? 100 : 80;
+    const baseRankSep = nodeCount < 10 ? 180 : nodeCount < 30 ? 150 : 120;
+    
+    // Si hay muchas conexiones, aumentar separación
+    const density = edgeCount / Math.max(nodeCount, 1);
+    const nodeSep = density > 2 ? baseNodeSep * 1.3 : baseNodeSep;
+    const rankSep = density > 2 ? baseRankSep * 1.2 : baseRankSep;
+
+    // Configuración mejorada del layout
+    dagreGraph.setGraph({
+      rankdir: direction,
+      align: 'UL', // Alineación Upper-Left
+      nodesep: nodeSep,
+      ranksep: rankSep,
+      edgesep: 50, // Separación entre edges
+      marginx: 60,
+      marginy: 60,
+      acyclicer: 'greedy', // Mejor manejo de ciclos
+      ranker: 'network-simplex', // Algoritmo de ranking optimizado
     });
-  }, [getNodes, diagramTitle]);
+
+    // Calcular dimensiones promedio de nodos para mejor estimación
+    const avgWidth = nodeElements.reduce((sum, n) => sum + (n.width || 240), 0) / nodeElements.length;
+    const avgHeight = nodeElements.reduce((sum, n) => sum + (n.height || 80), 0) / nodeElements.length;
+
+    // Agregar nodos al grafo con dimensiones reales o estimadas
+    nodeElements.forEach((node) => {
+      const nodeWidth = node.width || avgWidth || 240;
+      const nodeHeight = node.height || avgHeight || 80;
+      
+      dagreGraph.setNode(node.id, { 
+        width: nodeWidth, 
+        height: nodeHeight,
+        label: node.data?.label || node.id
+      });
+    });
+
+    // Agregar edges al grafo con configuración de peso
+    edges.forEach((edge) => {
+      dagreGraph.setEdge(edge.source, edge.target, {
+        weight: 1, // Peso uniforme para todas las conexiones
+        minlen: 1 // Longitud mínima del edge
+      });
+    });
+
+    // Ejecutar el algoritmo de layout
+    dagre.layout(dagreGraph);
+
+    // Separar nodos conectados de nodos aislados
+    const connectedNodeIds = new Set<string>();
+    edges.forEach(edge => {
+      connectedNodeIds.add(edge.source);
+      connectedNodeIds.add(edge.target);
+    });
+
+    const connectedNodes: Node[] = [];
+    const isolatedNodes: Node[] = [];
+
+    nodeElements.forEach((node) => {
+      if (connectedNodeIds.has(node.id)) {
+        connectedNodes.push(node);
+      } else {
+        isolatedNodes.push(node);
+      }
+    });
+
+    // Aplicar las nuevas posiciones a nodos conectados
+    const layoutedConnectedNodes = connectedNodes.map((node) => {
+      const nodeWithPosition = dagreGraph.node(node.id);
+      const nodeWidth = node.width || avgWidth || 240;
+      const nodeHeight = node.height || avgHeight || 80;
+      
+      return {
+        ...node,
+        position: {
+          x: nodeWithPosition.x - nodeWidth / 2,
+          y: nodeWithPosition.y - nodeHeight / 2,
+        },
+      };
+    });
+
+    // Posicionar nodos aislados en una fila separada
+    let isolatedNodesLayouted: Node[] = [];
+    if (isolatedNodes.length > 0 && layoutedConnectedNodes.length > 0) {
+      const connectedBounds = getNodesBounds(layoutedConnectedNodes);
+      const startY = direction === 'TB' || direction === 'LR' 
+        ? connectedBounds.y + connectedBounds.height + rankSep 
+        : connectedBounds.y - rankSep - 100;
+      
+      isolatedNodesLayouted = isolatedNodes.map((node, index) => ({
+        ...node,
+        position: {
+          x: connectedBounds.x + (index * (nodeSep + (node.width || 240))),
+          y: startY,
+        },
+      }));
+    } else if (isolatedNodes.length > 0) {
+      // Si solo hay nodos aislados, posicionarlos en cuadrícula
+      const itemsPerRow = Math.ceil(Math.sqrt(isolatedNodes.length));
+      isolatedNodesLayouted = isolatedNodes.map((node, index) => ({
+        ...node,
+        position: {
+          x: (index % itemsPerRow) * (nodeSep + (node.width || 240)),
+          y: Math.floor(index / itemsPerRow) * (rankSep + (node.height || 80)),
+        },
+      }));
+    }
+
+    const allLayoutedNodes = [...layoutedConnectedNodes, ...isolatedNodesLayouted];
+    setNodes(allLayoutedNodes);
+    
+    // Centrar la vista en los nodos organizados con animación suave
+    setTimeout(() => {
+      const bounds = getNodesBounds(allLayoutedNodes);
+      const viewport = getViewportForBounds(
+        bounds,
+        window.innerWidth,
+        window.innerHeight,
+        0.5,
+        2,
+        80
+      );
+      setViewport(viewport, { duration: 600 });
+    }, 100);
+  }, [getNodes, edges, nodes, setNodes, saveToHistory, getViewport, setViewport]);
+
+  // Función para auto-layout usando ELK (Layout Avanzado Mejorado)
+  const applyELKLayout = useCallback(async (algorithm: 'layered' | 'force' | 'mrtree' | 'stress' = 'layered') => {
+    const nodeElements = getNodes();
+    
+    if (nodeElements.length === 0) {
+      alert('No hay nodos para organizar');
+      return;
+    }
+
+    // Guardar en historial antes de aplicar layout
+    saveToHistory(nodes, edges);
+
+    const elk = new ELK();
+
+    // Calcular espaciado adaptativo
+    const nodeCount = nodeElements.length;
+    const edgeCount = edges.length;
+    const density = edgeCount / Math.max(nodeCount, 1);
+    
+    // Espaciado dinámico basado en cantidad de nodos y densidad
+    const baseSpacing = nodeCount < 10 ? 120 : nodeCount < 30 ? 100 : 80;
+    const layerSpacing = nodeCount < 10 ? 180 : nodeCount < 30 ? 150 : 120;
+    const spacing = density > 2 ? baseSpacing * 1.3 : baseSpacing;
+    const betweenLayers = density > 2 ? layerSpacing * 1.2 : layerSpacing;
+
+    // Configuraciones específicas por algoritmo
+    const algorithmOptions: Record<string, any> = {
+      layered: {
+        'elk.algorithm': 'layered',
+        'elk.direction': 'DOWN',
+        'elk.spacing.nodeNode': String(spacing),
+        'elk.layered.spacing.nodeNodeBetweenLayers': String(betweenLayers),
+        'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
+        'elk.layered.cycleBreaking.strategy': 'GREEDY',
+        'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
+        'elk.layered.compaction.postCompaction.strategy': 'EDGE_LENGTH',
+        'elk.spacing.edgeNode': '80',
+        'elk.spacing.edgeEdge': '50',
+      },
+      force: {
+        'elk.algorithm': 'force',
+        'elk.force.repulsion': '200',
+        'elk.force.iterations': '300',
+        'elk.spacing.nodeNode': String(spacing * 1.5),
+      },
+      mrtree: {
+        'elk.algorithm': 'mrtree',
+        'elk.spacing.nodeNode': String(spacing),
+        'elk.mrtree.searchOrder': 'DFS',
+      },
+      stress: {
+        'elk.algorithm': 'stress',
+        'elk.stress.desiredEdgeLength': String(spacing * 1.2),
+        'elk.stress.dimension': 'XY',
+      },
+    };
+
+    // Preparar el grafo para ELK con configuración mejorada
+    const graph = {
+      id: 'root',
+      layoutOptions: {
+        ...algorithmOptions[algorithm],
+        'elk.padding': '[top=80,left=80,bottom=80,right=80]',
+        'elk.spacing.componentComponent': '100',
+        'elk.separateConnectedComponents': 'true',
+        'elk.aspectRatio': '1.6', // Ratio 16:10 para mejor visualización
+      },
+      children: nodeElements.map((node) => ({
+        id: node.id,
+        width: node.width || 240,
+        height: node.height || 80,
+        labels: node.data?.label ? [{ text: node.data.label }] : undefined,
+      })),
+      edges: edges.map((edge) => ({
+        id: edge.id,
+        sources: [edge.source],
+        targets: [edge.target],
+      })),
+    };
+
+    try {
+      const layoutedGraph = await elk.layout(graph);
+
+      // Separar nodos conectados de nodos aislados
+      const connectedNodeIds = new Set<string>();
+      edges.forEach(edge => {
+        connectedNodeIds.add(edge.source);
+        connectedNodeIds.add(edge.target);
+      });
+
+      const connectedNodes: Node[] = [];
+      const isolatedNodes: Node[] = [];
+
+      nodeElements.forEach((node) => {
+        if (connectedNodeIds.has(node.id)) {
+          connectedNodes.push(node);
+        } else {
+          isolatedNodes.push(node);
+        }
+      });
+
+      // Aplicar las nuevas posiciones a nodos conectados
+      const layoutedConnectedNodes = connectedNodes.map((node) => {
+        const layoutedNode = layoutedGraph.children?.find((n) => n.id === node.id);
+        return {
+          ...node,
+          position: {
+            x: layoutedNode?.x ?? node.position.x,
+            y: layoutedNode?.y ?? node.position.y,
+          },
+        };
+      });
+
+      // Posicionar nodos aislados en cuadrícula al final
+      let isolatedNodesLayouted: Node[] = [];
+      if (isolatedNodes.length > 0 && layoutedConnectedNodes.length > 0) {
+        const connectedBounds = getNodesBounds(layoutedConnectedNodes);
+        const startY = connectedBounds.y + connectedBounds.height + betweenLayers;
+        
+        const itemsPerRow = Math.min(Math.ceil(Math.sqrt(isolatedNodes.length)), 5);
+        isolatedNodesLayouted = isolatedNodes.map((node, index) => ({
+          ...node,
+          position: {
+            x: connectedBounds.x + ((index % itemsPerRow) * (spacing + (node.width || 240))),
+            y: startY + (Math.floor(index / itemsPerRow) * (spacing + (node.height || 80))),
+          },
+        }));
+      } else if (isolatedNodes.length > 0) {
+        // Si solo hay nodos aislados, usar el layout de ELK para ellos también
+        isolatedNodesLayouted = isolatedNodes.map((node) => {
+          const layoutedNode = layoutedGraph.children?.find((n) => n.id === node.id);
+          return {
+            ...node,
+            position: {
+              x: layoutedNode?.x ?? node.position.x,
+              y: layoutedNode?.y ?? node.position.y,
+            },
+          };
+        });
+      }
+
+      const allLayoutedNodes = [...layoutedConnectedNodes, ...isolatedNodesLayouted];
+      setNodes(allLayoutedNodes);
+      
+      // Centrar la vista en los nodos organizados con animación suave
+      setTimeout(() => {
+        const bounds = getNodesBounds(allLayoutedNodes);
+        const viewport = getViewportForBounds(
+          bounds,
+          window.innerWidth,
+          window.innerHeight,
+          0.5,
+          2,
+          80
+        );
+        setViewport(viewport, { duration: 600 });
+      }, 100);
+    } catch (error) {
+      console.error('Error al aplicar ELK layout:', error);
+      alert('Error al organizar el diagrama. Intenta con otro algoritmo.');
+    }
+  }, [getNodes, edges, nodes, setNodes, saveToHistory, getViewport, setViewport]);
 
   // Función para seleccionar todos los nodos
   const onSelectAll = useCallback(() => {
@@ -1563,8 +1961,8 @@ El formato final debe ser:
     }
   }, [undo, redo, onDelete, editingNode, editingEdge, handleSaveEdit, handleCancelEdit, handleSaveEdgeEdit, handleCancelEdgeEdit, onCopy, onPaste, onDuplicate, exportJSONFunction, onSelectAll, handlePasteJSON]);
 
-  // Función para ordenar nodos automáticamente con algoritmo inteligente
-  const autoArrangeNodes = useCallback(() => {
+  // Función para ordenar nodos automáticamente con algoritmo inteligente (LR/TB)
+  const autoArrangeNodes = useCallback((direction: 'LR' | 'TB' = 'LR') => {
     if (nodes.length === 0) return;
 
     // Guardar en el historial antes del cambio
@@ -1612,85 +2010,85 @@ El formato final debe ser:
         }
       });
 
-      // 4. Configuración de layout HORIZONTAL (izquierda a derecha)
-      const levelWidth = 350;  // Espacio horizontal entre columnas
-      const nodeHeight = 150;  // Espacio vertical entre nodos
-      const startX = 100;
+      // 4. Configuración de layout y separación (estilo pipeline)
+      const levelWidth = 460;   // Mayor separación entre columnas
+      const nodeHeight = 220;   // Mayor separación entre filas
+      const startX = 120;
+      const startY = 120;
 
-      // 5. Posicionamiento HORIZONTAL con centrado óptimo (izquierda → derecha)
+      // 5. Posicionamiento con centrado óptimo según dirección
       const updatedNodes = nodes.map(node => {
         const nodeData = nodeMap.get(node.id);
         if (!nodeData) return node;
         
         const level = nodeData.level;
         
-        // Contar nodos en el mismo nivel (columna vertical)
+        // Contar nodos en el mismo nivel (columna o fila)
         const nodesInLevel = Array.from(nodeMap.values()).filter(n => n.level === level);
         const nodeIndex = nodesInLevel.findIndex(n => n.id === node.id);
         const totalNodesInLevel = nodesInLevel.length;
         
-        // Calcular posición X (columna según el nivel) - HORIZONTAL
+        // Calcular centros del canvas
+        const canvasCenterX = Math.max(400, Math.floor((typeof window !== 'undefined' ? window.innerWidth : 1200) / 2));
+        const canvasCenterY = Math.max(400, Math.floor((typeof window !== 'undefined' ? window.innerHeight : 800) / 2));
+
+        // Cálculos base para LR (horizontal)
         const levelCenterX = startX + (level * levelWidth);
-        
-        // Calcular centro del canvas vertical
-        const canvasVerticalCenter = 400;
-        
-        // Calcular altura total del nivel para centrar verticalmente
         const totalHeight = (totalNodesInLevel - 1) * nodeHeight;
-        const levelStartY = canvasVerticalCenter - (totalHeight / 2);
+        const levelStartY = canvasCenterY - (totalHeight / 2);
+
+        // Cálculos base para TB (vertical)
+        const levelCenterY = startY + (level * nodeHeight);
+        const totalWidth = (totalNodesInLevel - 1) * levelWidth;
+        const levelStartX = canvasCenterX - (totalWidth / 2);
         
         let newPosition;
         
-        // Intentar alinear hijos con sus padres para líneas más rectas HORIZONTAL
+        // Intentar alinear hijos con sus padres para líneas más rectas
         const parentEdges = edges.filter(edge => edge.target === node.id);
         
         if (parentEdges.length === 1) {
-          // Si tiene un solo padre, intentar alinearse con él verticalmente
+          // Si tiene un solo padre, intentar alinearse con él (eje secundario)
           const parentNode = nodeMap.get(parentEdges[0].source);
           if (parentNode && parentNode.position) {
-            newPosition = {
-              x: levelCenterX,
-              y: parentNode.position.y  // Misma altura Y que el padre
-            };
+            newPosition = direction === 'LR'
+              ? { x: levelCenterX, y: parentNode.position.y } // misma Y
+              : { x: parentNode.position.x, y: levelCenterY }; // misma X
           } else {
             // Centrado por defecto
-            newPosition = {
-              x: levelCenterX,
-              y: levelStartY + (nodeIndex * nodeHeight)
-            };
+            newPosition = direction === 'LR'
+              ? { x: levelCenterX, y: levelStartY + (nodeIndex * nodeHeight) }
+              : { x: levelStartX + (nodeIndex * levelWidth), y: levelCenterY };
           }
         } else if (parentEdges.length > 1) {
-          // Si tiene múltiples padres, posicionarse en el centro vertical de ellos
+          // Si tiene múltiples padres, posicionarse en el centro del eje secundario
           const parentPositions = parentEdges
             .map(edge => nodeMap.get(edge.source))
             .filter(parent => parent && parent.position)
-            .map(parent => parent!.position.y);  // Usar Y en lugar de X
+            .map(parent => direction === 'LR' ? parent!.position.y : parent!.position.x);
           
           if (parentPositions.length > 0) {
             const avgParentY = parentPositions.reduce((a, b) => a + b, 0) / parentPositions.length;
-            newPosition = {
-              x: levelCenterX,
-              y: avgParentY
-            };
+            newPosition = direction === 'LR'
+              ? { x: levelCenterX, y: avgParentY }
+              : { x: avgParentY, y: levelCenterY };
           } else {
-            newPosition = {
-              x: levelCenterX,
-              y: levelStartY + (nodeIndex * nodeHeight)
-            };
+            newPosition = direction === 'LR'
+              ? { x: levelCenterX, y: levelStartY + (nodeIndex * nodeHeight) }
+              : { x: levelStartX + (nodeIndex * levelWidth), y: levelCenterY };
           }
         } else {
-          // Sin padres, usar distribución centrada verticalmente
-          newPosition = {
-            x: levelCenterX,
-            y: levelStartY + (nodeIndex * nodeHeight)
-          };
+          // Sin padres, usar distribución centrada según dirección
+          newPosition = direction === 'LR'
+            ? { x: levelCenterX, y: levelStartY + (nodeIndex * nodeHeight) }
+            : { x: levelStartX + (nodeIndex * levelWidth), y: levelCenterY };
         }
 
-        // 6. Aplicar espaciado mínimo y evitar superposiciones VERTICAL
-        const minDistance = 120;
+        // 6. Aplicar espaciado mínimo y evitar superposiciones
+        const minDistance = 180; // mayor separación mínima
         const finalPosition = { ...newPosition };
         
-        // Verificar superposiciones con otros nodos del mismo nivel (columna)
+        // Verificar superposiciones con otros nodos del mismo nivel
         const nodesInLevelWithPositions = Array.from(nodeMap.values())
           .filter(n => n.id !== node.id && n.level === level && n.position);
         
@@ -1701,9 +2099,14 @@ El formato final debe ser:
           );
           
           if (distance < minDistance) {
-            // Mover VERTICALMENTE para evitar superposición
-            const direction = finalPosition.y >= nearby.position.y ? 1 : -1;
-            finalPosition.y += direction * (minDistance - distance);
+            // Mover sobre el eje secundario para evitar superposición
+            if (direction === 'LR') {
+              const dir = finalPosition.y >= nearby.position.y ? 1 : -1;
+              finalPosition.y += dir * (minDistance - distance);
+            } else {
+              const dir = finalPosition.x >= nearby.position.x ? 1 : -1;
+              finalPosition.x += dir * (minDistance - distance);
+            }
           }
         });
         
@@ -2255,16 +2658,28 @@ El formato final debe ser:
             <div className="border-t border-gray-200 my-2"></div>
 
             {/* Botón Ordenar */}
+            <div className="space-y-1">
             <button
-              onClick={autoArrangeNodes}
+                onClick={() => autoArrangeNodes('LR')}
               className="w-full px-3 py-2 rounded transition-colors text-sm font-medium flex items-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100"
-              title="Ordenar nodos automáticamente (simétrico)"
+                title="Ordenar nodos (Pipeline Horizontal: Izquierda → Derecha)"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12h14m0 0l-4-4m4 4l-4 4" />
               </svg>
-              Ordenar
+                Ordenar (Horizontal)
             </button>
+              <button
+                onClick={() => autoArrangeNodes('TB')}
+                className="w-full px-3 py-2 rounded transition-colors text-sm font-medium flex items-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                title="Ordenar nodos (Vertical: Arriba ↓ Abajo)"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v14m0 0l4-4m-4 4l-4-4" />
+                </svg>
+                Ordenar (Vertical)
+              </button>
+            </div>
 
             {/* Botón Eliminar */}
             <button
@@ -2363,6 +2778,29 @@ El formato final debe ser:
             </div>
 
             <div className="border-t border-gray-200 my-2"></div>
+            <div className="text-xs text-gray-600 mb-2 font-medium">Auto-Layout</div>
+
+            {/* Botones de Auto-Layout */}
+            <div className="flex space-x-1">
+              <button
+                onClick={applyDagreLayout}
+                className="flex-1 px-2 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors text-xs font-medium flex items-center justify-center gap-1"
+                title="Organizar automáticamente con Dagre (Jerárquico)"
+              >
+                <Network className="w-3 h-3" />
+                Dagre
+              </button>
+              <button
+                onClick={applyELKLayout}
+                className="flex-1 px-2 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors text-xs font-medium flex items-center justify-center gap-1"
+                title="Organizar automáticamente con ELK (Avanzado)"
+              >
+                <Network className="w-3 h-3" />
+                ELK
+              </button>
+            </div>
+
+            <div className="border-t border-gray-200 my-2"></div>
             <div className="text-xs text-gray-600 mb-2 font-medium">Edición</div>
 
             {/* Botones Copy/Paste/Duplicate */}
@@ -2415,10 +2853,10 @@ El formato final debe ser:
           </Panel>
           <Background 
             variant={BackgroundVariant.Dots} 
-            gap={24} 
-            size={1}
-            color="#E5E7EB"
-            className="opacity-50"
+            gap={20} 
+            size={1.5}
+            color="#CBD5E1"
+            className="opacity-100"
           />
         </ReactFlow>
 
