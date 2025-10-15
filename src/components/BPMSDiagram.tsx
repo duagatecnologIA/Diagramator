@@ -46,11 +46,14 @@ import {
   Copy,
   FileJson,
   Network,
+  Bot,
+  Check,
 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import dagre from 'dagre';
 import ELK from 'elkjs/lib/elk.bundled.js';
 import type { ElkNode } from 'elkjs';
+import ChatModal from './ChatModal';
 
 // Interfaz simple para los datos de los nodos
 interface NodeData {
@@ -465,6 +468,9 @@ function BPMSDiagramInner({
   // Estado para mostrar modal de templates
   const [showTemplates, setShowTemplates] = React.useState(false);
   
+  // Estado para el chat modal
+  const [showChatModal, setShowChatModal] = React.useState(false);
+  
   // Estados para edición del título
   const [diagramTitle, setDiagramTitle] = React.useState(propDiagramTitle || 'Sin título');
   const [isEditingTitle, setIsEditingTitle] = React.useState(false);
@@ -480,7 +486,12 @@ function BPMSDiagramInner({
     }
   }, [propDiagramTitle]);
 
-  // Función para copiar el prompt maestro
+  // Función para abrir el chat modal
+  const handleOpenChat = React.useCallback(() => {
+    setShowChatModal(true);
+  }, []);
+
+  // Función para copiar el prompt maestro (mantener para compatibilidad)
   const handleCopyPrompt = React.useCallback(async () => {
     const promptContent = `# 🧠 PROMPT MAESTRO — GENERADOR DE FLUJOS BPMN JSON VALIDADO
 
@@ -609,6 +620,45 @@ El formato final debe ser:
       return newIndex;
     });
   }, [historyIndex, isUndoRedoOperation]);
+
+  // Función para generar diagrama desde el chat
+  const handleGenerateDiagram = React.useCallback((jsonData: any) => {
+    if (jsonData.nodes && jsonData.edges) {
+      // Validar que los nodos y edges tengan la estructura correcta
+      const validNodes = jsonData.nodes.filter((node: any) => 
+        node.id && node.type && node.position && node.data
+      );
+      const validEdges = jsonData.edges.filter((edge: any) => 
+        edge.id && edge.source && edge.target
+      );
+
+      if (validNodes.length > 0) {
+        // Actualizar el canvas con el nuevo diagrama
+        setNodes(validNodes);
+        setEdges(validEdges);
+        
+        // Guardar en el historial
+        saveToHistory(validNodes, validEdges);
+        
+        // Cerrar el modal después de generar
+        setShowChatModal(false);
+        
+        // Opcional: Ajustar la vista para mostrar todo el diagrama
+        setTimeout(() => {
+          const bounds = getNodesBounds(validNodes);
+          const viewport = getViewportForBounds(
+            bounds,
+            window.innerWidth,
+            window.innerHeight,
+            0.5,
+            2,
+            80
+          );
+          setViewport(viewport, { duration: 800 });
+        }, 100);
+      }
+    }
+  }, [saveToHistory, setViewport]);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -2377,26 +2427,21 @@ El formato final debe ser:
           <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center">
             <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-md border border-gray-200/50 p-0.5">
               <div className="flex items-center gap-2 px-2 py-1">
-                {/* Radio button style indicator */}
-                <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-                  copySuccess 
-                    ? 'bg-pink-500 border-pink-500' 
-                    : 'bg-white border-pink-300 hover:border-pink-400'
-                }`}>
-                  {copySuccess && (
-                    <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                  )}
-                </div>
-                
                 <button
-                  onClick={handleCopyPrompt}
-                  className="text-gray-800 hover:text-gray-900 transition-colors duration-200 text-xs font-medium"
-                  title="Copiar prompt maestro para LLM"
+                  onClick={handleOpenChat}
+                  className="group flex items-center gap-2 px-3 py-2 bg-white hover:bg-blue-50 rounded-lg shadow-sm hover:shadow-md border border-gray-200 hover:border-blue-300 transition-all duration-300 text-xs font-medium text-gray-800 hover:text-blue-700 active:scale-95 active:bg-blue-100"
+                  title="Abrir DIAGRAMATOR - Asistente de Diagramas con IA"
                 >
                   {copySuccess ? (
-                    <>¡Copiado!</>
+                    <>
+                      <Check className="w-4 h-4 text-green-600 group-hover:scale-110 transition-transform duration-300" />
+                      ¡Copiado!
+                    </>
                   ) : (
-                    <>Copy Prompt for LLM</>
+                    <>
+                      <Bot className="w-4 h-4 text-blue-600 group-hover:text-blue-700 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300" />
+                      <span className="group-hover:tracking-wide transition-all duration-300">DIAGRAMATOR</span>
+                    </>
                   )}
                 </button>
               </div>
@@ -3481,6 +3526,13 @@ El formato final debe ser:
             </div>
           </div>
         )}
+
+        {/* Chat Modal */}
+        <ChatModal
+          isOpen={showChatModal}
+          onClose={() => setShowChatModal(false)}
+          onGenerateDiagram={handleGenerateDiagram}
+        />
       </div>
     </div>
   );
