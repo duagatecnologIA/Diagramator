@@ -136,12 +136,10 @@ export default function LoginForm() {
             {/* Título */}
             <div className="space-y-2">
               <h2 className="text-3xl font-light text-gray-900">
-                {showSignup ? 'Crear cuenta' : 'Iniciar sesión'}
+                Iniciar sesión
               </h2>
               <p className="text-sm text-gray-500">
-                {showSignup 
-                  ? 'Únete y comienza a crear' 
-                  : 'Continúa donde lo dejaste'}
+                Continúa donde lo dejaste
               </p>
             </div>
 
@@ -211,7 +209,7 @@ export default function LoginForm() {
                   </>
                 ) : (
                   <>
-                    <span>{showSignup ? 'Crear cuenta' : 'Continuar'}</span>
+                    <span>Continuar</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
