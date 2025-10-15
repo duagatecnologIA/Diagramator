@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Workflow, GitBranch, Zap, Network, Circle, ArrowRightLeft } from 'lucide-react';
 
 export default function LoginForm() {
   const { signIn } = useAuth();
@@ -10,7 +10,6 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showSignup, setShowSignup] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
 
@@ -33,8 +32,45 @@ export default function LoginForm() {
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
         
         {/* Lado Izquierdo - Ilustración/Branding */}
-        <div className="hidden lg:flex flex-col justify-center p-12 space-y-8">
-          <div className="space-y-6">
+        <div className="hidden lg:flex flex-col justify-center p-12 space-y-8 relative overflow-hidden">
+          {/* Elementos decorativos de fondo */}
+          <div className="absolute inset-0 opacity-5">
+            {/* Nodos de flujo dispersos */}
+            <div className="absolute top-20 left-16 w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
+            <div className="absolute top-32 right-20 w-2 h-2 bg-indigo-400 rounded-full animate-pulse delay-1000"></div>
+            <div className="absolute bottom-40 left-24 w-4 h-4 bg-purple-400 rounded-full animate-pulse delay-2000"></div>
+            <div className="absolute top-48 right-32 w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse delay-500"></div>
+            
+            {/* Líneas de conexión sutiles */}
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 300">
+              <path 
+                d="M80 80 Q200 120 320 80" 
+                stroke="currentColor" 
+                strokeWidth="1" 
+                fill="none" 
+                className="text-blue-200"
+                strokeDasharray="2,4"
+              />
+              <path 
+                d="M60 200 Q200 160 340 200" 
+                stroke="currentColor" 
+                strokeWidth="1" 
+                fill="none" 
+                className="text-indigo-200"
+                strokeDasharray="3,6"
+              />
+              <path 
+                d="M100 250 Q200 180 300 120" 
+                stroke="currentColor" 
+                strokeWidth="1" 
+                fill="none" 
+                className="text-purple-200"
+                strokeDasharray="1,3"
+              />
+            </svg>
+          </div>
+
+          <div className="space-y-6 relative z-10">
             <h1 className="text-5xl font-light text-gray-900 leading-tight">
               Bienvenido a<br />
               <span className="font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
@@ -45,12 +81,48 @@ export default function LoginForm() {
             <p className="text-lg text-gray-500 font-light leading-relaxed max-w-md">
               Crea diagramas de procesos de negocio de forma inteligente y colaborativa.
             </p>
-          </div>
 
+            {/* Iconos de flujo de trabajo */}
+            <div className="flex items-center gap-6 pt-8">
+              <div className="flex items-center gap-3 px-4 py-2 bg-blue-50 rounded-full">
+                <Workflow className="w-5 h-5 text-blue-600" />
+                <span className="text-sm font-medium text-blue-700">Flujos Inteligentes</span>
+              </div>
+              
+              <div className="flex items-center gap-3 px-4 py-2 bg-indigo-50 rounded-full">
+                <Network className="w-5 h-5 text-indigo-600" />
+                <span className="text-sm font-medium text-indigo-700">Conecta Todo</span>
+              </div>
+            </div>
+
+            {/* Mini diagrama decorativo */}
+            <div className="pt-8">
+              <div className="flex items-center gap-4 text-gray-400">
+                <div className="flex items-center gap-2">
+                  <Circle className="w-3 h-3 text-blue-500" />
+                  <span className="text-xs">Inicio</span>
+                </div>
+                <ArrowRightLeft className="w-4 h-4" />
+                <div className="flex items-center gap-2">
+                  <GitBranch className="w-3 h-3 text-indigo-500" />
+                  <span className="text-xs">Proceso</span>
+                </div>
+                <ArrowRightLeft className="w-4 h-4" />
+                <div className="flex items-center gap-2">
+                  <Zap className="w-3 h-3 text-purple-500" />
+                  <span className="text-xs">Resultado</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Lado Derecho - Formulario Minimalista */}
-        <div className="w-full max-w-md mx-auto lg:mx-0">
+        <div className="w-full max-w-md mx-auto lg:mx-0 relative">
+          {/* Elementos decorativos sutiles */}
+          <div className="absolute -top-4 -right-4 w-8 h-8 bg-blue-100 rounded-full opacity-30"></div>
+          <div className="absolute -bottom-8 -left-4 w-6 h-6 bg-indigo-100 rounded-full opacity-40"></div>
+          
           {/* Logo móvil */}
           <div className="lg:hidden text-center mb-12">
             <h1 className="text-3xl font-light text-gray-900">

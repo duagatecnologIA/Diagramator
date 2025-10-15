@@ -227,57 +227,80 @@ function DecisionNode({ data }: { data: NodeData }) {
   
   return (
     <div 
-      className={`rotate-45 shadow-lg flex items-center justify-center relative ${sizeClasses[size]} transition-all duration-200 hover:shadow-xl hover:scale-105`}
+      className={`shadow-lg flex items-center justify-center relative ${sizeClasses[size]} transition-all duration-200 hover:shadow-xl hover:scale-105`}
       style={{ 
         background: color,
         color: textColor,
         boxShadow: `0 4px 12px ${color}40, 0 2px 6px ${color}30`,
+        transform: 'rotate(45deg)',
+        width: '100px',
+        height: '100px'
       }}
     >
+      {/* Handle superior - vértice superior del diamante */}
       <Handle
         type="target"
         position={Position.Top}
+        id="top"
         className="w-3 h-3 border-2 border-white !bg-white transition-all duration-200 hover:scale-110"
         style={{ 
           boxShadow: `0 0 0 2px ${color}`,
-          top: -6
+          top: -6,
+          left: '50%',
+          transform: 'translateX(-50%)'
         }}
       />
-      <div className="text-center -rotate-45">
+      
+      {/* Handle inferior - vértice inferior del diamante */}
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="bottom"
+        className="w-3 h-3 border-2 border-white !bg-white transition-all duration-200 hover:scale-110"
+        style={{ 
+          boxShadow: `0 0 0 2px ${color}`,
+          bottom: -6,
+          left: '50%',
+          transform: 'translateX(-50%)'
+        }}
+      />
+      
+      {/* Handle izquierdo - vértice izquierdo del diamante */}
+      <Handle
+        type="source"
+        position={Position.Left}
+        id="left"
+        className="w-3 h-3 border-2 border-white !bg-white transition-all duration-200 hover:scale-110"
+        style={{ 
+          boxShadow: `0 0 0 2px ${color}`,
+          left: -6,
+          top: '50%',
+          transform: 'translateY(-50%)'
+        }}
+      />
+      
+      {/* Handle derecho - vértice derecho del diamante */}
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="right"
+        className="w-3 h-3 border-2 border-white !bg-white transition-all duration-200 hover:scale-110"
+        style={{ 
+          boxShadow: `0 0 0 2px ${color}`,
+          right: -6,
+          top: '50%',
+          transform: 'translateY(-50%)'
+        }}
+      />
+      
+      <div className="text-center" style={{ transform: 'rotate(-45deg)' }}>
         <div className="w-6 h-6 mx-auto mb-2 flex items-center justify-center">
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>
         </div>
-            <p className={`${fontSizes[fontSize]} font-semibold leading-tight px-1`}>{data.label}</p>
+        <p className={`${fontSizes[fontSize]} font-semibold leading-tight px-1`}>{data.label}</p>
       </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="w-3 h-3 border-2 border-white !bg-white transition-all duration-200 hover:scale-110"
-        style={{ 
-          boxShadow: `0 0 0 2px ${color}`,
-          bottom: -6
-        }}
-      />
-      <Handle
-        type="source"
-        position={Position.Left}
-        className="w-3 h-3 border-2 border-white !bg-white transition-all duration-200 hover:scale-110"
-        style={{ 
-          boxShadow: `0 0 0 2px ${color}`,
-          left: -6
-        }}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="w-3 h-3 border-2 border-white !bg-white transition-all duration-200 hover:scale-110"
-        style={{ 
-          boxShadow: `0 0 0 2px ${color}`,
-          right: -6
-        }}
-      />
     </div>
   );
 }
@@ -2523,7 +2546,6 @@ El formato final debe ser:
           zoomOnPinch={true}
           zoomOnDoubleClick={true}
           panOnScroll={false}
-          panOnScrollMode="free"
           preventScrolling={true}
           zoomActivationKeyCode={null}
           fitViewOptions={{
