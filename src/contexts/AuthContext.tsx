@@ -26,6 +26,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Verificar si Supabase está configurado
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn('Supabase no configurado - modo sin autenticación');
+      setLoading(false);
+      return;
+    }
+
     // Obtener sesión inicial
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
@@ -65,15 +75,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadProfile = async (userId: string) => {
     try {
+      // Verificar si Supabase está configurado antes de hacer la consulta
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseAnonKey) {
+        console.warn('Supabase no configurado - saltando carga de perfil');
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
-      setProfile(data);
+      if (error) {
+        console.warn('Error cargando perfil:', error.message);
+        // No lanzar error, solo continuar sin perfil
+      } else {
+        setProfile(data);
+      }
     } catch (error) {
+      console.warn('Error inesperado cargando perfil:', error);
     } finally {
       setLoading(false);
     }
