@@ -2516,13 +2516,23 @@ El formato final debe ser:
           panOnDrag={toolMode === 'select'}
           connectionRadius={20}
           snapToGrid={false}
+          // Configuración de zoom fluido como n8n
+          minZoom={0.05}
+          maxZoom={4}
+          zoomOnScroll={true}
+          zoomOnPinch={true}
+          zoomOnDoubleClick={true}
+          panOnScroll={false}
+          panOnScrollMode="free"
+          preventScrolling={true}
+          zoomActivationKeyCode={null}
           fitViewOptions={{
             padding: 0.2,
             includeHiddenNodes: false,
-            minZoom: 0.1,
-            maxZoom: 2
+            minZoom: 0.05,
+            maxZoom: 4,
+            duration: 400
           }}
-          maxZoom={2}
           deleteKeyCode={null}
           multiSelectionKeyCode={['Meta', 'Control']}
           selectionKeyCode={'Meta'}
