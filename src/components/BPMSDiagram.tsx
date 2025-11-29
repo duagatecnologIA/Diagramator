@@ -493,7 +493,7 @@ function BPMSDiagramInner({
 
   // Función para copiar el prompt maestro (mantener para compatibilidad)
   const handleCopyPrompt = React.useCallback(async () => {
-    const promptContent = `# 🧠 PROMPT MAESTRO — GENERADOR DE FLUJOS BPMN JSON VALIDADO
+    const promptContent = `# 🧠 PROMPT MAESTRO — GENERADOR DE FLUJOS BPMS JSON VALIDADO
 
 📢 **Instrucción principal:**
 
@@ -503,7 +503,7 @@ function BPMSDiagramInner({
 Explicar el tema, y numero de nodos.
 dar instrucciones adicionales si es necesario.
 
-Actúa como un generador de flujos BPMN en formato **JSON exacto** siguiendo la estructura validada que te proporcionaré a continuación.  
+Actúa como un generador de flujos BPMS en formato **JSON exacto** siguiendo la estructura validada que te proporcionaré a continuación.  
 Tu tarea es analizar un **texto descriptivo** o una **imagen** (si la incluyo) y crear un **diagrama de flujo** basado en ese contenido.  
 La salida **debe respetar la estructura y formato JSON validados**, sin agregar ningún texto adicional fuera del bloque JSON.  
 
@@ -549,7 +549,7 @@ El formato final debe ser:
   "nodes": [...],
   "edges": [...],
   "metadata": {
-    "name": "BPMN Diagram",
+    "name": "BPMS Diagram",
     "created": "YYYY-MM-DDTHH:MM:SS.sssZ",
     "version": "1.0"
   }
@@ -584,7 +584,7 @@ El formato final debe ser:
     }
   ],
   "metadata": {
-    "name": "BPMN Diagram",
+    "name": "BPMS Diagram",
     "created": "2025-10-10T02:10:15.339Z",
     "version": "1.0"
   }

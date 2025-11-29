@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
           const content: any[] = [
             {
               type: 'text',
-              text: msg.content || 'Analiza esta imagen y genera un diagrama BPMN basado en el contenido visual que veas.'
+              text: msg.content || 'Analiza esta imagen y genera un diagrama BPMS basado en el contenido visual que veas.'
             }
           ];
           

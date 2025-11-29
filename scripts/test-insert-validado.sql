@@ -158,7 +158,7 @@ VALUES (
       }
     ],
     "metadata": {
-      "name": "BPMN Diagram Test",
+      "name": "BPMS Diagram Test",
       "created": "2025-10-10T02:10:15.339Z",
       "version": "1.0"
     }

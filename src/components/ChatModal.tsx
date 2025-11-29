@@ -25,7 +25,7 @@ interface ChatModalProps {
   onGenerateDiagram: (jsonData: any) => void;
 }
 
-const PROMPT_MAESTRO = `# 🧠 PROMPT MAESTRO — GENERADOR DE FLUJOS BPMN JSON VALIDADO
+const PROMPT_MAESTRO = `# 🧠 PROMPT MAESTRO — GENERADOR DE FLUJOS BPMS JSON VALIDADO
 
 📢 **Instrucción principal:**
 
@@ -33,7 +33,7 @@ const PROMPT_MAESTRO = `# 🧠 PROMPT MAESTRO — GENERADOR DE FLUJOS BPMN JSON 
 
 **Las instrucciones vienen dictadas por el usuario**
 
-Actúa como un generador de flujos BPMN en formato **JSON exacto** siguiendo la estructura validada que te proporcionaré a continuación.  
+Actúa como un generador de flujos BPMS en formato **JSON exacto** siguiendo la estructura validada que te proporcionaré a continuación.  
 Tu tarea es analizar un **texto descriptivo**, **imágenes** o **archivos PDF** (si los incluyo) y crear un **diagrama de flujo** basado en ese contenido.  
 
 **IMPORTANTE:** Si el usuario adjunta archivos (imágenes o PDFs), debes:
@@ -94,7 +94,7 @@ El formato final debe ser:
   "nodes": [...],
   "edges": [...],
   "metadata": {
-    "name": "BPMN Diagram",
+    "name": "BPMS Diagram",
     "created": "YYYY-MM-DDTHH:MM:SS.sssZ",
     "version": "1.0"
   }
@@ -131,7 +131,7 @@ El formato final debe ser:
     }
   ],
   "metadata": {
-    "name": "BPMN Diagram",
+    "name": "BPMS Diagram",
     "created": "2025-10-10T02:10:15.339Z",
     "version": "1.0"
   }
@@ -170,7 +170,7 @@ export default function ChatModal({ isOpen, onClose, onGenerateDiagram }: ChatMo
         {
           id: '1',
           role: 'assistant',
-          content: `¡Hola! Soy DIAGRAMATOR, tu asistente especializado en generar diagramas BPMN. 
+          content: `¡Hola! Soy DIAGRAMATOR, tu asistente especializado en generar diagramas BPMS. 
 
 Puedo ayudarte a crear diagramas de flujo de procesos de negocio basados en descripciones de texto o análisis de imágenes.
 
@@ -255,7 +255,7 @@ Puedo ayudarte a crear diagramas de flujo de procesos de negocio basados en desc
       {
         id: '1',
         role: 'assistant',
-        content: `¡Hola! Soy DIAGRAMATOR, tu asistente especializado en generar diagramas BPMN. 
+        content: `¡Hola! Soy DIAGRAMATOR, tu asistente especializado en generar diagramas BPMS. 
 
 Puedo ayudarte a crear diagramas de flujo de procesos de negocio basados en descripciones de texto o análisis de imágenes.
 
@@ -426,7 +426,7 @@ Puedo ayudarte a crear diagramas de flujo de procesos de negocio basados en desc
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-900">DIAGRAMATOR</h2>
-              <p className="text-sm text-gray-500">Asistente de Diagramas BPMN</p>
+              <p className="text-sm text-gray-500">Asistente de Diagramas BPMS</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
